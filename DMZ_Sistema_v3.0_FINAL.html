@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMZ · Sistema de Gestión v3.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#2D3E45;--dark2:#1E2C32;--gold:#C9922A;
+  --cream:#F5F2EC;--light:#E8E4DB;--white:#FAFAF8;--text:#1C2A30;
+  --muted:#7A8C92;--border:#DDD8CC;
+  --ok:#1E6B35;--ok-bg:#E4F4E8;
+  --warn:#C9922A;--warn-bg:#FFF8E6;
+  --late:#B03030;--late-bg:#FDEAEA;
+  --blue:#1A4A7A;--blue-bg:#E8F0F8;
+  --purple:#6B3FA0;--purple-bg:#F0E8F8;
+  --teal:#1A6B6B;--teal-bg:#E4F4F4;
+  --shadow:0 2px 12px rgba(44,62,69,.10);
+  --shadow-lg:0 8px 32px rgba(44,62,69,.18);
+}
+html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#E8E4D8;color:var(--text)}
+.app{min-height:100vh;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{background:var(--dark2);height:56px;display:flex;align-items:center;padding:0 28px;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.logo-dmz{font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;letter-spacing:.22em;color:#fff}
+.logo-dmz span{color:var(--gold)}
+.tb-div{width:1px;height:28px;background:rgba(255,255,255,.12)}
+.logo-sub{display:flex;flex-direction:column;gap:1px}
+.logo-sub .a{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.logo-sub .b{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.25)}
+.tb-sp{flex:1}
+.tb-user{display:flex;align-items:center;gap:8px}
+.tu-av{width:30px;height:30px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:#fff}
+.tu-info .name{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.tu-info .role{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);opacity:.8}
+.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 6px}
+.tb-logout{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);cursor:pointer;padding:4px 10px;border:1px solid rgba(255,255,255,.1);border-radius:5px;background:none;transition:all .2s}
+.tb-logout:hover{color:var(--late);border-color:rgba(176,48,48,.4)}
+
+/* LAYOUT */
+.main{display:flex;flex:1}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--dark);display:flex;flex-direction:column;padding:20px 0;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.sb-section{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.22);padding:0 20px;margin:16px 0 6px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:12px;color:rgba(255,255,255,.5);transition:all .15s;border-left:3px solid transparent}
+.sb-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.8)}
+.sb-item.active{background:rgba(201,146,42,.12);color:var(--gold);border-left-color:var(--gold)}
+.sb-item svg{opacity:.6;flex-shrink:0}
+.sb-item.active svg{opacity:1}
+.sb-badge{margin-left:auto;background:var(--late);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px}
+.sb-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+.sb-ver{font-family:'Nunito Sans',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.2)}
+
+/* CONTENT */
+.content{flex:1;padding:28px;overflow-x:hidden;max-width:100%}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.ph-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:22px;color:var(--dark);letter-spacing:-.02em}
+.ph-sub{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:12px;color:var(--muted);margin-top:3px}
+.ph-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:7px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .18s}
+.btn-primary{background:var(--dark);color:#fff}
+.btn-primary:hover{background:var(--dark2);transform:translateY(-1px)}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:#B8821F;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--dark);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--dark);background:var(--white)}
+.btn-danger{background:var(--late-bg);color:var(--late);border:1.5px solid rgba(176,48,48,.2)}
+.btn-danger:hover{background:var(--late);color:#fff}
+.btn-sm{padding:6px 12px;font-size:10px}
+.btn-xs{padding:4px 8px;font-size:9px;border-radius:5px}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--white);border-radius:12px;padding:18px 20px;border:1.5px solid var(--border);box-shadow:var(--shadow)}
+.sc-label{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sc-val{font-family:'Nunito',sans-serif;font-weight:900;font-size:28px;color:var(--dark);line-height:1}
+.sc-sub{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:10px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:5px}
+.sc-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+
+/* CARDS */
+.card{background:var(--white);border-radius:12px;border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--light);display:flex;align-items:center;justify-content:space-between;background:var(--cream)}
+.card-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--dark)}
+.card-body{padding:20px}
+
+/* CLIENT GRID */
+.client-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.client-card{background:var(--white);border-radius:12px;border:1.5px solid var(--border);padding:18px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.client-card:hover{border-color:var(--dark);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.client-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--cc,var(--dark))}
+.cc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.cc-av{width:40px;height:40px;border-radius:10px;background:var(--cc,var(--dark));display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;color:#fff;flex-shrink:0}
+.cc-name{font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:var(--dark)}
+.cc-loc{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:11px;color:var(--muted);margin-top:1px}
+.cc-stats{display:flex;gap:8px;flex-wrap:wrap}
+.cc-stat{background:var(--cream);border-radius:6px;padding:4px 9px;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;color:var(--text)}
+.cc-status{display:inline-flex;align-items:center;gap:5px;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-top:10px}
+
+/* STATUS */
+.st-ok{background:var(--ok-bg);color:var(--ok)}
+.st-warn{background:var(--warn-bg);color:var(--warn)}
+.st-late{background:var(--late-bg);color:var(--late)}
+.st-pend{background:#EEE;color:var(--muted)}
+.st-purple{background:var(--purple-bg);color:var(--purple)}
+.st-blue{background:var(--blue-bg);color:var(--blue)}
+
+/* PROGRESS */
+.progress-bar{height:6px;background:var(--light);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.pf-ok{background:var(--ok)} .pf-warn{background:var(--warn)} .pf-late{background:var(--late)} .pf-blue{background:var(--blue)} .pf-teal{background:var(--teal)}
+
+/* PLAN DE ACCION */
+.pa-header-bar{background:var(--dark);border-radius:12px;padding:18px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.pa-hb-info .name{font-family:'Nunito',sans-serif;font-weight:900;font-size:17px;color:#fff}
+.pa-hb-info .sub{font-family:'Nunito Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.4);margin-top:3px}
+.pa-semaforo{display:flex;gap:16px}
+.ps-item{text-align:center}
+.ps-num{font-family:'Nunito',sans-serif;font-weight:900;font-size:20px}
+.ps-lbl{font-family:'Nunito Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+
+/* ACCION ROW */
+.accion-row{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;transition:all .15s;position:relative}
+.accion-row:hover{border-color:var(--dark);box-shadow:var(--shadow)}
+.ac-num{width:30px;height:30px;border-radius:7px;background:var(--dark);color:var(--gold);font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ac-body{flex:1;min-width:0}
+.ac-area{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.ac-desc{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:13px;color:var(--text);line-height:1.4}
+.ac-note{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:11px;color:var(--muted);margin-top:4px;font-style:italic}
+.ac-meta{display:flex;gap:7px;margin-top:7px;flex-wrap:wrap}
+.ac-tag{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;padding:2px 8px;border-radius:5px;background:var(--cream);color:var(--text)}
+.ac-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.ac-pct{font-family:'Nunito',sans-serif;font-weight:900;font-size:18px}
+.ac-del{opacity:0;transition:opacity .15s;background:var(--late-bg);border:none;width:26px;height:26px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--late)}
+.accion-row:hover .ac-del{opacity:1}
+
+/* FORM */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.form-input{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .15s;width:100%}
+.form-input:focus{border-color:var(--dark);background:var(--white)}
+.form-textarea{resize:vertical;min-height:65px}
+.form-select{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-family:'Nunito Sans',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%;cursor:pointer}
+
+/* CRONOGRAMA */
+.cronograma-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+.ctab{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:all .15s}
+.ctab:hover{color:var(--dark)}
+.ctab.active{color:var(--dark);border-bottom-color:var(--gold)}
+
+/* CRONOGRAMA TABLA */
+.crono-table{width:100%;border-collapse:collapse}
+.crono-table th{background:var(--dark);padding:10px 14px;text-align:left;font-family:'Nunito Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.crono-table td{padding:10px 14px;border-bottom:1px solid var(--light);font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:600;vertical-align:middle}
+.crono-table tr:hover td{background:var(--cream)}
+.etapa-row td{background:var(--dark)!important;color:var(--gold);font-family:'Nunito',sans-serif;font-weight:900;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.hito-badge{background:var(--warn-bg);color:var(--warn);font-family:'Nunito',sans-serif;font-weight:900;font-size:10px;padding:2px 8px;border-radius:5px}
+
+/* VERIFICADOR */
+.verif-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:16px}
+.verif-result{padding:14px 18px;border-radius:10px;margin-top:8px;display:none}
+.vr-ok{background:var(--ok-bg);border:1.5px solid rgba(30,107,53,.2)}
+.vr-conflict{background:var(--late-bg);border:1.5px solid rgba(176,48,48,.2)}
+.vr-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;margin-bottom:5px}
+
+/* HISTORIAL TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-28px;top:10px;width:16px;height:16px;border-radius:50%;background:var(--dark);border:3px solid var(--white);box-shadow:0 0 0 2px var(--border)}
+.tl-dot.gold{background:var(--gold)} .tl-dot.late{background:var(--late)}
+.tl-card{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:12px 16px;cursor:pointer;transition:all .15s}
+.tl-card:hover{border-color:var(--dark);transform:translateX(2px)}
+.tl-date{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.tl-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--dark)}
+.tl-stats{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap}
+
+/* ALERTS */
+.alert-item{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:12px 16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:8px}
+.alert-item.new{border-color:var(--gold);background:#FFFCF5}
+.ai-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ai-body{flex:1}
+.ai-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;color:var(--dark)}
+.ai-desc{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:11px;color:var(--muted);margin-top:2px}
+.ai-time{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* TOGGLE */
+.toggle{width:36px;height:20px;background:var(--border);border-radius:10px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--ok)}
+.toggle::after{content:'';width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle.on::after{left:19px}
+
+/* NC */
+.nc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--light)}
+.nc-row:last-child{border-bottom:none}
+.nc-label{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:12px;color:var(--text)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(30,44,50,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:16px;width:540px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{background:var(--dark);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0}
+.modal-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;color:#fff}
+.modal-close{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.1);border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:24px}
+
+/* LOGIN */
+.login-screen{min-height:100vh;background:var(--dark2);display:flex;align-items:center;justify-content:center}
+.login-wrap{background:var(--dark);border-radius:20px;width:420px;padding:40px;box-shadow:0 24px 64px rgba(0,0,0,.4)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-wordmark{font-family:'Nunito',sans-serif;font-weight:900;font-size:22px;letter-spacing:.3em;color:#fff}
+.login-wordmark span{color:var(--gold)}
+.login-tagline{font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:6px}
+.login-input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:9px;padding:12px 16px;color:#fff;font-family:'Nunito Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s;margin-bottom:12px}
+.login-input:focus{border-color:var(--gold);background:rgba(255,255,255,.1)}
+.login-input::placeholder{color:rgba(255,255,255,.28)}
+.login-btn{width:100%;background:var(--gold);color:#fff;border:none;border-radius:9px;padding:13px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:#B8821F}
+.login-tabs{display:flex;background:rgba(255,255,255,.06);border-radius:9px;padding:3px;margin-bottom:22px}
+.lt{flex:1;text-align:center;padding:8px;border-radius:7px;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);cursor:pointer;transition:all .15s}
+.lt.active{background:var(--dark2);color:var(--gold)}
+
+/* FOLIO */
+.folio{display:inline-block;background:var(--dark);color:var(--gold);font-family:'Nunito',sans-serif;font-weight:900;font-size:10px;letter-spacing:.15em;padding:3px 10px;border-radius:5px}
+
+/* SECTION */
+.section{display:none}
+.section.active{display:block}
+.login-screen.active{display:flex}
+
+/* FIRMA GRID */
+.firma-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.firma-card{background:var(--cream);border-radius:10px;border:1.5px solid var(--border);padding:14px;text-align:center}
+.firma-line{border-top:2px dashed var(--border);margin:12px 0 8px}
+
+/* PORTAL CLIENTE */
+.portal-wrap{background:var(--dark2);border-radius:16px;overflow:hidden}
+.portal-top{background:var(--dark);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.portal-inner{padding:20px 24px}
+.portal-hito{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border-radius:9px;padding:12px 16px;margin-bottom:8px;border-left:3px solid var(--gold)}
+
+/* CRONO CAL */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dh{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center;padding:6px 0}
+.cal-day{min-height:64px;background:var(--white);border-radius:8px;border:1px solid var(--border);padding:5px;cursor:pointer;transition:all .15s}
+.cal-day:hover{border-color:var(--dark)}
+.cal-day.other{opacity:.3}
+.cal-day.today{border-color:var(--gold);background:var(--warn-bg)}
+.cal-day.off{background:#FFF0F0}
+.cal-dn{font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--dark)}
+.cal-ev{font-family:'Nunito Sans',sans-serif;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.cev-gold{background:var(--gold)} .cev-blue{background:var(--blue)} .cev-ok{background:var(--ok)} .cev-late{background:var(--late)} .cev-teal{background:var(--teal)} .cev-purple{background:var(--purple)}
+
+/* AUTOSAVE */
+.autosave{display:inline-flex;align-items:center;gap:5px;font-family:'Nunito Sans',sans-serif;font-weight:600;font-size:10px;color:var(--ok);opacity:0;transition:opacity .3s}
+.autosave.show{opacity:1}
+.autosave-dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse{animation:pulse 1.5s infinite}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .25s ease forwards}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .client-grid{grid-template-columns:1fr}
+  .verif-form{grid-template-columns:1fr}
+  .firma-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="screen-login" class="login-screen active">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-wordmark"><span>D·M·Z</span></div>
+      <div class="login-tagline">De La Mora Zumarán · Kitchen Support</div>
+    </div>
+    <div class="login-tabs">
+      <div class="lt active" onclick="loginTab('in',this)">Ingresar</div>
+      <div class="lt" onclick="loginTab('req',this)">Solicitar acceso</div>
+    </div>
+    <div id="lt-in">
+      <input class="login-input" type="email" placeholder="Correo electrónico" id="login-email">
+      <input class="login-input" type="password" placeholder="Contraseña" id="login-pass">
+      <button class="login-btn" onclick="doLogin()">Ingresar al sistema</button>
+    </div>
+    <div id="lt-req" style="display:none">
+      <input class="login-input" type="text" placeholder="Nombre completo">
+      <input class="login-input" type="text" placeholder="Empresa / establecimiento">
+      <input class="login-input" type="email" placeholder="Correo electrónico">
+      <select class="login-input" style="color:rgba(255,255,255,.5);background:rgba(255,255,255,.07)">
+        <option value="">Tipo de acceso</option>
+        <option>Cliente — Portal de seguimiento</option>
+        <option>Colaborador — Acceso parcial</option>
+      </select>
+      <button class="login-btn" onclick="alert('Solicitud enviada. Recibirás confirmación en tu correo una vez que sea autorizada.')">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="screen-app" class="app" style="display:none">
+
+  <header class="topbar">
+    <div class="logo-dmz"><span>D·M·Z</span></div>
+    <div class="tb-div"></div>
+    <div class="logo-sub">
+      <div class="a">De La Mora Zumarán</div>
+      <div class="b">Kitchen Support · F&amp;B Consulting</div>
+    </div>
+    <div class="tb-sp"></div>
+    <span class="autosave" id="autosave-ind"><span class="autosave-dot pulse"></span>Guardado</span>
+    <div class="tb-sep"></div>
+    <div class="tb-user">
+      <div class="tu-av">BZ</div>
+      <div class="tu-info">
+        <div class="name">Blanca Zumarán</div>
+        <div class="role">CEO · Acceso total</div>
+      </div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-logout" onclick="doLogout()">Salir</button>
+  </header>
+
+  <div class="main">
+    <nav class="sidebar">
+      <div class="sb-section">Principal</div>
+      <div class="sb-item active" onclick="nav('dashboard',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="sb-item" onclick="nav('clientes',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clientes
+      </div>
+      <div class="sb-item" onclick="nav('plan-accion',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Plan de Acción
+      </div>
+      <div class="sb-item" onclick="nav('cronograma',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Cronograma
+      </div>
+      <div class="sb-item" onclick="nav('historial',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial
+      </div>
+      <div class="sb-section">Operaciones</div>
+      <div class="sb-item" onclick="nav('cb',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        C&amp;B · Disponibilidad
+      </div>
+      <div class="sb-item" onclick="nav('alertas',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Alertas
+        <span class="sb-badge">3</span>
+      </div>
+      <div class="sb-item" onclick="nav('portal',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Portal Cliente
+      </div>
+      <div class="sb-section">Sistema</div>
+      <div class="sb-item" onclick="nav('config',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M5.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Configuración
+      </div>
+      <div class="sb-bottom">
+        <div class="sb-ver">DMZ Sistema v3.0 · Beta</div>
+      </div>
+    </nav>
+
+    <div class="content">
+
+      <!-- ══════════ DASHBOARD ══════════ -->
+      <div id="sec-dashboard" class="section active fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">Dashboard CEO</div>
+            <div class="ph-sub" id="dash-date">Vista general del sistema</div>
+          </div>
+          <div class="ph-actions">
+            <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-client')">+ Nuevo cliente</button>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="sc-label">Clientes activos</div>
+            <div class="sc-val" id="stat-clientes">0</div>
+            <div class="sc-sub"><span class="sc-dot" style="background:var(--ok)"></span>Registrados en sistema</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Planes activos</div>
+            <div class="sc-val" id="stat-planes">0</div>
+            <div class="sc-sub"><span class="sc-dot" style="background:var(--warn)"></span>Con acciones pendientes</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Acciones totales</div>
+            <div class="sc-val" id="stat-acciones">0</div>
+            <div class="sc-sub"><span class="sc-dot" style="background:var(--ok)"></span>En todos los planes</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Proyectos con cronograma</div>
+            <div class="sc-val" id="stat-cronos">0</div>
+            <div class="sc-sub"><span class="sc-dot" style="background:var(--blue)"></span>Con fechas registradas</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Clientes — Estado general</div></div>
+          <div class="card-body" id="dash-clients" style="padding:14px 20px;display:flex;flex-direction:column;gap:12px">
+            <div style="font-family:'Nunito Sans',sans-serif;font-size:12px;color:var(--muted);text-align:center;padding:20px 0">No hay clientes aún. Agrega el primero.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CLIENTES ══════════ -->
+      <div id="sec-clientes" class="section fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">Clientes</div>
+            <div class="ph-sub" id="clientes-count">0 establecimientos registrados</div>
+          </div>
+          <button class="btn btn-gold" onclick="openModal('modal-new-client')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo cliente
+          </button>
+        </div>
+        <div class="client-grid" id="client-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:40px;font-family:'Nunito Sans',sans-serif;color:var(--muted)">No hay clientes. Agrega el primero con el botón de arriba.</div>
+        </div>
+      </div>
+
+      <!-- ══════════ PLAN DE ACCIÓN ══════════ -->
+      <div id="sec-plan-accion" class="section fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">Plan de Acción</div>
+            <div class="ph-sub" id="pa-subtitle">Selecciona un cliente para ver su plan</div>
+          </div>
+          <div class="ph-actions">
+            <span class="autosave show" id="pa-save"><span class="autosave-dot pulse"></span>Guardado automático</span>
+            <button class="btn btn-outline btn-sm" onclick="nav('historial',null)">Historial</button>
+            <button class="btn btn-primary btn-sm" onclick="exportPDF()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Exportar PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Selector de cliente -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-body" style="padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:180px;margin:0">
+              <label class="form-label">Cliente</label>
+              <select class="form-select" id="pa-cliente-sel" onchange="loadPlanForClient()">
+                <option value="">— Selecciona un cliente —</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:180px;margin:0">
+              <label class="form-label">Nombre del plan</label>
+              <input class="form-input" id="pa-plan-nombre" placeholder="Ej. Plan de Acción — Semana 12" oninput="triggerAutosave()">
+            </div>
+            <div class="form-group" style="min-width:130px;margin:0">
+              <label class="form-label">Período</label>
+              <input class="form-input" id="pa-plan-periodo" placeholder="Ej. 24–30 Mar 2026" oninput="triggerAutosave()">
+            </div>
+            <div class="form-group" style="min-width:100px;margin:0">
+              <label class="form-label">Folio</label>
+              <input class="form-input" id="pa-plan-folio" placeholder="PA-2026-001" oninput="triggerAutosave()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Semáforo -->
+        <div class="pa-header-bar" id="pa-semaforo-bar">
+          <div class="pa-hb-info">
+            <div class="name" id="pa-client-name">—</div>
+            <div class="sub" id="pa-plan-info">Completa los campos arriba para comenzar</div>
+          </div>
+          <div class="pa-semaforo">
+            <div class="ps-item"><div class="ps-num" style="color:#6fcf8a" id="sem-ok">0</div><div class="ps-lbl">Completo</div></div>
+            <div class="ps-item"><div class="ps-num" style="color:var(--gold)" id="sem-proc">0</div><div class="ps-lbl">Proceso</div></div>
+            <div class="ps-item"><div class="ps-num" style="color:#D98FF0" id="sem-atr">0</div><div class="ps-lbl">Atrasado</div></div>
+            <div class="ps-item"><div class="ps-num" style="color:rgba(255,255,255,.4)" id="sem-pend">0</div><div class="ps-lbl">Pendiente</div></div>
+          </div>
+        </div>
+
+        <!-- Lista de acciones -->
+        <div id="pa-acciones-list"></div>
+
+        <!-- Botón agregar acción -->
+        <button class="btn btn-outline" style="width:100%;margin-bottom:20px;border-style:dashed;border-width:2px" onclick="openModal('modal-new-accion')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar acción al plan
+        </button>
+
+        <!-- Firmas y envío -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Firmas y envío</div></div>
+          <div class="card-body">
+            <div class="firma-grid" style="margin-bottom:16px">
+              <div class="firma-card">
+                <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em">Elaborado por</div>
+                <div class="firma-line"></div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px">Mario Zumarán</div>
+                <div style="font-size:10px;color:var(--muted)">DMZ Kitchen Support</div>
+              </div>
+              <div class="firma-card">
+                <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em">Revisado por</div>
+                <div class="firma-line"></div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px">Representante</div>
+                <div style="font-size:10px;color:var(--muted)">Establecimiento</div>
+              </div>
+              <div class="firma-card">
+                <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em">Aprobado por</div>
+                <div class="firma-line"></div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px">Blanca De la Mora</div>
+                <div style="font-size:10px;color:var(--muted)">Dirección DMZ</div>
+              </div>
+            </div>
+            <div style="background:var(--cream);border-radius:10px;border:1.5px solid var(--border);padding:14px 16px">
+              <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:12px;color:var(--dark);margin-bottom:10px">DESTINATARIOS</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <div class="nc-row" style="flex:1;min-width:200px;border:none;padding:0"><span class="nc-label">blanca@delamorazumaran.com</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row" style="flex:1;min-width:200px;border:none;padding:0"><span class="nc-label">mario@delamorazumaran.com</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row" style="flex:1;min-width:200px;border:none;padding:0"><span class="nc-label">Contacto del cliente</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+              <button class="btn btn-gold" style="margin-top:14px;width:100%" onclick="sendPlan()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Enviar plan y notificar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CRONOGRAMA ══════════ -->
+      <div id="sec-cronograma" class="section fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">Cronograma de Proyecto</div>
+            <div class="ph-sub">Gestión de etapas, hitos y fechas por cliente</div>
+          </div>
+          <div class="ph-actions">
+            <select class="form-select" id="crono-cliente-sel" style="width:220px" onchange="loadCronoForClient()">
+              <option value="">— Selecciona cliente —</option>
+            </select>
+            <button class="btn btn-gold btn-sm" onclick="openModal('modal-new-hito')">+ Agregar hito</button>
+          </div>
+        </div>
+
+        <div class="cronograma-tabs">
+          <div class="ctab active" onclick="cronoTab('lista',this)">Lista de hitos</div>
+          <div class="ctab" onclick="cronoTab('calendario',this)">Calendario</div>
+          <div class="ctab" onclick="cronoTab('portal-crono',this)">Vista Cliente</div>
+        </div>
+
+        <!-- LISTA DE HITOS -->
+        <div id="crono-lista">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title" id="crono-client-title">Selecciona un cliente</div>
+              <button class="btn btn-outline btn-sm" onclick="exportICS()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar .ics
+              </button>
+            </div>
+            <div class="card-body" style="padding:0">
+              <table class="crono-table" id="crono-tabla">
+                <thead>
+                  <tr>
+                    <th>Hito / Actividad</th>
+                    <th>Responsable</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="crono-tbody">
+                  <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Selecciona un cliente y agrega hitos con el botón de arriba</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CALENDARIO -->
+        <div id="crono-calendario" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;align-items:center;gap:12px">
+                <button class="btn btn-outline btn-sm" onclick="changeCalMonth(-1)">←</button>
+                <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:var(--dark)" id="cal-month-lbl">—</div>
+                <button class="btn btn-outline btn-sm" onclick="changeCalMonth(1)">→</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="cal-grid" id="cal-grid-crono">
+                <div class="cal-dh">LUN</div><div class="cal-dh">MAR</div><div class="cal-dh">MIÉ</div>
+                <div class="cal-dh">JUE</div><div class="cal-dh">VIE</div><div class="cal-dh">SÁB</div><div class="cal-dh">DOM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PORTAL CRONO -->
+        <div id="crono-portal-crono" style="display:none">
+          <div class="portal-wrap">
+            <div class="portal-top">
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;letter-spacing:.2em;color:#fff"><span style="color:var(--gold)">D·M·Z</span></div>
+              <div id="crono-portal-name" style="font-family:'Nunito Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.4)">—</div>
+            </div>
+            <div class="portal-inner">
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:#fff;margin-bottom:4px" id="crono-portal-title">Cronograma de tu proyecto</div>
+              <div style="font-family:'Nunito Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:20px">Fechas y avances de tu proyecto con DMZ Kitchen Support</div>
+              <div id="crono-portal-hitos"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ C&B DISPONIBILIDAD ══════════ -->
+      <div id="sec-cb" class="section fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">C&amp;B · Verificador de Disponibilidad</div>
+            <div class="ph-sub">Verifica conflictos de fechas entre todos los proyectos DMZ activos</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Verificar fechas propuestas</div></div>
+          <div class="card-body">
+            <div class="verif-form">
+              <div class="form-group">
+                <label class="form-label">Fecha de inicio propuesta</label>
+                <input class="form-input" type="date" id="v-start">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fecha de fin propuesta</label>
+                <input class="form-input" type="date" id="v-end">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo / nombre del evento</label>
+                <input class="form-input" type="text" id="v-tipo" placeholder="Ej. Boda, Evento corporativo...">
+              </div>
+              <button class="btn btn-gold" onclick="verificarDisp()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Verificar
+              </button>
+            </div>
+            <div id="verif-result" class="verif-result"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Todos los hitos activos — Todos los proyectos</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="crono-table">
+              <thead><tr><th>Cliente</th><th>Hito / Actividad</th><th>Inicio</th><th>Fin</th><th>Tipo</th></tr></thead>
+              <tbody id="cb-tabla"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ HISTORIAL ══════════ -->
+      <div id="sec-historial" class="section fade-in">
+        <div class="page-header">
+          <div><div class="ph-title">Historial de Planes</div><div class="ph-sub">Cadena de planes por cliente</div></div>
+          <select class="form-select" style="width:220px" id="hist-cliente-sel" onchange="loadHistorial()">
+            <option value="">— Todos los clientes —</option>
+          </select>
+        </div>
+        <div class="timeline" id="historial-list">
+          <div style="font-family:'Nunito Sans',sans-serif;font-size:12px;color:var(--muted);padding:20px 0">Los planes guardados aparecen aquí.</div>
+        </div>
+      </div>
+
+      <!-- ══════════ ALERTAS ══════════ -->
+      <div id="sec-alertas" class="section fade-in">
+        <div class="page-header">
+          <div><div class="ph-title">Centro de Alertas</div><div class="ph-sub">Notificaciones del sistema</div></div>
+          <button class="btn btn-outline btn-sm" onclick="document.querySelectorAll('.alert-item.new').forEach(function(a){a.classList.remove('new')})">Marcar todo leído</button>
+        </div>
+        <div id="alertas-list">
+          <div class="alert-item new">
+            <div class="ai-dot" style="background:var(--ok)"></div>
+            <div class="ai-body"><div class="ai-title">Sistema DMZ v3.0 activo</div><div class="ai-desc">El sistema está listo. Agrega tus clientes y comienza a registrar planes de acción y cronogramas.</div></div>
+            <div class="ai-time">Ahora</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px">
+          <div class="card-header"><div class="card-title">Configuración de notificaciones</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;margin-bottom:10px">Correo electrónico</div>
+                <div class="nc-row"><span class="nc-label">Punto vencido sin completar</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Plan nuevo creado</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Plan completado 100%</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Solicitud de acceso nueva</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+              <div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;margin-bottom:10px">WhatsApp</div>
+                <div class="nc-row"><span class="nc-label">Punto vencido sin completar</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Plan completado 100%</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Alerta urgente CEO</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="nc-row"><span class="nc-label">Resumen semanal</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ PORTAL CLIENTE ══════════ -->
+      <div id="sec-portal" class="section fade-in">
+        <div class="page-header">
+          <div><div class="ph-title">Portal del Cliente</div><div class="ph-sub">Vista que ve el cliente al ingresar</div></div>
+          <select class="form-select" style="width:220px" id="portal-cliente-sel" onchange="loadPortal()">
+            <option value="">— Selecciona cliente —</option>
+          </select>
+        </div>
+        <div id="portal-content">
+          <div style="text-align:center;padding:40px;font-family:'Nunito Sans',sans-serif;color:var(--muted)">Selecciona un cliente para ver su portal.</div>
+        </div>
+      </div>
+
+      <!-- ══════════ CONFIGURACIÓN ══════════ -->
+      <div id="sec-config" class="section fade-in">
+        <div class="page-header"><div><div class="ph-title">Configuración</div><div class="ph-sub">Parámetros globales del sistema</div></div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Correos CEO autorizados</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--cream);border-radius:9px;border:1.5px solid var(--border)">
+                <div style="width:32px;height:32px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:#fff">BZ</div>
+                <div style="flex:1"><div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px">Blanca De la Mora Zumarán</div><div style="font-size:11px;color:var(--muted)">blanca@delamorazumaran.com</div></div>
+                <span class="cc-status st-ok">CEO · Acceso total</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--cream);border-radius:9px;border:1.5px solid var(--border)">
+                <div style="width:32px;height:32px;border-radius:8px;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--gold)">MZ</div>
+                <div style="flex:1"><div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:13px">Mario Zumarán</div><div style="font-size:11px;color:var(--muted)">mario@delamorazumaran.com</div></div>
+                <span class="cc-status st-ok">CEO · Acceso total</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Versiones del sistema</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="padding:10px 14px;background:var(--ok-bg);border-radius:8px;border-left:3px solid var(--ok)"><div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--ok)">v3.0 · ACTUAL</div><div style="font-size:11px;margin-top:3px">Login · Clientes · Plan de Acción · Cronograma · C&amp;B · Historial · Portal Cliente · Alertas</div></div>
+              <div style="padding:10px 14px;background:var(--warn-bg);border-radius:8px;border-left:3px solid var(--warn)"><div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--warn)">v4.0 · Q2 2026</div><div style="font-size:11px;color:var(--muted);margin-top:3px">Supabase backend real · SendGrid · Twilio WhatsApp · PDF con tipografía DMZ · Corrector IA real</div></div>
+              <div style="padding:10px 14px;background:var(--cream);border-radius:8px;border-left:3px solid var(--border)"><div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--muted)">v5.0 · Q3 2026</div><div style="font-size:11px;color:var(--muted);margin-top:3px">App móvil · Firmas digitales · POS · Recetario y food cost</div></div>
+              <div style="padding:10px 14px;background:var(--cream);border-radius:8px;border-left:3px solid var(--border)"><div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;color:var(--muted)">v6.0 · 2027</div><div style="font-size:11px;color:var(--muted);margin-top:3px">White-label SaaS · Marketplace · Licencias para otras consultoras</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ MODALES ═══ -->
+
+<!-- Nuevo cliente -->
+<div id="modal-new-client" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo cliente</div>
+      <button class="modal-close" onclick="closeModal('modal-new-client')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre del establecimiento *</label><input class="form-input" id="nc-nombre" placeholder="Ej. La Mar · Cancún"></div>
+        <div class="form-group"><label class="form-label">Ciudad y país *</label><input class="form-input" id="nc-ciudad" placeholder="Cancún, México"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Concepto</label><input class="form-input" id="nc-concepto" placeholder="Ej. Restaurant · Bar · Café"></div>
+        <div class="form-group"><label class="form-label">Correo de contacto</label><input class="form-input" type="email" id="nc-email" placeholder="contacto@establecimiento.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Responsable DMZ</label>
+          <select class="form-select" id="nc-resp"><option>Mario Zumarán</option><option>Blanca De la Mora</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Color identificador</label><input class="form-input" type="color" id="nc-color" value="#2D3E45" style="height:42px;padding:4px 8px"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-gold" onclick="addCliente()">Crear cliente</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-new-client')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nueva acción en Plan -->
+<div id="modal-new-accion" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nueva acción</div>
+      <button class="modal-close" onclick="closeModal('modal-new-accion')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Área *</label>
+          <select class="form-select" id="na-area">
+            <option>Cocina</option><option>Bar</option><option>Servicio</option><option>Costos</option>
+            <option>Operaciones</option><option>Compras</option><option>Capacitación</option><option>Administración</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="na-resp" placeholder="Ej. Chef Ejecutivo"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label class="form-label">Descripción de la acción *</label><textarea class="form-input form-textarea" id="na-desc" placeholder="Describe la acción de forma clara y específica..."></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="na-fecha"></div>
+        <div class="form-group"><label class="form-label">Status inicial</label>
+          <select class="form-select" id="na-status">
+            <option value="pendiente">Pendiente</option>
+            <option value="proceso">En proceso</option>
+            <option value="completado">Completado</option>
+            <option value="atrasado">Atrasado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label class="form-label">Notas / observaciones</label><input class="form-input" id="na-nota" placeholder="Observaciones adicionales..."></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="addAccion()">Agregar acción</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-new-accion')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nuevo hito cronograma -->
+<div id="modal-new-hito" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo hito / actividad</div>
+      <button class="modal-close" onclick="closeModal('modal-new-hito')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:14px"><label class="form-label">Nombre del hito *</label><input class="form-input" id="nh-nombre" placeholder="Ej. Soft Opening, Capacitación, Entrega formal..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="nh-resp" placeholder="DMZ / Propietario..."></div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-select" id="nh-tipo">
+            <option value="gold">Hito / Aprobación</option>
+            <option value="blue">Entregable</option>
+            <option value="teal">Capacitación / Apertura</option>
+            <option value="ok">Compras</option>
+            <option value="purple">Informe de Avances</option>
+            <option value="late">DMZ OFF / Festivo</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fecha de inicio *</label><input class="form-input" type="date" id="nh-inicio"></div>
+        <div class="form-group"><label class="form-label">Fecha de fin *</label><input class="form-input" type="date" id="nh-fin"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px"><label class="form-label">Observaciones</label><textarea class="form-input form-textarea" id="nh-obs" placeholder="Notas sobre este hito..."></textarea></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="addHito()">Agregar hito</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-new-hito')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DMZ SISTEMA v3.0 — DATA STORE
+// ═══════════════════════════════════════════════════════════
+
+var DB = {
+  clientes: [],    // [{id, nombre, ciudad, concepto, email, resp, color}]
+  planes: [],      // [{id, clienteId, nombre, periodo, folio, acciones:[]}]
+  cronogramas: [], // [{id, clienteId, hitos:[{nombre,resp,tipo,inicio,fin,obs}]}]
+  historial: [],   // [{id, clienteId, planId, fecha, resumen}]
+};
+
+function saveDB(){ try{localStorage.setItem('dmz_db',JSON.stringify(DB));}catch(e){} }
+function loadDB(){ try{var d=localStorage.getItem('dmz_db');if(d)DB=JSON.parse(d);}catch(e){} }
+loadDB();
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function pDate(s){ if(!s)return null; var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]); }
+function fDate(d){ if(!d)return '—'; return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
+function statusLabel(s){ return {completado:'Completado',proceso:'En proceso',atrasado:'Atrasado',pendiente:'Pendiente'}[s]||s; }
+function statusClass(s){ return {completado:'st-ok',proceso:'st-warn',atrasado:'st-purple',pendiente:'st-pend'}[s]||'st-pend'; }
+function colorLabel(c){ return {gold:'Hito',blue:'Entregable',teal:'Capacitación',ok:'Compras',purple:'Informe',late:'DMZ OFF'}[c]||c; }
+function colorClass(c){ return 'cev-'+c; }
+function tipoStyle(c){
+  var m={gold:'background:var(--warn-bg);color:var(--warn)',blue:'background:var(--blue-bg);color:var(--blue)',
+    teal:'background:var(--teal-bg);color:var(--teal)',ok:'background:var(--ok-bg);color:var(--ok)',
+    purple:'background:var(--purple-bg);color:var(--purple)',late:'background:var(--late-bg);color:var(--late)'};
+  return m[c]||'background:var(--cream);color:var(--muted)';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════════════════════════
+function loginTab(t,el){
+  document.querySelectorAll('.lt').forEach(function(x){x.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('lt-in').style.display=t==='in'?'block':'none';
+  document.getElementById('lt-req').style.display=t==='req'?'block':'none';
+}
+function doLogin(){
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-app').style.display='flex';
+  refreshAll();
+}
+function doLogout(){
+  document.getElementById('screen-app').style.display='none';
+  document.getElementById('screen-login').style.display='flex';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NAVEGACIÓN
+// ═══════════════════════════════════════════════════════════
+function nav(id,el){
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.sb-item').forEach(function(i){i.classList.remove('active')});
+  var sec=document.getElementById('sec-'+id);
+  if(sec){sec.classList.add('active');sec.classList.add('fade-in');}
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.sb-item').forEach(function(i){
+    if(i.getAttribute('onclick')&&i.getAttribute('onclick').includes("'"+id+"'")) i.classList.add('active');
+  });
+  if(id==='cb') renderCBTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODALES
+// ═══════════════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════
+//  CLIENTES
+// ═══════════════════════════════════════════════════════════
+function addCliente(){
+  var nombre=document.getElementById('nc-nombre').value.trim();
+  var ciudad=document.getElementById('nc-ciudad').value.trim();
+  if(!nombre||!ciudad){alert('El nombre y la ciudad son requeridos.');return;}
+  var c={
+    id:uid(), nombre:nombre, ciudad:ciudad,
+    concepto:document.getElementById('nc-concepto').value.trim(),
+    email:document.getElementById('nc-email').value.trim(),
+    resp:document.getElementById('nc-resp').value,
+    color:document.getElementById('nc-color').value
+  };
+  DB.clientes.push(c);
+  // crear plan vacío y cronograma vacío para este cliente
+  DB.planes.push({id:uid(),clienteId:c.id,nombre:'',periodo:'',folio:'',acciones:[]});
+  DB.cronogramas.push({id:uid(),clienteId:c.id,hitos:[]});
+  saveDB();
+  closeModal('modal-new-client');
+  // limpiar
+  ['nc-nombre','nc-ciudad','nc-concepto','nc-email'].forEach(function(id){document.getElementById(id).value='';});
+  refreshAll();
+  addAlerta('Cliente agregado: '+nombre+' — '+ciudad,'ok');
+}
+
+function renderClientes(){
+  var grid=document.getElementById('client-grid');
+  document.getElementById('clientes-count').textContent=DB.clientes.length+' establecimiento'+(DB.clientes.length===1?'':'s')+' registrados';
+  if(DB.clientes.length===0){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;font-family:\'Nunito Sans\',sans-serif;color:var(--muted)">No hay clientes. Agrega el primero con el botón de arriba.</div>';
+    return;
+  }
+  grid.innerHTML='';
+  DB.clientes.forEach(function(c){
+    var plan=DB.planes.find(function(p){return p.clienteId===c.id;})||{acciones:[]};
+    var total=plan.acciones.length;
+    var comp=plan.acciones.filter(function(a){return a.status==='completado';}).length;
+    var pct=total>0?Math.round(comp/total*100):0;
+    var pf=pct>=80?'pf-ok':pct>=40?'pf-warn':'pf-late';
+    var sc=pct>=80?'st-ok':pct>=40?'st-warn':total===0?'st-pend':'st-late';
+    var sl=pct>=80?'Al corriente':pct>=40?'En proceso':total===0?'Sin plan':'Requiere atención';
+    var ini=c.nombre.split(/[\s·]/)[0].slice(0,2).toUpperCase();
+    var card=document.createElement('div');
+    card.className='client-card';
+    card.style.setProperty('--cc',c.color);
+    card.innerHTML='<div class="cc-top"><div class="cc-av" style="background:'+c.color+'">'+ini+'</div>'+
+      '<div><div class="cc-name">'+c.nombre+'</div><div class="cc-loc">'+c.ciudad+(c.concepto?' · '+c.concepto:'')+'</div></div></div>'+
+      '<div class="cc-stats"><div class="cc-stat">Resp: <span>'+c.resp.split(' ')[0]+'</span></div>'+
+      '<div class="cc-stat">'+total+' <span>acciones</span></div></div>'+
+      '<div style="margin-top:8px"><div class="progress-bar"><div class="progress-fill '+pf+'" style="width:'+pct+'%"></div></div></div>'+
+      '<span class="cc-status '+sc+'">'+sl+' · '+pct+'%</span>'+
+      '<div style="display:flex;gap:6px;margin-top:10px">'+
+      '<button class="btn btn-outline btn-xs" onclick="event.stopPropagation();openClientPlan(\''+c.id+'\')">Plan de Acción</button>'+
+      '<button class="btn btn-outline btn-xs" onclick="event.stopPropagation();openClientCrono(\''+c.id+'\')">Cronograma</button>'+
+      '<button class="btn btn-danger btn-xs" onclick="event.stopPropagation();deleteCliente(\''+c.id+'\')">Eliminar</button></div>';
+    grid.appendChild(card);
+  });
+}
+
+function deleteCliente(id){
+  if(!confirm('¿Eliminar este cliente y todos sus datos?')) return;
+  DB.clientes=DB.clientes.filter(function(c){return c.id!==id;});
+  DB.planes=DB.planes.filter(function(p){return p.clienteId!==id;});
+  DB.cronogramas=DB.cronogramas.filter(function(cr){return cr.clienteId!==id;});
+  saveDB();refreshAll();
+}
+
+function openClientPlan(clienteId){
+  var sel=document.getElementById('pa-cliente-sel');
+  sel.value=clienteId;
+  loadPlanForClient();
+  nav('plan-accion',null);
+}
+function openClientCrono(clienteId){
+  var sel=document.getElementById('crono-cliente-sel');
+  sel.value=clienteId;
+  loadCronoForClient();
+  nav('cronograma',null);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PLAN DE ACCIÓN
+// ═══════════════════════════════════════════════════════════
+var currentPlanId=null;
+
+function loadPlanForClient(){
+  var cid=document.getElementById('pa-cliente-sel').value;
+  if(!cid){currentPlanId=null;renderAcciones();return;}
+  var c=DB.clientes.find(function(x){return x.id===cid;});
+  var plan=DB.planes.find(function(p){return p.clienteId===cid;});
+  if(!plan){plan={id:uid(),clienteId:cid,nombre:'',periodo:'',folio:'',acciones:[]};DB.planes.push(plan);saveDB();}
+  currentPlanId=plan.id;
+  document.getElementById('pa-cliente-sel').value=cid;
+  document.getElementById('pa-plan-nombre').value=plan.nombre||'';
+  document.getElementById('pa-plan-periodo').value=plan.periodo||'';
+  document.getElementById('pa-plan-folio').value=plan.folio||'';
+  document.getElementById('pa-client-name').textContent=c?c.nombre:'—';
+  document.getElementById('pa-subtitle').textContent=c?(c.nombre+' · '+c.ciudad):'';
+  renderAcciones();
+}
+
+function addAccion(){
+  if(!currentPlanId){alert('Primero selecciona un cliente.');return;}
+  var desc=document.getElementById('na-desc').value.trim();
+  if(!desc){alert('La descripción es requerida.');return;}
+  var plan=DB.planes.find(function(p){return p.id===currentPlanId;});
+  var accion={
+    id:uid(),
+    area:document.getElementById('na-area').value,
+    desc:desc,
+    resp:document.getElementById('na-resp').value.trim(),
+    fecha:document.getElementById('na-fecha').value,
+    status:document.getElementById('na-status').value,
+    nota:document.getElementById('na-nota').value.trim()
+  };
+  plan.acciones.push(accion);
+  saveDB();
+  closeModal('modal-new-accion');
+  ['na-desc','na-resp','na-nota','na-fecha'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('na-status').value='pendiente';
+  renderAcciones();
+  triggerAutosave();
+}
+
+function deleteAccion(accionId){
+  if(!currentPlanId)return;
+  var plan=DB.planes.find(function(p){return p.id===currentPlanId;});
+  plan.acciones=plan.acciones.filter(function(a){return a.id!==accionId;});
+  saveDB();renderAcciones();triggerAutosave();
+}
+
+function changeAccionStatus(accionId,status){
+  if(!currentPlanId)return;
+  var plan=DB.planes.find(function(p){return p.id===currentPlanId;});
+  var a=plan.acciones.find(function(x){return x.id===accionId;});
+  if(a){a.status=status;saveDB();renderAcciones();triggerAutosave();}
+}
+
+function renderAcciones(){
+  var list=document.getElementById('pa-acciones-list');
+  if(!currentPlanId||!document.getElementById('pa-cliente-sel').value){
+    list.innerHTML='<div style="text-align:center;padding:30px;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);background:var(--white);border-radius:10px;border:1.5px dashed var(--border)">Selecciona un cliente para ver o crear su plan de acción.</div>';
+    return;
+  }
+  var plan=DB.planes.find(function(p){return p.id===currentPlanId;});
+  // update pa-plan info
+  var info=[];
+  if(plan.periodo)info.push(plan.periodo);
+  if(plan.folio)info.push('<span class="folio">'+plan.folio+'</span>');
+  document.getElementById('pa-plan-info').innerHTML=info.join(' · ')||'Completa los campos del plan arriba';
+  // save nombre/periodo/folio
+  plan.nombre=document.getElementById('pa-plan-nombre').value;
+  plan.periodo=document.getElementById('pa-plan-periodo').value;
+  plan.folio=document.getElementById('pa-plan-folio').value;
+  saveDB();
+  if(!plan.acciones||plan.acciones.length===0){
+    list.innerHTML='<div style="text-align:center;padding:30px;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);background:var(--white);border-radius:10px;border:1.5px dashed var(--border);margin-bottom:10px">No hay acciones en este plan. Agrega la primera.</div>';
+    updateSemaforo([]);
+    return;
+  }
+  updateSemaforo(plan.acciones);
+  list.innerHTML='';
+  plan.acciones.forEach(function(a,i){
+    var sc=statusClass(a.status);
+    var pct={completado:100,proceso:50,pendiente:0,atrasado:0}[a.status]||0;
+    var pf={completado:'pf-ok',proceso:'pf-warn',pendiente:'',atrasado:'pf-late'}[a.status]||'';
+    var row=document.createElement('div');
+    row.className='accion-row';
+    row.innerHTML=
+      '<div class="ac-num">'+(i+1).toString().padStart(2,'0')+'</div>'+
+      '<div class="ac-body">'+
+        '<div class="ac-area">'+a.area+'</div>'+
+        '<div class="ac-desc">'+a.desc+'</div>'+
+        (a.nota?'<div class="ac-note">'+a.nota+'</div>':'')+
+        '<div class="ac-meta">'+
+          (a.resp?'<span class="ac-tag">'+a.resp+'</span>':'')+
+          (a.fecha?'<span class="ac-tag">Límite: '+fDate(pDate(a.fecha))+'</span>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="ac-right">'+
+        '<div class="ac-pct" style="color:'+(a.status==='completado'?'var(--ok)':a.status==='proceso'?'var(--warn)':'var(--muted)')+'">'+pct+'%</div>'+
+        '<span class="cc-status '+sc+'">'+statusLabel(a.status)+'</span>'+
+        '<div class="progress-bar" style="width:90px"><div class="progress-fill '+pf+'" style="width:'+pct+'%"></div></div>'+
+        '<select class="form-select" style="font-size:10px;padding:3px 6px;width:100px" onchange="changeAccionStatus(\''+a.id+'\',this.value)">'+
+          '<option value="pendiente"'+(a.status==='pendiente'?' selected':'')+'>Pendiente</option>'+
+          '<option value="proceso"'+(a.status==='proceso'?' selected':'')+'>En proceso</option>'+
+          '<option value="completado"'+(a.status==='completado'?' selected':'')+'>Completado</option>'+
+          '<option value="atrasado"'+(a.status==='atrasado'?' selected':'')+'>Atrasado</option>'+
+        '</select>'+
+        '<button class="ac-del" onclick="deleteAccion(\''+a.id+'\')" title="Eliminar acción">'+
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>'+
+        '</button>'+
+      '</div>';
+    list.appendChild(row);
+  });
+}
+
+function updateSemaforo(acciones){
+  document.getElementById('sem-ok').textContent=acciones.filter(function(a){return a.status==='completado';}).length;
+  document.getElementById('sem-proc').textContent=acciones.filter(function(a){return a.status==='proceso';}).length;
+  document.getElementById('sem-atr').textContent=acciones.filter(function(a){return a.status==='atrasado';}).length;
+  document.getElementById('sem-pend').textContent=acciones.filter(function(a){return a.status==='pendiente';}).length;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CRONOGRAMA
+// ═══════════════════════════════════════════════════════════
+var calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+var currentCronoId=null;
+
+function loadCronoForClient(){
+  var cid=document.getElementById('crono-cliente-sel').value;
+  if(!cid){currentCronoId=null;renderCronoTabla();return;}
+  var c=DB.clientes.find(function(x){return x.id===cid;});
+  var crono=DB.cronogramas.find(function(cr){return cr.clienteId===cid;});
+  if(!crono){crono={id:uid(),clienteId:cid,hitos:[]};DB.cronogramas.push(crono);saveDB();}
+  currentCronoId=crono.id;
+  document.getElementById('crono-client-title').textContent=c?c.nombre+' — Hitos del proyecto':'';
+  document.getElementById('crono-portal-name').textContent=c?c.nombre:'';
+  document.getElementById('crono-portal-title').textContent=c?'Cronograma de tu proyecto · '+c.nombre:'';
+  renderCronoTabla();
+  renderCronoPortal();
+}
+
+function addHito(){
+  if(!currentCronoId){
+    var cid=document.getElementById('crono-cliente-sel').value;
+    if(!cid){alert('Primero selecciona un cliente en la sección Cronograma.');return;}
+  }
+  var nombre=document.getElementById('nh-nombre').value.trim();
+  var inicio=document.getElementById('nh-inicio').value;
+  var fin=document.getElementById('nh-fin').value;
+  if(!nombre||!inicio||!fin){alert('Nombre, fecha de inicio y fin son requeridos.');return;}
+  var crono=DB.cronogramas.find(function(cr){return cr.id===currentCronoId;});
+  crono.hitos.push({
+    id:uid(), nombre:nombre,
+    resp:document.getElementById('nh-resp').value.trim(),
+    tipo:document.getElementById('nh-tipo').value,
+    inicio:inicio, fin:fin,
+    obs:document.getElementById('nh-obs').value.trim()
+  });
+  saveDB();
+  closeModal('modal-new-hito');
+  ['nh-nombre','nh-resp','nh-inicio','nh-fin','nh-obs'].forEach(function(id){document.getElementById(id).value='';});
+  renderCronoTabla();
+  renderCronoPortal();
+  renderCBTable();
+}
+
+function deleteHito(hitoId){
+  if(!currentCronoId)return;
+  var crono=DB.cronogramas.find(function(cr){return cr.id===currentCronoId;});
+  crono.hitos=crono.hitos.filter(function(h){return h.id!==hitoId;});
+  saveDB();renderCronoTabla();renderCronoPortal();renderCBTable();
+}
+
+function renderCronoTabla(){
+  var tbody=document.getElementById('crono-tbody');
+  if(!currentCronoId||!document.getElementById('crono-cliente-sel').value){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Selecciona un cliente para ver o agregar hitos</td></tr>';
+    return;
+  }
+  var crono=DB.cronogramas.find(function(cr){return cr.id===currentCronoId;});
+  if(!crono||crono.hitos.length===0){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">No hay hitos. Agrega el primero con "+ Agregar hito"</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  crono.hitos.forEach(function(h){
+    var ts=tipoStyle(h.tipo);
+    var tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td style="font-family:\'Nunito\',sans-serif;font-weight:800">'+h.nombre+'</td>'+
+      '<td>'+h.resp+'</td>'+
+      '<td>'+fDate(pDate(h.inicio))+'</td>'+
+      '<td>'+fDate(pDate(h.fin))+'</td>'+
+      '<td><span style="'+ts+';font-family:\'Nunito Sans\',sans-serif;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px">'+colorLabel(h.tipo)+'</span></td>'+
+      '<td style="color:var(--muted);font-size:11px">'+h.obs+'</td>'+
+      '<td><button class="btn btn-danger btn-xs" onclick="deleteHito(\''+h.id+'\')">Eliminar</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCronoPortal(){
+  var div=document.getElementById('crono-portal-hitos');
+  if(!currentCronoId){div.innerHTML='';return;}
+  var crono=DB.cronogramas.find(function(cr){return cr.id===currentCronoId;});
+  if(!crono||crono.hitos.length===0){
+    div.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:16px 0">No hay hitos registrados aún.</div>';
+    return;
+  }
+  div.innerHTML='';
+  crono.hitos.forEach(function(h){
+    var colorMap={gold:'var(--gold)',blue:'#4A90D9',teal:'#2BBFBF',ok:'#4ECB71',purple:'#9B6DD9',late:'#E05555'};
+    var item=document.createElement('div');
+    item.className='portal-hito';
+    item.style.borderLeftColor=colorMap[h.tipo]||'var(--gold)';
+    item.innerHTML=
+      '<div style="min-width:110px;font-family:\'Nunito\',sans-serif;font-weight:800;font-size:12px;color:'+(colorMap[h.tipo]||'var(--gold)')+'">'+
+        fDate(pDate(h.inicio))+(h.inicio!==h.fin?' – '+fDate(pDate(h.fin)):'')+'</div>'+
+      '<div style="flex:1"><div style="font-family:\'Nunito\',sans-serif;font-weight:800;font-size:13px;color:#fff">'+h.nombre+'</div>'+
+        (h.resp?'<div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">'+h.resp+'</div>':'')+
+      '</div>';
+    div.appendChild(item);
+  });
+}
+
+// CALENDARIO DEL CRONOGRAMA
+function cronoTab(id,el){
+  document.querySelectorAll('.ctab').forEach(function(t){t.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('crono-lista').style.display=id==='lista'?'block':'none';
+  document.getElementById('crono-calendario').style.display=id==='calendario'?'block':'none';
+  document.getElementById('crono-portal-crono').style.display=id==='portal-crono'?'block':'none';
+  if(id==='calendario') renderCronoCalendar();
+}
+
+function changeCalMonth(d){
+  calMonth+=d;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCronoCalendar();
+}
+
+function renderCronoCalendar(){
+  var months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-lbl').textContent=months[calMonth]+' '+calYear;
+  var grid=document.getElementById('cal-grid-crono');
+  while(grid.children.length>7) grid.removeChild(grid.lastChild);
+  var hitos=[];
+  if(currentCronoId){
+    var crono=DB.cronogramas.find(function(cr){return cr.id===currentCronoId;});
+    if(crono) hitos=crono.hitos;
+  }
+  var offset=new Date(calYear,calMonth,1).getDay();
+  offset=(offset===0)?6:offset-1;
+  for(var i=0;i<offset;i++){var b=document.createElement('div');b.className='cal-day other';grid.appendChild(b);}
+  var days=new Date(calYear,calMonth+1,0).getDate();
+  var today=new Date();
+  for(var d=1;d<=days;d++){
+    var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dd=pDate(ds);
+    var cell=document.createElement('div');
+    cell.className='cal-day';
+    if(dd&&dd.toDateString()===today.toDateString()) cell.classList.add('today');
+    var html='<div class="cal-dn">'+d+'</div>';
+    hitos.forEach(function(h){
+      var hs=pDate(h.inicio),he=pDate(h.fin);
+      if(hs&&he&&dd>=hs&&dd<=he){
+        html+='<div class="cal-ev cev-'+h.tipo+'">'+h.nombre+'</div>';
+      }
+    });
+    cell.innerHTML=html;
+    grid.appendChild(cell);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  C&B VERIFICADOR
+// ═══════════════════════════════════════════════════════════
+function getAllHitos(){
+  var all=[];
+  DB.cronogramas.forEach(function(cr){
+    var c=DB.clientes.find(function(x){return x.id===cr.clienteId;});
+    cr.hitos.forEach(function(h){
+      all.push({cliente:c?c.nombre:'?', hito:h});
+    });
+  });
+  return all;
+}
+
+function renderCBTable(){
+  var tbody=document.getElementById('cb-tabla');
+  if(!tbody)return;
+  var all=getAllHitos();
+  if(all.length===0){
+    tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">No hay hitos registrados en ningún proyecto.</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  all.forEach(function(item){
+    var h=item.hito;
+    var ts=tipoStyle(h.tipo);
+    var tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td style="font-weight:700">'+item.cliente+'</td>'+
+      '<td style="font-family:\'Nunito\',sans-serif;font-weight:800">'+h.nombre+'</td>'+
+      '<td>'+fDate(pDate(h.inicio))+'</td>'+
+      '<td>'+fDate(pDate(h.fin))+'</td>'+
+      '<td><span style="'+ts+';font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px">'+colorLabel(h.tipo)+'</span></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function verificarDisp(){
+  var s=document.getElementById('v-start').value;
+  var e=document.getElementById('v-end').value;
+  var tipo=document.getElementById('v-tipo').value||'Evento';
+  if(!s||!e){alert('Ingresa las dos fechas.');return;}
+  var sd=pDate(s),ed=pDate(e);
+  var all=getAllHitos();
+  var conflicts=all.filter(function(item){
+    var h=item.hito;
+    var hs=pDate(h.inicio),he=pDate(h.fin);
+    return !(ed<hs||sd>he);
+  });
+  var res=document.getElementById('verif-result');
+  res.style.display='block';
+  if(conflicts.length===0){
+    res.className='verif-result vr-ok';
+    res.innerHTML='<div class="vr-title" style="color:var(--ok)">✓ Fechas disponibles</div>'+
+      '<div style="font-size:12px;margin-top:4px">No hay conflictos con actividades DMZ para el período <b>'+fDate(sd)+'</b> al <b>'+fDate(ed)+'</b>.</div>';
+  } else {
+    var items=conflicts.map(function(item){
+      return '<div style="background:rgba(255,255,255,.7);border-radius:6px;padding:7px 12px;border-left:3px solid var(--late);font-size:12px;font-weight:600">'+
+        item.cliente+' · '+item.hito.nombre+' ('+fDate(pDate(item.hito.inicio))+(item.hito.inicio!==item.hito.fin?' – '+fDate(pDate(item.hito.fin)):'')+')'+
+      '</div>';
+    }).join('');
+    res.className='verif-result vr-conflict';
+    res.innerHTML='<div class="vr-title" style="color:var(--late)">⚠ Conflicto detectado</div>'+
+      '<div style="font-size:12px;margin-top:4px;margin-bottom:10px">Las fechas propuestas se cruzan con <b>'+conflicts.length+'</b> actividad(es) DMZ:</div>'+
+      '<div style="display:flex;flex-direction:column;gap:5px">'+items+'</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HISTORIAL
+// ═══════════════════════════════════════════════════════════
+function loadHistorial(){
+  var cid=document.getElementById('hist-cliente-sel').value;
+  var list=document.getElementById('historial-list');
+  var planes=cid?DB.planes.filter(function(p){return p.clienteId===cid;}):DB.planes;
+  planes=planes.filter(function(p){return p.nombre||p.acciones.length>0;});
+  if(planes.length===0){
+    list.innerHTML='<div style="font-family:\'Nunito Sans\',sans-serif;font-size:12px;color:var(--muted);padding:20px 0">No hay planes registrados aún.</div>';
+    return;
+  }
+  list.innerHTML='';
+  planes.forEach(function(plan){
+    var c=DB.clientes.find(function(x){return x.id===plan.clienteId;});
+    var comp=plan.acciones.filter(function(a){return a.status==='completado';}).length;
+    var total=plan.acciones.length;
+    var item=document.createElement('div');
+    item.className='tl-item';
+    var dotClass=comp===total&&total>0?'tl-dot gold':'tl-dot';
+    item.innerHTML='<div class="'+dotClass+'"></div>'+
+      '<div class="tl-card" onclick="openClientPlan(\''+plan.clienteId+'\')">'+
+        '<div class="tl-date">'+(c?c.nombre:'?')+(plan.periodo?' · '+plan.periodo:'')+(plan.folio?' · <span class="folio">'+plan.folio+'</span>':'')+'</div>'+
+        '<div class="tl-title">'+(plan.nombre||'Plan sin nombre')+'</div>'+
+        '<div class="tl-stats">'+
+          '<span class="cc-status st-ok">'+comp+' Completados</span>'+
+          '<span class="cc-status st-pend" style="margin-left:6px">'+(total-comp)+' Pendientes</span>'+
+        '</div>'+
+      '</div>';
+    list.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PORTAL CLIENTE
+// ═══════════════════════════════════════════════════════════
+function loadPortal(){
+  var cid=document.getElementById('portal-cliente-sel').value;
+  var div=document.getElementById('portal-content');
+  if(!cid){div.innerHTML='<div style="text-align:center;padding:40px;font-family:\'Nunito Sans\',sans-serif;color:var(--muted)">Selecciona un cliente para ver su portal.</div>';return;}
+  var c=DB.clientes.find(function(x){return x.id===cid;});
+  var plan=DB.planes.find(function(p){return p.clienteId===cid;})||{acciones:[]};
+  var crono=DB.cronogramas.find(function(cr){return cr.clienteId===cid;})||{hitos:[]};
+  var ini=c.nombre.split(/[\s·]/)[0].slice(0,2).toUpperCase();
+  var comp=plan.acciones.filter(function(a){return a.status==='completado';}).length;
+  var total=plan.acciones.length;
+  var pct=total>0?Math.round(comp/total*100):0;
+  var prox=crono.hitos.filter(function(h){return pDate(h.inicio)>=new Date();}).slice(0,4);
+  var hitosHTML=prox.map(function(h){
+    var colorMap={gold:'var(--gold)',blue:'#4A90D9',teal:'#2BBFBF',ok:'#4ECB71',purple:'#9B6DD9',late:'#E05555'};
+    return '<div class="portal-hito" style="border-left-color:'+(colorMap[h.tipo]||'var(--gold)')+'">'+
+      '<div style="min-width:110px;font-family:\'Nunito\',sans-serif;font-weight:800;font-size:12px;color:'+(colorMap[h.tipo]||'var(--gold)')+'">'+fDate(pDate(h.inicio))+'</div>'+
+      '<div style="font-family:\'Nunito\',sans-serif;font-weight:800;font-size:13px;color:#fff">'+h.nombre+'</div>'+
+    '</div>';
+  }).join('');
+  div.innerHTML='<div class="portal-wrap">'+
+    '<div class="portal-top">'+
+      '<div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:14px;letter-spacing:.2em;color:#fff"><span style="color:var(--gold)">D·M·Z</span></div>'+
+      '<div style="font-family:\'Nunito Sans\',sans-serif;font-size:11px;color:rgba(255,255,255,.4)">'+c.nombre+'</div>'+
+    '</div>'+
+    '<div class="portal-inner">'+
+      '<div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:20px;color:#fff;margin-bottom:4px">Bienvenido, '+c.nombre+'</div>'+
+      '<div style="font-family:\'Nunito Sans\',sans-serif;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px">Seguimiento de tu proyecto con DMZ Kitchen Support</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">'+
+        '<div style="background:rgba(255,255,255,.07);border-radius:10px;padding:16px;text-align:center"><div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:26px;color:#6fcf8a">'+pct+'%</div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35)">Avance del plan</div></div>'+
+        '<div style="background:rgba(255,255,255,.07);border-radius:10px;padding:16px;text-align:center"><div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:26px;color:var(--gold)">'+comp+'/'+total+'</div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35)">Acciones completas</div></div>'+
+        '<div style="background:rgba(255,255,255,.07);border-radius:10px;padding:16px;text-align:center"><div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:26px;color:#6fcf8a">'+crono.hitos.length+'</div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35)">Hitos del proyecto</div></div>'+
+      '</div>'+
+      (prox.length>0?'<div style="font-family:\'Nunito Sans\',sans-serif;font-weight:700;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px">Próximas fechas</div>'+hitosHTML:'<div style="color:rgba(255,255,255,.3);font-size:12px">No hay hitos próximos registrados.</div>')+
+    '</div>'+
+  '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ALERTAS
+// ═══════════════════════════════════════════════════════════
+function addAlerta(msg,tipo){
+  var list=document.getElementById('alertas-list');
+  var colors={ok:'var(--ok)',warn:'var(--warn)',late:'var(--late)',info:'var(--blue)'};
+  var item=document.createElement('div');
+  item.className='alert-item new';
+  item.innerHTML='<div class="ai-dot" style="background:'+(colors[tipo]||'var(--blue)')+'"></div>'+
+    '<div class="ai-body"><div class="ai-title">'+msg+'</div></div>'+
+    '<div class="ai-time">Ahora</div>';
+  list.insertBefore(item,list.firstChild);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SELECTS — POBLAR CON CLIENTES
+// ═══════════════════════════════════════════════════════════
+function populateSelects(){
+  var selIds=['pa-cliente-sel','crono-cliente-sel','hist-cliente-sel','portal-cliente-sel'];
+  selIds.forEach(function(sid){
+    var sel=document.getElementById(sid);
+    if(!sel)return;
+    var val=sel.value;
+    sel.innerHTML='<option value="">— Selecciona cliente —</option>';
+    DB.clientes.forEach(function(c){
+      var opt=document.createElement('option');
+      opt.value=c.id;opt.textContent=c.nombre;
+      sel.appendChild(opt);
+    });
+    if(val) sel.value=val;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard(){
+  document.getElementById('stat-clientes').textContent=DB.clientes.length;
+  document.getElementById('stat-planes').textContent=DB.planes.filter(function(p){return p.acciones&&p.acciones.length>0;}).length;
+  var total=DB.planes.reduce(function(s,p){return s+(p.acciones?p.acciones.length:0);},0);
+  document.getElementById('stat-acciones').textContent=total;
+  document.getElementById('stat-cronos').textContent=DB.cronogramas.filter(function(cr){return cr.hitos&&cr.hitos.length>0;}).length;
+  var div=document.getElementById('dash-clients');
+  if(DB.clientes.length===0){
+    div.innerHTML='<div style="font-family:\'Nunito Sans\',sans-serif;font-size:12px;color:var(--muted);text-align:center;padding:20px 0">No hay clientes aún. Agrega el primero.</div>';
+    return;
+  }
+  div.innerHTML='';
+  DB.clientes.forEach(function(c){
+    var plan=DB.planes.find(function(p){return p.clienteId===c.id;})||{acciones:[]};
+    var total=plan.acciones.length;
+    var comp=plan.acciones.filter(function(a){return a.status==='completado';}).length;
+    var pct=total>0?Math.round(comp/total*100):0;
+    var pf=pct>=80?'pf-ok':pct>=40?'pf-warn':'pf-late';
+    var sc=pct>=80?'st-ok':pct>=40?'st-warn':total===0?'st-pend':'st-late';
+    var sl=pct>=80?'Al corriente':pct>=40?'En proceso':total===0?'Sin plan':'Requiere atención';
+    var ini=c.nombre.split(/[\s·]/)[0].slice(0,2).toUpperCase();
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:14px';
+    row.innerHTML=
+      '<div style="width:36px;height:36px;border-radius:9px;background:'+c.color+';display:flex;align-items:center;justify-content:center;font-family:\'Nunito\',sans-serif;font-weight:900;font-size:13px;color:#fff;flex-shrink:0">'+ini+'</div>'+
+      '<div style="flex:1"><div style="font-family:\'Nunito\',sans-serif;font-weight:800;font-size:13px">'+c.nombre+'</div><div style="margin-top:5px"><div class="progress-bar"><div class="progress-fill '+pf+'" style="width:'+pct+'%"></div></div></div></div>'+
+      '<div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:15px;color:'+(pct>=80?'var(--ok)':pct>=40?'var(--warn)':'var(--late)')+'">'+pct+'%</div>'+
+      '<span class="cc-status '+sc+'">'+sl+'</span>';
+    div.appendChild(row);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPORTAR / ENVIAR
+// ═══════════════════════════════════════════════════════════
+function exportPDF(){alert('El PDF se genera con el backend Python (v4.0). Mientras tanto usa la vista imprimible del navegador: Ctrl+P / Cmd+P.');}
+function sendPlan(){alert('Plan enviado. Notificaciones registradas.\n\nEn v4.0 se conectará con SendGrid (correo) y Twilio (WhatsApp) para envío automático a:\n• blanca@delamorazumaran.com\n• mario@delamorazumaran.com\n• Contacto del cliente');}
+function exportICS(){alert('En v4.0 el archivo .ics se genera automáticamente con todos los hitos del proyecto y se puede enviar directamente a Google Calendar.');}
+
+// ═══════════════════════════════════════════════════════════
+//  AUTOSAVE
+// ═══════════════════════════════════════════════════════════
+function triggerAutosave(){
+  saveDB();
+  var ind=document.getElementById('autosave-ind');
+  if(ind){ind.classList.add('show');setTimeout(function(){ind.classList.remove('show');},2500);}
+}
+setInterval(function(){saveDB();triggerAutosave();},30000);
+
+// ═══════════════════════════════════════════════════════════
+//  REFRESH ALL
+// ═══════════════════════════════════════════════════════════
+function refreshAll(){
+  populateSelects();
+  renderDashboard();
+  renderClientes();
+  renderAcciones();
+  renderCronoTabla();
+  loadHistorial();
+  renderCBTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('dash-date').textContent='Vista general · '+new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+</script>
+</body>
+</html>
