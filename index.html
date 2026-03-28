@@ -268,12 +268,52 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#E8E4D8;co
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .25s ease forwards}
 
+/* PAGOS */
+.pago-row{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all .15s}
+.pago-row:hover{border-color:var(--dark);box-shadow:var(--shadow)}
+.pago-num{width:32px;height:32px;border-radius:8px;background:var(--dark);color:var(--gold);font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pago-body{flex:1}
+.pago-concepto{font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;color:var(--dark)}
+.pago-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.pago-tag{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:10px;padding:2px 8px;border-radius:5px;background:var(--cream);color:var(--text)}
+.pago-monto{font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;color:var(--dark);text-align:right;min-width:110px}
+.pago-monto .currency{font-size:12px;font-weight:700;color:var(--muted)}
+.pago-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0}
+.pago-del{opacity:0;transition:opacity .15s;background:var(--late-bg);border:none;width:24px;height:24px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--late)}
+.pago-row:hover .pago-del{opacity:1}
+.resumen-pagos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.rp-card{background:var(--white);border-radius:12px;border:1.5px solid var(--border);padding:16px 18px}
+.rp-label{font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rp-val{font-family:'Nunito',sans-serif;font-weight:900;font-size:24px;color:var(--dark)}
+.rp-sub{font-family:'Nunito Sans',sans-serif;font-size:10px;font-weight:600;color:var(--muted);margin-top:4px}
+.invoice-preview{background:var(--white);border-radius:12px;border:1.5px solid var(--border);padding:28px 32px}
+.inv-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid var(--light)}
+.inv-logo{font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;letter-spacing:.2em;color:var(--dark)}
+.inv-logo span{color:var(--gold)}
+.inv-folio{text-align:right}
+.inv-folio .num{font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:var(--dark)}
+.inv-folio .fecha{font-family:'Nunito Sans',sans-serif;font-size:11px;color:var(--muted);margin-top:3px}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.inv-party .label{font-family:'Nunito Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.inv-party .name{font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:var(--dark)}
+.inv-party .detail{font-family:'Nunito Sans',sans-serif;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+.inv-table th{background:var(--dark);padding:9px 14px;text-align:left;font-family:'Nunito Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.inv-table td{padding:10px 14px;border-bottom:1px solid var(--light);font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text)}
+.inv-totals{display:flex;justify-content:flex-end}
+.inv-totals-box{min-width:220px}
+.inv-total-row{display:flex;justify-content:space-between;padding:5px 0;font-family:'Nunito Sans',sans-serif;font-size:12px;color:var(--muted)}
+.inv-total-row.final{border-top:2px solid var(--dark);margin-top:5px;padding-top:10px;font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;color:var(--dark)}
+.inv-footer{margin-top:24px;padding-top:16px;border-top:1px solid var(--light);font-family:'Nunito Sans',sans-serif;font-size:10px;color:var(--muted);text-align:center;line-height:1.6}
+
 @media(max-width:768px){
   .sidebar{display:none}
   .stats-row{grid-template-columns:1fr 1fr}
   .client-grid{grid-template-columns:1fr}
   .verif-form{grid-template-columns:1fr}
   .firma-grid{grid-template-columns:1fr}
+  .resumen-pagos{grid-template-columns:1fr}
+  .inv-parties{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -371,6 +411,10 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#E8E4D8;co
         Portal Cliente
       </div>
       <div class="sb-section">Sistema</div>
+      <div class="sb-item" onclick="nav('pagos',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Pagos &amp; Facturación
+      </div>
       <div class="sb-item" onclick="nav('config',this)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M5.93 4.93a10 10 0 0 0 0 14.14"/></svg>
         Configuración
@@ -738,6 +782,116 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#E8E4D8;co
         </div>
       </div>
 
+      <!-- ══════════ PAGOS & FACTURACIÓN ══════════ -->
+      <div id="sec-pagos" class="section fade-in">
+        <div class="page-header">
+          <div>
+            <div class="ph-title">Pagos &amp; Facturación</div>
+            <div class="ph-sub">Control de cobros, alertas de vencimiento e invoices por proyecto</div>
+          </div>
+          <div class="ph-actions">
+            <select class="form-select" id="pagos-cliente-sel" style="width:220px" onchange="loadPagosForClient()">
+              <option value="">— Selecciona cliente —</option>
+            </select>
+            <button class="btn btn-gold" onclick="openModal('modal-new-pago')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar pago
+            </button>
+          </div>
+        </div>
+
+        <!-- Resumen financiero -->
+        <div class="resumen-pagos" id="pagos-resumen">
+          <div class="rp-card">
+            <div class="rp-label">Total del contrato</div>
+            <div class="rp-val" id="rp-total">$0</div>
+            <div class="rp-sub">Valor total acordado</div>
+          </div>
+          <div class="rp-card">
+            <div class="rp-label">Cobrado</div>
+            <div class="rp-val" id="rp-cobrado" style="color:var(--ok)">$0</div>
+            <div class="rp-sub" id="rp-cobrado-sub">0 pagos recibidos</div>
+          </div>
+          <div class="rp-card">
+            <div class="rp-label">Pendiente</div>
+            <div class="rp-val" id="rp-pendiente" style="color:var(--late)">$0</div>
+            <div class="rp-sub" id="rp-pendiente-sub">0 pagos por cobrar</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="cronograma-tabs">
+          <div class="ctab active" onclick="pagosTab('lista',this)">Tabla de pagos</div>
+          <div class="ctab" onclick="pagosTab('invoice',this)">Generar Invoice</div>
+          <div class="ctab" onclick="pagosTab('portal-pagos',this)">Vista Cliente</div>
+        </div>
+
+        <!-- LISTA DE PAGOS -->
+        <div id="pagos-lista">
+          <div id="pagos-list">
+            <div style="text-align:center;padding:40px;font-family:'Nunito Sans',sans-serif;color:var(--muted);background:var(--white);border-radius:10px;border:1.5px dashed var(--border)">
+              Selecciona un cliente y agrega sus pagos con el botón de arriba.
+            </div>
+          </div>
+          <button class="btn btn-outline" style="width:100%;margin-top:4px;border-style:dashed;border-width:2px" onclick="openModal('modal-new-pago')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar pago
+          </button>
+        </div>
+
+        <!-- INVOICE -->
+        <div id="pagos-invoice" style="display:none">
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div class="card-title">Configurar invoice</div></div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Folio del invoice</label>
+                  <input class="form-input" id="inv-folio-input" placeholder="DMZ-INV-2026-001">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fecha de emisión</label>
+                  <input class="form-input" type="date" id="inv-fecha-input">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Concepto</label>
+                  <input class="form-input" id="inv-concepto-input" placeholder="Ej. Consultoría F&B · Mes de Abril 2026">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Condiciones de pago</label>
+                  <input class="form-input" id="inv-condiciones-input" placeholder="Ej. Pago a 15 días · Transferencia bancaria">
+                </div>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button class="btn btn-primary" onclick="renderInvoicePreview()">Generar vista previa</button>
+                <button class="btn btn-gold" onclick="alert('En v4.0 el invoice se genera como PDF descargable con tipografía y branding DMZ completo.')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  Descargar PDF
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="invoice-preview-wrap"></div>
+        </div>
+
+        <!-- PORTAL CLIENTE PAGOS -->
+        <div id="pagos-portal-pagos" style="display:none">
+          <div class="portal-wrap">
+            <div class="portal-top">
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;letter-spacing:.2em;color:#fff"><span style="color:var(--gold)">D·M·Z</span></div>
+              <div id="pagos-portal-client-name" style="font-family:'Nunito Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.4)">—</div>
+            </div>
+            <div class="portal-inner">
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:18px;color:#fff;margin-bottom:4px">Estado de cuenta</div>
+              <div style="font-family:'Nunito Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.4);margin-bottom:20px">Tus pagos y fechas de vencimiento con DMZ Kitchen Support</div>
+              <div id="pagos-portal-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ══════════ CONFIGURACIÓN ══════════ -->
       <div id="sec-config" class="section fade-in">
         <div class="page-header"><div><div class="ph-title">Configuración</div><div class="ph-sub">Parámetros globales del sistema</div></div></div>
@@ -880,6 +1034,72 @@ html,body{height:100%;font-family:'Nunito Sans',sans-serif;background:#E8E4D8;co
   </div>
 </div>
 
+<!-- Nuevo pago -->
+<div id="modal-new-pago" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo pago</div>
+      <button class="modal-close" onclick="closeModal('modal-new-pago')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo de pago *</label>
+          <select class="form-select" id="np-tipo">
+            <option value="anticipo">Anticipo</option>
+            <option value="parcialidad">Parcialidad</option>
+            <option value="honorarios">Honorarios mensuales</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda</label>
+          <select class="form-select" id="np-moneda">
+            <option value="MXN">MXN — Peso mexicano</option>
+            <option value="USD">USD — Dólar</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Monto *</label>
+          <input class="form-input" type="number" id="np-monto" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de vencimiento *</label>
+          <input class="form-input" type="date" id="np-fecha">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Concepto / descripción</label>
+        <input class="form-input" id="np-concepto" placeholder="Ej. Anticipo 50% — Proyecto Gran Señoríos">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="np-status">
+            <option value="pendiente">Pendiente</option>
+            <option value="pagado">Pagado</option>
+            <option value="vencido">Vencido</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alerta (días antes)</label>
+          <select class="form-select" id="np-alerta">
+            <option value="3">3 días antes</option>
+            <option value="5">5 días antes</option>
+            <option value="7">7 días antes</option>
+            <option value="0">Sin alerta</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-gold" onclick="addPago()">Agregar pago</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-new-pago')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
 //  DMZ SISTEMA v3.0 — DATA STORE
@@ -890,10 +1110,11 @@ var DB = {
   planes: [],      // [{id, clienteId, nombre, periodo, folio, acciones:[]}]
   cronogramas: [], // [{id, clienteId, hitos:[{nombre,resp,tipo,inicio,fin,obs}]}]
   historial: [],   // [{id, clienteId, planId, fecha, resumen}]
+  pagos: [],       // [{id, clienteId, tipo, monto, moneda, concepto, fecha, status, alerta}]
 };
 
 function saveDB(){ try{localStorage.setItem('dmz_db',JSON.stringify(DB));}catch(e){} }
-function loadDB(){ try{var d=localStorage.getItem('dmz_db');if(d)DB=JSON.parse(d);}catch(e){} }
+function loadDB(){ try{var d=localStorage.getItem('dmz_db');if(d){DB=JSON.parse(d);if(!DB.pagos)DB.pagos=[];}}catch(e){} }
 loadDB();
 
 // ═══════════════════════════════════════════════════════════
@@ -1470,7 +1691,7 @@ function addAlerta(msg,tipo){
 //  SELECTS — POBLAR CON CLIENTES
 // ═══════════════════════════════════════════════════════════
 function populateSelects(){
-  var selIds=['pa-cliente-sel','crono-cliente-sel','hist-cliente-sel','portal-cliente-sel'];
+  var selIds=['pa-cliente-sel','crono-cliente-sel','hist-cliente-sel','portal-cliente-sel','pagos-cliente-sel'];
   selIds.forEach(function(sid){
     var sel=document.getElementById(sid);
     if(!sel)return;
@@ -1538,6 +1759,229 @@ function triggerAutosave(){
 setInterval(function(){saveDB();triggerAutosave();},30000);
 
 // ═══════════════════════════════════════════════════════════
+//  PAGOS & FACTURACIÓN
+// ═══════════════════════════════════════════════════════════
+var currentPagosClienteId = null;
+
+function loadPagosForClient(){
+  var cid = document.getElementById('pagos-cliente-sel').value;
+  currentPagosClienteId = cid || null;
+  var c = cid ? DB.clientes.find(function(x){return x.id===cid;}) : null;
+  document.getElementById('pagos-portal-client-name').textContent = c ? c.nombre : '—';
+  renderPagosList();
+  renderPagosResumen();
+  renderPagosPortal();
+}
+
+function addPago(){
+  if(!currentPagosClienteId){alert('Primero selecciona un cliente.');return;}
+  var monto = parseFloat(document.getElementById('np-monto').value);
+  var fecha = document.getElementById('np-fecha').value;
+  if(!monto||!fecha){alert('El monto y la fecha son requeridos.');return;}
+  var pago = {
+    id: uid(),
+    clienteId: currentPagosClienteId,
+    tipo: document.getElementById('np-tipo').value,
+    monto: monto,
+    moneda: document.getElementById('np-moneda').value,
+    concepto: document.getElementById('np-concepto').value.trim(),
+    fecha: fecha,
+    status: document.getElementById('np-status').value,
+    alerta: parseInt(document.getElementById('np-alerta').value)
+  };
+  if(!DB.pagos) DB.pagos = [];
+  DB.pagos.push(pago);
+  saveDB();
+  closeModal('modal-new-pago');
+  ['np-monto','np-concepto','np-fecha'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('np-status').value='pendiente';
+  renderPagosList();
+  renderPagosResumen();
+  addAlerta('Pago agregado: '+formatMonto(pago.monto,pago.moneda)+' — '+fDate(pDate(pago.fecha)),'ok');
+}
+
+function deletePago(pagoId){
+  if(!confirm('¿Eliminar este pago?')) return;
+  DB.pagos = (DB.pagos||[]).filter(function(p){return p.id!==pagoId;});
+  saveDB(); renderPagosList(); renderPagosResumen(); renderPagosPortal();
+}
+
+function changePagoStatus(pagoId, status){
+  var p = (DB.pagos||[]).find(function(x){return x.id===pagoId;});
+  if(p){p.status=status;saveDB();renderPagosList();renderPagosResumen();renderPagosPortal();}
+}
+
+function formatMonto(monto, moneda){
+  moneda = moneda || 'MXN';
+  return (moneda==='USD'?'$':'$') + monto.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ' + moneda;
+}
+
+function tipoLabel(tipo){
+  return {anticipo:'Anticipo',parcialidad:'Parcialidad',honorarios:'Honorarios mensuales'}[tipo]||tipo;
+}
+
+function pagoStatusClass(s){
+  return {pagado:'st-ok',pendiente:'st-pend',vencido:'st-late'}[s]||'st-pend';
+}
+
+function renderPagosList(){
+  var list = document.getElementById('pagos-list');
+  var pagos = (DB.pagos||[]).filter(function(p){return !currentPagosClienteId||p.clienteId===currentPagosClienteId;});
+  if(pagos.length===0){
+    list.innerHTML='<div style="text-align:center;padding:40px;font-family:\'Nunito Sans\',sans-serif;color:var(--muted);background:var(--white);border-radius:10px;border:1.5px dashed var(--border)">'+
+      (currentPagosClienteId?'No hay pagos registrados para este cliente. Agrega el primero.':'Selecciona un cliente para ver sus pagos.')+'</div>';
+    return;
+  }
+  // Sort by date
+  pagos.sort(function(a,b){return a.fecha > b.fecha ? 1 : -1;});
+  list.innerHTML='';
+  pagos.forEach(function(p,i){
+    var sc = pagoStatusClass(p.status);
+    var fechaD = pDate(p.fecha);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var diasRestantes = fechaD ? Math.round((fechaD-today)/(1000*60*60*24)) : null;
+    var alertaHTML = '';
+    if(p.status==='pendiente' && diasRestantes!==null){
+      if(diasRestantes<0) alertaHTML = '<span class="cc-status st-late" style="font-size:9px">'+Math.abs(diasRestantes)+' días vencido</span>';
+      else if(diasRestantes<=p.alerta) alertaHTML = '<span class="cc-status st-warn" style="font-size:9px">Vence en '+diasRestantes+' días</span>';
+    }
+    var row = document.createElement('div');
+    row.className = 'pago-row';
+    row.innerHTML =
+      '<div class="pago-num">'+(i+1).toString().padStart(2,'0')+'</div>'+
+      '<div class="pago-body">'+
+        '<div class="pago-concepto">'+(p.concepto||tipoLabel(p.tipo))+'</div>'+
+        '<div class="pago-meta">'+
+          '<span class="pago-tag">'+tipoLabel(p.tipo)+'</span>'+
+          '<span class="pago-tag">'+fDate(pDate(p.fecha))+'</span>'+
+          '<span class="pago-tag">'+p.moneda+'</span>'+
+          (alertaHTML?alertaHTML:'')+
+        '</div>'+
+      '</div>'+
+      '<div style="text-align:right;min-width:130px">'+
+        '<div class="pago-monto"><span class="currency">$</span>'+p.monto.toLocaleString('es-MX',{minimumFractionDigits:2})+'</div>'+
+        '<div class="pago-meta" style="justify-content:flex-end;margin-top:6px">'+
+          '<select class="form-select" style="font-size:10px;padding:3px 6px;width:110px" onchange="changePagoStatus(\''+p.id+'\',this.value)">'+
+            '<option value="pendiente"'+(p.status==='pendiente'?' selected':'')+'>Pendiente</option>'+
+            '<option value="pagado"'+(p.status==='pagado'?' selected':'')+'>Pagado</option>'+
+            '<option value="vencido"'+(p.status==='vencido'?' selected':'')+'>Vencido</option>'+
+          '</select>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pago-actions">'+
+        '<span class="cc-status '+sc+'">'+{pagado:'Pagado',pendiente:'Pendiente',vencido:'Vencido'}[p.status]+'</span>'+
+        '<button class="pago-del" onclick="deletePago(\''+p.id+'\')" title="Eliminar">'+
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>'+
+        '</button>'+
+      '</div>';
+    list.appendChild(row);
+  });
+}
+
+function renderPagosResumen(){
+  var pagos = (DB.pagos||[]).filter(function(p){return !currentPagosClienteId||p.clienteId===currentPagosClienteId;});
+  var total = pagos.reduce(function(s,p){return s+p.monto;},0);
+  var cobrado = pagos.filter(function(p){return p.status==='pagado';}).reduce(function(s,p){return s+p.monto;},0);
+  var pendiente = pagos.filter(function(p){return p.status!=='pagado';}).reduce(function(s,p){return s+p.monto;},0);
+  var moneda = pagos.length>0 ? pagos[0].moneda : 'MXN';
+  var fmt = function(n){ return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2})+' '+moneda; };
+  document.getElementById('rp-total').textContent = fmt(total);
+  document.getElementById('rp-cobrado').textContent = fmt(cobrado);
+  document.getElementById('rp-pendiente').textContent = fmt(pendiente);
+  var cobPagos = pagos.filter(function(p){return p.status==='pagado';}).length;
+  var pendPagos = pagos.filter(function(p){return p.status!=='pagado';}).length;
+  document.getElementById('rp-cobrado-sub').textContent = cobPagos+' pago'+(cobPagos!==1?'s':'')+' recibido'+(cobPagos!==1?'s':'');
+  document.getElementById('rp-pendiente-sub').textContent = pendPagos+' pago'+(pendPagos!==1?'s':'')+' por cobrar';
+}
+
+function renderPagosPortal(){
+  var div = document.getElementById('pagos-portal-content');
+  if(!currentPagosClienteId){div.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px">Selecciona un cliente para ver su portal de pagos.</div>';return;}
+  var pagos = (DB.pagos||[]).filter(function(p){return p.clienteId===currentPagosClienteId;});
+  pagos.sort(function(a,b){return a.fecha>b.fecha?1:-1;});
+  if(pagos.length===0){div.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:12px;padding:16px 0">No hay pagos registrados.</div>';return;}
+  var html = '';
+  pagos.forEach(function(p){
+    var colorMap = {pagado:'#4ECB71',pendiente:'var(--gold)',vencido:'#E05555'};
+    var lbl = {pagado:'Pagado',pendiente:'Pendiente',vencido:'Vencido'};
+    html += '<div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border-radius:9px;padding:12px 16px;margin-bottom:8px;border-left:3px solid '+(colorMap[p.status]||'var(--gold)')+'">'+
+      '<div style="min-width:100px;font-family:\'Nunito\',sans-serif;font-weight:800;font-size:12px;color:'+(colorMap[p.status]||'var(--gold)')+'">'+fDate(pDate(p.fecha))+'</div>'+
+      '<div style="flex:1">'+
+        '<div style="font-family:\'Nunito\',sans-serif;font-weight:800;font-size:13px;color:#fff">'+(p.concepto||tipoLabel(p.tipo))+'</div>'+
+        '<div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px">'+tipoLabel(p.tipo)+'</div>'+
+      '</div>'+
+      '<div style="text-align:right">'+
+        '<div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:15px;color:#fff">$'+p.monto.toLocaleString('es-MX',{minimumFractionDigits:2})+'</div>'+
+        '<div style="font-size:10px;font-weight:700;color:'+(colorMap[p.status]||'var(--gold)')+'">'+lbl[p.status]+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  div.innerHTML = html;
+}
+
+function pagosTab(id, el){
+  document.querySelectorAll('.ctab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('pagos-lista').style.display = id==='lista'?'block':'none';
+  document.getElementById('pagos-invoice').style.display = id==='invoice'?'block':'none';
+  document.getElementById('pagos-portal-pagos').style.display = id==='portal-pagos'?'block':'none';
+  if(id==='invoice') prefillInvoice();
+  if(id==='portal-pagos') renderPagosPortal();
+}
+
+function prefillInvoice(){
+  var today = new Date().toISOString().split('T')[0];
+  if(!document.getElementById('inv-fecha-input').value) document.getElementById('inv-fecha-input').value = today;
+  var n = (DB.pagos||[]).length + 1;
+  if(!document.getElementById('inv-folio-input').value) document.getElementById('inv-folio-input').value = 'DMZ-INV-2026-' + String(n).padStart(3,'0');
+}
+
+function renderInvoicePreview(){
+  var cid = currentPagosClienteId;
+  var c = cid ? DB.clientes.find(function(x){return x.id===cid;}) : null;
+  var pagos = (DB.pagos||[]).filter(function(p){return !cid||p.clienteId===cid;}).filter(function(p){return p.status!=='pagado';});
+  var folio = document.getElementById('inv-folio-input').value || 'DMZ-INV-2026-001';
+  var fecha = document.getElementById('inv-fecha-input').value;
+  var concepto = document.getElementById('inv-concepto-input').value || 'Servicios de consultoría F&B';
+  var condiciones = document.getElementById('inv-condiciones-input').value || 'Pago a 15 días · Transferencia bancaria';
+  var moneda = pagos.length>0 ? pagos[0].moneda : 'MXN';
+  var subtotal = pagos.reduce(function(s,p){return s+p.monto;},0);
+  var iva = subtotal * 0.16;
+  var total = subtotal + iva;
+  var fmt = function(n){ return '$'+n.toLocaleString('es-MX',{minimumFractionDigits:2})+' '+moneda; };
+  var rowsHTML = pagos.length>0 ? pagos.map(function(p,i){
+    return '<tr><td>'+(i+1)+'</td><td>'+(p.concepto||tipoLabel(p.tipo))+'</td><td>'+fDate(pDate(p.fecha))+'</td><td style="text-align:right;font-family:\'Nunito\',sans-serif;font-weight:800">'+fmt(p.monto)+'</td></tr>';
+  }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted)">'+concepto+'</td></tr>';
+  var wrap = document.getElementById('invoice-preview-wrap');
+  wrap.innerHTML = '<div class="invoice-preview">'+
+    '<div class="inv-header">'+
+      '<div>'+
+        '<div class="inv-logo"><span>D·M·Z</span></div>'+
+        '<div style="font-family:\'Nunito Sans\',sans-serif;font-size:11px;color:var(--muted);margin-top:4px">De La Mora Zumarán · Kitchen Support</div>'+
+        '<div style="font-family:\'Nunito Sans\',sans-serif;font-size:11px;color:var(--muted)">blanca@delamorazumaran.com · mario@delamorazumaran.com</div>'+
+      '</div>'+
+      '<div class="inv-folio">'+
+        '<div class="inv-folio num">'+folio+'</div>'+
+        '<div class="inv-folio fecha">'+fDate(pDate(fecha))+'</div>'+
+        '<div style="margin-top:8px"><span class="cc-status st-pend" style="font-size:10px">POR COBRAR</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="inv-parties">'+
+      '<div class="inv-party"><div class="label">De</div><div class="name">De La Mora Zumarán</div><div class="detail">Kitchen Support · F&amp;B Consulting<br>blanca@delamorazumaran.com</div></div>'+
+      '<div class="inv-party"><div class="label">Para</div><div class="name">'+(c?c.nombre:'Cliente')+'</div><div class="detail">'+(c?c.ciudad:'')+(c&&c.email?'<br>'+c.email:'')+'</div></div>'+
+    '</div>'+
+    '<table class="inv-table"><thead><tr><th>#</th><th>Concepto</th><th>Fecha</th><th style="text-align:right">Monto</th></tr></thead><tbody>'+rowsHTML+'</tbody></table>'+
+    '<div style="background:var(--cream);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-family:\'Nunito Sans\',sans-serif;font-size:11px;color:var(--muted)"><b style="color:var(--dark)">Condiciones:</b> '+condiciones+'</div>'+
+    '<div class="inv-totals"><div class="inv-totals-box">'+
+      '<div class="inv-total-row"><span>Subtotal</span><span>'+fmt(subtotal)+'</span></div>'+
+      '<div class="inv-total-row"><span>IVA (16%)</span><span>'+fmt(iva)+'</span></div>'+
+      '<div class="inv-total-row final"><span>Total</span><span>'+fmt(total)+'</span></div>'+
+    '</div></div>'+
+    '<div class="inv-footer">De La Mora Zumarán · Kitchen Support · F&amp;B Consulting &amp; Operations<br>Este documento es una vista previa. El PDF final se genera desde el sistema DMZ v4.0.</div>'+
+  '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
 //  REFRESH ALL
 // ═══════════════════════════════════════════════════════════
 function refreshAll(){
@@ -1548,6 +1992,8 @@ function refreshAll(){
   renderCronoTabla();
   loadHistorial();
   renderCBTable();
+  renderPagosList();
+  renderPagosResumen();
 }
 
 // ═══════════════════════════════════════════════════════════
