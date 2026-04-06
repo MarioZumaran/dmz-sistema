@@ -2673,47 +2673,55 @@ function buildReport() {
 
 // Sección de áreas evaluadas en el reporte — estilo "Evaluación de Sucursal"
 function buildAreasEvaluadasSection() {
-  const evaluadas = AREAS.filter(a => STATE.areas[a.id] && STATE.areas[a.id].photos.length > 0);
-  const noEvaluadas = AREAS_BASE.filter(b => !evaluadas.some(e => e.id === b.id));
-  if (!evaluadas.length) return \'\';
-  const evalRows = evaluadas.map((a, i) => {
-    const photos = STATE.areas[a.id].photos;
-    let aC=0, aO=0, aK=0;
-    photos.forEach(p => { if(p.alert==='critico')aC++; else if(p.alert==='observacion')aO++; else if(p.alert==='correcto')aK++; });
-    const aT = aC+aO+aK || 1;
-    const pct = Math.round(aK/aT*100);
-    const col = pct < 30 ? '#C0392B' : pct < 60 ? '#E07B00' : '#2E7D32';
-    return \`<tr>
-      <td style="text-align:center;padding:.4rem .6rem;">
-        <div style="width:14px;height:14px;border-radius:50%;background:${col};display:inline-block;vertical-align:middle;"></div>
-      </td>
-      <td style="font-size:.73rem;font-weight:600;padding:.4rem .6rem;color:var(--dark)">${a.name}</td>
-      <td style="font-size:.68rem;color:${col};font-weight:700;text-align:center;padding:.4rem .6rem">${pct}%</td>
-      <td style="font-size:.65rem;color:var(--mid);padding:.4rem .6rem">${photos.length} foto${photos.length!==1?\'s\':\'\'} · ${aC} crít. · ${aO} obs. · ${aK} ok</td>
-    </tr>\`;
-  }).join(\'\');
-  const noEvalRows = noEvaluadas.map(a =>
-    \`<tr style="opacity:.4">
-      <td style="text-align:center;padding:.3rem .6rem;"><div style="width:14px;height:14px;border-radius:50%;background:#ccc;display:inline-block;vertical-align:middle;"></div></td>
-      <td style="font-size:.68rem;padding:.3rem .6rem;color:var(--mid)">${a.name}</td>
-      <td colspan="2" style="font-size:.6rem;color:var(--mid);padding:.3rem .6rem">No evaluada</td>
-    </tr>\`
-  ).join(\'\');
-  return \`<div class="rpt-dash" style="border-top:3px solid var(--ai);background:#fff;">
-    <div class="rpt-dt" style="color:var(--ai)">Áreas Evaluadas</div>
-    <div class="rpt-ds">COBERTURA DE AUDITORÍA · ${esc(STATE.client.toUpperCase() || 'CLIENTE')}</div>
-    <div class="dash-table-wrap">
-      <table class="d-table">
-        <thead><tr>
-          <th style="width:5%">●</th>
-          <th>ÁREA</th>
-          <th style="text-align:center;width:10%">CUMPL.</th>
-          <th>DETALLE</th>
-        </tr></thead>
-        <tbody>${evalRows}${noEvalRows}</tbody>
-      </table>
-    </div>
-  </div>\`;
+  var evaluadas = AREAS.filter(function(a) { return STATE.areas[a.id] && STATE.areas[a.id].photos.length > 0; });
+  var noEvaluadas = AREAS_BASE.filter(function(b) { return !evaluadas.some(function(e) { return e.id === b.id; }); });
+  if (!evaluadas.length) return '';
+
+  var evalRows = evaluadas.map(function(a) {
+    var photos = STATE.areas[a.id].photos;
+    var aC=0, aO=0, aK=0;
+    photos.forEach(function(p) {
+      if (p.alert==='critico') aC++;
+      else if (p.alert==='observacion') aO++;
+      else if (p.alert==='correcto') aK++;
+    });
+    var aT = aC+aO+aK || 1;
+    var pct = Math.round(aK/aT*100);
+    var col = pct < 30 ? '#C0392B' : pct < 60 ? '#E07B00' : '#2E7D32';
+    return '<tr>' +
+      '<td style="text-align:center;padding:.4rem .6rem;">' +
+        '<div style="width:14px;height:14px;border-radius:50%;background:'+col+';display:inline-block;vertical-align:middle;"></div>' +
+      '</td>' +
+      '<td style="font-size:.73rem;font-weight:600;padding:.4rem .6rem;color:var(--dark)">'+a.name+'</td>' +
+      '<td style="font-size:.68rem;color:'+col+';font-weight:700;text-align:center;padding:.4rem .6rem">'+pct+'%</td>' +
+      '<td style="font-size:.65rem;color:var(--mid);padding:.4rem .6rem">'+photos.length+' foto'+(photos.length!==1?'s':'')+' · '+aC+' crít. · '+aO+' obs. · '+aK+' ok</td>' +
+    '</tr>';
+  }).join('');
+
+  var noEvalRows = noEvaluadas.map(function(a) {
+    return '<tr style="opacity:.4">' +
+      '<td style="text-align:center;padding:.3rem .6rem;"><div style="width:14px;height:14px;border-radius:50%;background:#ccc;display:inline-block;vertical-align:middle;"></div></td>' +
+      '<td style="font-size:.68rem;padding:.3rem .6rem;color:var(--mid)">'+a.name+'</td>' +
+      '<td colspan="2" style="font-size:.6rem;color:var(--mid);padding:.3rem .6rem">No evaluada</td>' +
+    '</tr>';
+  }).join('');
+
+  var clientName = esc(STATE.client ? STATE.client.toUpperCase() : 'CLIENTE');
+  return '<div class="rpt-dash" style="border-top:3px solid var(--ai);background:#fff;">' +
+    '<div class="rpt-dt" style="color:var(--ai)">Áreas Evaluadas</div>' +
+    '<div class="rpt-ds">COBERTURA DE AUDITORÍA · '+clientName+'</div>' +
+    '<div class="dash-table-wrap">' +
+      '<table class="d-table">' +
+        '<thead><tr>' +
+          '<th style="width:5%">●</th>' +
+          '<th>ÁREA</th>' +
+          '<th style="text-align:center;width:10%">CUMPL.</th>' +
+          '<th>DETALLE</th>' +
+        '</tr></thead>' +
+        '<tbody>'+evalRows+noEvalRows+'</tbody>' +
+      '</table>' +
+    '</div>' +
+  '</div>';
 }
 
 function buildClimaReportSection() {
