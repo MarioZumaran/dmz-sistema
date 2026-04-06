@@ -2497,7 +2497,7 @@ async function analyzePhoto(pid) {
     if (CFG.aiProvider === 'gemini' && hasGeminiKey) {
       // ── GEMINI ─────────────────────────────────────────────────
       const gr = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${CFG.geminiModel}:generateContent?key=${STATE.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -4117,7 +4117,7 @@ Responde siempre en español. Sé directo, honesto y orientado a acción.`;
 
     if (CFG.aiProvider === 'gemini' && _hasGemini) {
       const gr = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${CFG.geminiModel}:generateContent?key=${STATE.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
