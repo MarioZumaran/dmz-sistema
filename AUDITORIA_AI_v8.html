@@ -1110,12 +1110,18 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
   <nav id="sidebar">
     <div class="sb-section-head">ÁREAS</div>
     <div id="area-nav"></div>
-    <div style="padding:.4rem .8rem .2rem;">
+    <div style="padding:.4rem .8rem .2rem;display:flex;flex-direction:column;gap:.3rem;">
       <button onclick="openNewArea()"
               style="width:100%;padding:.42rem;font-size:.64rem;letter-spacing:.1em;
                      background:rgba(201,149,42,.1);border:1px dashed var(--gold);
                      color:var(--gold);border-radius:4px;cursor:pointer;">
         + NUEVA ÁREA
+      </button>
+      <button onclick="restoreAreas()"
+              style="width:100%;padding:.38rem;font-size:.58rem;letter-spacing:.08em;
+                     background:rgba(26,107,138,.07);border:1px dashed var(--ai);
+                     color:var(--ai);border-radius:4px;cursor:pointer;">
+        ↺ Restaurar áreas ocultas
       </button>
     </div>
     <div class="sb-footer">
@@ -1570,6 +1576,14 @@ let AREAS = [
     id: 'personal', name: 'PERSONAL / RRHH',
     chips: ['Sin capacitación visible','Uniforme incompleto o sucio','Personal sin identificación','Actitud no alineada al servicio','Uso de celular en servicio','Sin escalafón o roles claros','Comunicación deficiente entre áreas','Sin programa de incentivos activo']
   },
+  {
+    id: 'cualidades', name: 'CUALIDADES DE LA EMPRESA',
+    chips: ['Trayectoria consolidada','Reputación reconocida','Clientes fieles','Calidad gastronómica alta','Lugar acreditado','Personal amable y agradable','Target: familiar / amigos','Target: deportistas / mujeres','Segmento C / B / B+ / A / A+']
+  },
+  {
+    id: 'eval_alimentos', name: 'EVALUACIÓN DE ALIMENTOS',
+    chips: ['Tiempo en rojo','Presentación mejorable','Sazón / sal / balance','Buena presentación','Buen sabor / equilibrado','Buena porción','Venta sugestiva ausente','Complementos de mesa sin etiqueta','Shot inmune / Aloe disponible']
+  },
 ];
 
 const AC  = { critico: '#C0392B', observacion: '#E07B00', correcto: '#2E7D32' };
@@ -1648,13 +1662,12 @@ function renderAreaNav() {
     const conf   = photos.filter(p => p.state === 'confirmed').length;
     const active = a.id === STATE.currentArea;
     const badge    = cnt ? `<span class="ani-badge" style="background:${col}">${conf}/${cnt}</span>` : '';
-    const isCustom = STATE.customAreaDefs.some(d => d.id === a.id);
-    const delBtn   = isCustom
-      ? `<button onclick="event.stopPropagation();deleteCustomArea('${a.id}')"
-                 title="Eliminar área"
-                 style="background:none;border:none;color:rgba(255,255,255,.28);font-size:1rem;
-                        padding:0 .15rem;cursor:pointer;line-height:1;flex-shrink:0;">×</button>`
-      : '';
+    const delBtn = `<button onclick="event.stopPropagation();hideArea('${a.id}')"
+               title="Ocultar área de esta sesión"
+               style="background:none;border:none;color:var(--mid);font-size:1rem;
+                      padding:0 .15rem;cursor:pointer;line-height:1;flex-shrink:0;opacity:.5;"
+               onmouseover="this.style.opacity=1;this.style.color='var(--red)'"
+               onmouseout="this.style.opacity=.5;this.style.color='var(--mid)'">×</button>`;
     return `<div class="ani ${active ? 'active' : ''}" onclick="switchArea('${a.id}')" data-area="${a.id}">
       <div class="ani-dot" style="background:${col}"></div>
       <div class="ani-info">
@@ -2654,7 +2667,53 @@ function buildReport() {
       </table>
     </div>
   </div>` : ''}
-  ${buildClimaReportSection()}`;
+  ${buildAreasEvaluadasSection()}
+  ${buildClimaReportSection()}\`;
+}
+
+// Sección de áreas evaluadas en el reporte — estilo "Evaluación de Sucursal"
+function buildAreasEvaluadasSection() {
+  const evaluadas = AREAS.filter(a => STATE.areas[a.id] && STATE.areas[a.id].photos.length > 0);
+  const noEvaluadas = AREAS_BASE.filter(b => !evaluadas.some(e => e.id === b.id));
+  if (!evaluadas.length) return \'\';
+  const evalRows = evaluadas.map((a, i) => {
+    const photos = STATE.areas[a.id].photos;
+    let aC=0, aO=0, aK=0;
+    photos.forEach(p => { if(p.alert==='critico')aC++; else if(p.alert==='observacion')aO++; else if(p.alert==='correcto')aK++; });
+    const aT = aC+aO+aK || 1;
+    const pct = Math.round(aK/aT*100);
+    const col = pct < 30 ? '#C0392B' : pct < 60 ? '#E07B00' : '#2E7D32';
+    return \`<tr>
+      <td style="text-align:center;padding:.4rem .6rem;">
+        <div style="width:14px;height:14px;border-radius:50%;background:${col};display:inline-block;vertical-align:middle;"></div>
+      </td>
+      <td style="font-size:.73rem;font-weight:600;padding:.4rem .6rem;color:var(--dark)">${a.name}</td>
+      <td style="font-size:.68rem;color:${col};font-weight:700;text-align:center;padding:.4rem .6rem">${pct}%</td>
+      <td style="font-size:.65rem;color:var(--mid);padding:.4rem .6rem">${photos.length} foto${photos.length!==1?\'s\':\'\'} · ${aC} crít. · ${aO} obs. · ${aK} ok</td>
+    </tr>\`;
+  }).join(\'\');
+  const noEvalRows = noEvaluadas.map(a =>
+    \`<tr style="opacity:.4">
+      <td style="text-align:center;padding:.3rem .6rem;"><div style="width:14px;height:14px;border-radius:50%;background:#ccc;display:inline-block;vertical-align:middle;"></div></td>
+      <td style="font-size:.68rem;padding:.3rem .6rem;color:var(--mid)">${a.name}</td>
+      <td colspan="2" style="font-size:.6rem;color:var(--mid);padding:.3rem .6rem">No evaluada</td>
+    </tr>\`
+  ).join(\'\');
+  return \`<div class="rpt-dash" style="border-top:3px solid var(--ai);background:#fff;">
+    <div class="rpt-dt" style="color:var(--ai)">Áreas Evaluadas</div>
+    <div class="rpt-ds">COBERTURA DE AUDITORÍA · ${esc(STATE.client.toUpperCase() || 'CLIENTE')}</div>
+    <div class="dash-table-wrap">
+      <table class="d-table">
+        <thead><tr>
+          <th style="width:5%">●</th>
+          <th>ÁREA</th>
+          <th style="text-align:center;width:10%">CUMPL.</th>
+          <th>DETALLE</th>
+        </tr></thead>
+        <tbody>${evalRows}${noEvalRows}</tbody>
+      </table>
+    </div>
+  </div>\`;
 }
 
 function buildClimaReportSection() {
@@ -3169,20 +3228,78 @@ function addCustomArea() {
 }
 
 function deleteCustomArea(id) {
-  if (!confirm('¿Eliminar esta área y todas sus fotos? Esta acción no se puede deshacer.')) return;
-  const idx = AREAS.findIndex(function(a) { return a.id === id; });
-  if (idx !== -1) AREAS.splice(idx, 1);
-  const di = STATE.customAreaDefs.findIndex(function(d) { return d.id === id; });
-  if (di !== -1) STATE.customAreaDefs.splice(di, 1);
-  delete STATE.areas[id];
-  // Si estábamos en esa área, cambiar a la primera disponible
+  // Mantener compatibilidad — alias de hideArea para áreas custom
+  hideArea(id, true);
+}
+
+// Oculta un área del sidebar. Si es personalizada y forceDelete=true la borra.
+// Las áreas base solo se ocultan (datos intactos, reaparecen con "Restaurar áreas").
+function hideArea(id, forceDelete) {
+  const isCustom = STATE.customAreaDefs.some(function(d) { return d.id === id; });
+  if (isCustom || forceDelete) {
+    if (!confirm('¿Eliminar esta área y todas sus fotos? Esta acción no se puede deshacer.')) return;
+    const idx = AREAS.findIndex(function(a) { return a.id === id; });
+    if (idx !== -1) AREAS.splice(idx, 1);
+    const di = STATE.customAreaDefs.findIndex(function(d) { return d.id === id; });
+    if (di !== -1) STATE.customAreaDefs.splice(di, 1);
+    delete STATE.areas[id];
+    showToast('Área eliminada');
+  } else {
+    // Área base: solo ocultar — datos intactos en STATE.areas
+    if (!STATE.hiddenAreas) STATE.hiddenAreas = [];
+    if (!STATE.hiddenAreas.includes(id)) STATE.hiddenAreas.push(id);
+    const idx = AREAS.findIndex(function(a) { return a.id === id; });
+    if (idx !== -1) AREAS.splice(idx, 1);
+    showToast('Área ocultada — usa "Restaurar áreas" para recuperarla');
+  }
   if (STATE.currentArea === id) {
     switchArea(AREAS.length ? AREAS[0].id : null);
   } else {
     renderAreaNav();
   }
   markDirty();
-  showToast('Área eliminada');
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   RESTAURAR ÁREAS OCULTAS
+───────────────────────────────────────────────────────────────── */
+// Áreas base originales (para restaurar las que se ocultaron)
+const AREAS_BASE = [
+  { id: 'fachada',       name: 'EXTERIOR / FACHADA',        chips: ['Señalética deteriorada','Pintura descascarada','Iluminación deficiente','Acceso obstaculizado','Imagen desactualizada','Jardines / macetas descuidados','Grafitti o deterioro visible','Estacionamiento en mal estado'] },
+  { id: 'imagen',        name: 'IMAGEN / REDES',            chips: ['Uniformes sin estándar','Material sin identidad','Mobiliario deteriorado','Feed desactualizado','Sin estrategia digital','Carta desalineada del branding','Señalización interior ausente','Material impreso obsoleto'] },
+  { id: 'alimentos',     name: 'ALIMENTOS',                 chips: ['Presentación mejorable','Menú desactualizado','Temperatura incorrecta','Porcionado inconsistente','Sin estándar de emplatado','Producto caducado o próximo','Cross-contamination visible','Emplatado inconsistente por turno'] },
+  { id: 'servicio',      name: 'SERVICIO',                  chips: ['Sin guión de bienvenida','Tiempos de respuesta altos','Falta seguimiento de mesa','Sin venta sugestiva','Gestión de quejas ausente','Sin presentación del menú','Cobro incorrecto o lento','Personal sin conocimiento del menú'] },
+  { id: 'banos',         name: 'BAÑOS',                     chips: ['Consumibles agotados','Ventilación obstruida','Herrajes oxidados','Limpieza insuficiente','Señalética deteriorada','Olor desagradable','Piso mojado sin señalización','Espejo o iluminación deficiente'] },
+  { id: 'cocina',        name: 'COCINA',                    chips: ['PEPS incumplido','Etiquetado faltante','Superficies sucias','Almacenamiento incorrecto','Residuos sin retirar','Plagas o indicios','EPI incompleto en personal','Temperatura de refrigerador incorrecta'] },
+  { id: 'almacen',       name: 'ALMACÉN',                   chips: ['Sin etiquetado de fechas','Mezcla de productos','Sin sistema de inventario','Temperatura no controlada','Organización deficiente','Producto en contacto con piso','Acceso no restringido','Sin registro de entradas/salidas'] },
+  { id: 'barra',         name: 'BARRA',                     chips: ['Mise en place incompleto','Temperatura de salsas','Botellería sin orden','Escarcha en congelador','Limpieza entre servicio','Stock de bebidas insuficiente','Sin receta estandarizada visible','Cristalería con manchas o golpes'] },
+  { id: 'terraza',       name: 'TERRAZA / SALÓN',           chips: ['Mobiliario sucio o dañado','Iluminación deficiente','Menús sucios o maltratados','Música inadecuada','Temperatura ambiental incorrecta','Decoración descuidada','Pisos o alfombras sucios','Mantelería manchada o rota'] },
+  { id: 'formatos',      name: 'FORMATOS',                  chips: ['Registros incompletos','Formatos desactualizados','Sin firma de responsable','Checklist no llenado','Versión incorrecta en uso','Sin bitácora de apertura/cierre','Temperatura no registrada','Registros de limpieza faltantes'] },
+  { id: 'personal',      name: 'PERSONAL / RRHH',           chips: ['Sin capacitación visible','Uniforme incompleto o sucio','Personal sin identificación','Actitud no alineada al servicio','Uso de celular en servicio','Sin escalafón o roles claros','Comunicación deficiente entre áreas','Sin programa de incentivos activo'] },
+  { id: 'cualidades',    name: 'CUALIDADES DE LA EMPRESA',  chips: ['Trayectoria consolidada','Reputación reconocida','Clientes fieles','Calidad gastronómica alta','Lugar acreditado','Personal amable y agradable','Target: familiar / amigos','Target: deportistas / mujeres','Segmento C / B / B+ / A / A+'] },
+  { id: 'eval_alimentos',name: 'EVALUACIÓN DE ALIMENTOS',   chips: ['Tiempo en rojo','Presentación mejorable','Sazón / sal / balance','Buena presentación','Buen sabor / equilibrado','Buena porción','Venta sugestiva ausente','Complementos de mesa sin etiqueta','Shot inmune / Aloe disponible'] },
+];
+
+function restoreAreas() {
+  if (!STATE.hiddenAreas || !STATE.hiddenAreas.length) {
+    showToast('No hay áreas ocultas que restaurar');
+    return;
+  }
+  let restored = 0;
+  STATE.hiddenAreas.forEach(function(id) {
+    if (!AREAS.some(function(a) { return a.id === id; })) {
+      const base = AREAS_BASE.find(function(a) { return a.id === id; });
+      if (base) {
+        AREAS.push(base);
+        if (!STATE.areas[id]) STATE.areas[id] = { photos: [] };
+        restored++;
+      }
+    }
+  });
+  STATE.hiddenAreas = [];
+  renderAreaNav();
+  markDirty();
+  showToast('✓ ' + restored + ' área' + (restored !== 1 ? 's' : '') + ' restaurada' + (restored !== 1 ? 's' : ''));
 }
 
 /* ─────────────────────────────────────────────────────────────────
