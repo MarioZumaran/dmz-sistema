@@ -3422,7 +3422,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
   <div class="ls-box">
     <div class="ls-brand"><span style="color:var(--orange)">D</span>ELA<span style="color:var(--orange)">M</span>ORA<span style="color:var(--orange)">Z</span>UMARÁN</div>
     <div class="ls-title">REPORTE DE AUDITORÍA</div>
-    <div class="ls-sub"></div>
+    <div class="ls-sub">${clientEsc.toUpperCase()}</div>
     <input class="ls-input" id="ls-inp" type="text" maxlength="6" placeholder="CÓDIGO" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkCode()">
     <button class="ls-btn" onclick="checkCode()">ACCEDER AL REPORTE</button>
     <div class="ls-err" id="ls-err"></div>
@@ -3442,7 +3442,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 <!-- ── REPORT CONTENT ─────────────────────────────────── -->
 <div id="report-content" style="display:none">
   <div class="rpt-bar">
-    <span><span style="opacity:.4">REPORTE · </span> · ${date}</span>
+    <span><span style="opacity:.4">REPORTE · </span>${clientEsc.toUpperCase()} · ${date}</span>
     <button onclick="window.print()">⊞ PDF / Imprimir</button>
   </div>
   <div class="rpt-cover">
@@ -3451,7 +3451,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
       <div class="rc-ksup">KITCHEN SUPPORT</div>
       <div class="rc-sep"></div>
       <div class="rc-lbl">CLIENTE</div>
-      <div class="rc-title"></div>
+      <div class="rc-title">${clientEsc.toUpperCase()}</div>
       <div class="rc-sub">REPORTE DE AUDITORÍA OPERATIVA · ${new Date().getFullYear()}</div>
     </div>
     <div class="rc-kpis">
@@ -3466,9 +3466,9 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 
 <script>
 // ── Access control ──────────────────────────────────────────────
-const REPORT_ID = '';
-const CODE_B64  = '';
-const MAX_USES  = 0;
+const REPORT_ID = '${reportId}';
+const CODE_B64  = '${codeB64}';
+const MAX_USES  = ${maxUses};
 const STOR_KEY  = 'dmz_report_' + REPORT_ID;
 
 function getUses() {
