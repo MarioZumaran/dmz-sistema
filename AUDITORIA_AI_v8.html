@@ -2088,15 +2088,16 @@ function onKeyInput() {
   } else if (k.length > 0) {
     // Usar el proveedor seleccionado manualmente
     if (CFG.aiProvider === 'gemini') {
-      State.geminiKey = k;
+      STATE.geminiKey = k;
     } else {
       STATE.apiKey = k;
     }
   }
 
   // Indicador de estado
+  // Gemini keys pueden empezar con AIza u otros prefijos según el proyecto
   const isValid = (CFG.aiProvider === 'anthropic' && STATE.apiKey.startsWith('sk-ant-'))
-               || (CFG.aiProvider === 'gemini'    && STATE.geminiKey.length > 10);
+               || (CFG.aiProvider === 'gemini'    && STATE.geminiKey.length > 15);
 
   if (k.length === 0) {
     s.className = 'key-status';
@@ -2111,17 +2112,26 @@ function onKeyInput() {
 function onProviderChange() {
   const sel = document.getElementById('ai-provider-sel');
   CFG.aiProvider = sel.value;
-  // Cambiar placeholder del campo
   const inp = document.getElementById('inp-key');
+  const dot = document.getElementById('key-status');
   if (CFG.aiProvider === 'gemini') {
     inp.placeholder = 'AIzaSy… (Google AI Studio)';
     inp.value = STATE.geminiKey || '';
+    // Si ya hay key de Gemini guardada, mostrar verde
+    if (STATE.geminiKey && STATE.geminiKey.length >= 35) {
+      dot.className = 'key-status ok';
+    } else {
+      dot.className = 'key-status';
+    }
   } else {
     inp.placeholder = 'sk-ant-api03-… (Anthropic)';
     inp.value = STATE.apiKey || '';
+    if (STATE.apiKey && STATE.apiKey.startsWith('sk-ant-')) {
+      dot.className = 'key-status ok';
+    } else {
+      dot.className = 'key-status';
+    }
   }
-  // Revalidar
-  document.getElementById('key-status').className = 'key-status';
   updateAnalyzeBtn();
 }
 
