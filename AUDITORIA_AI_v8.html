@@ -653,8 +653,9 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 1px; background: var(--border);
 }
-.rpt-photo { position: relative; background: #111; overflow: hidden; }
+.rpt-photo { position: relative; background: #111; overflow: hidden; min-height: 220px; }
 .rpt-photo img { width: 100%; height: 280px; object-fit: cover; display: block; }
+.rpt-photo-noimg { min-height: 220px; background: #1a1a1a; }
 .rpt-caption {
   position: absolute; bottom: 0; left: 0; right: 0;
   background: linear-gradient(transparent, rgba(0,0,0,.82));
@@ -2295,6 +2296,7 @@ async function processFiles(files) {
       id:           newPid(),
       displayUrl:   URL.createObjectURL(processedFile),
       apiDataUrl:   null,
+      storageB64:   null,   // se genera async abajo
       file:         processedFile,
       name:         file.name,
       alert:        null,
@@ -2304,6 +2306,16 @@ async function processFiles(files) {
       aiSuggestion: null,
     };
     STATE.areas[STATE.currentArea].photos.push(photo);
+
+    // Generar storageB64 inmediatamente para que el reporte funcione
+    (function(ph, pf) {
+      resizeForStorage(URL.createObjectURL(pf), 800).then(function(b64) {
+        if (b64) {
+          ph.storageB64 = b64;
+          markDirty();
+        }
+      });
+    })(photo, processedFile);
   }
 
   renderGrid();
@@ -2976,11 +2988,27 @@ function buildReport() {
       const mkrs = p.markers.map((m, i) =>
         `<div class="ann-dot" style="left:${m.x*100}%;top:${m.y*100}%;background:${col}">${i+1}</div>`
       ).join('');
-      const notes = p.notes.filter(n => n.trim());
-      // FIX: usar storageB64 si existe (persiste), de lo contrario blob URL
+      const notes = p.notes.filter(n => n && n.trim());
+
+      // Si no hay imagen, mostrar tarjeta de texto con las observaciones
       const imgSrc = p.storageB64
         ? 'data:image/jpeg;base64,' + p.storageB64
         : (p.displayUrl || '');
+
+      if (!imgSrc && !p.isFormEntry) {
+        // Tarjeta sin imagen — mostrar observaciones como texto
+        return `<div class="rpt-photo" style="background:#1a1a1a;display:flex;flex-direction:column;justify-content:flex-end;min-height:220px;">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.15;">
+            <div style="font-size:2.5rem;">📷</div>
+            <div style="font-size:.6rem;color:#fff;letter-spacing:.1em;margin-top:.4rem;">SIN IMAGEN</div>
+          </div>
+          <div class="rpt-caption">
+            <span class="rpt-badge" style="background:${col}">${icon} ${lbl}</span>
+            ${notes.map(n => `<div class="rpt-note">${esc(n)}</div>`).join('')}
+          </div>
+        </div>`;
+      }
+
       return `<div class="rpt-photo">
         <img src="${imgSrc}" alt="" loading="lazy">
         ${mkrs}
@@ -3092,6 +3120,7 @@ function buildReport() {
     <span><span style="opacity:.4">REPORTE · </span>${esc(client.toUpperCase())} · ${date}</span>
     <button class="btn btn-gold" onclick="printReport()">🖨 PDF / Imprimir</button>
     <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">📤 Entregar al Cliente</button>
+    <button class="btn btn-outline" onclick="recargarFotosReporte()" id="btn-recarga-fotos" title="Si las fotos aparecen negras, haz clic aquí">🔄 Recargar fotos</button>
   </div>
   <div class="rpt-cover">
     <div>
@@ -4912,6 +4941,44 @@ function pasoAddCard() {
   buildReport();
   setMode('rep');
   markDirty();
+}
+
+
+/* ─────────────────────────────────────────────────────────────────
+   RECARGAR FOTOS EN REPORTE
+   Intenta regenerar storageB64 desde displayUrl para fotos sin imagen
+───────────────────────────────────────────────────────────────── */
+async function recargarFotosReporte() {
+  var btn = document.getElementById('btn-recarga-fotos');
+  if (btn) { btn.textContent = '⏳ Procesando…'; btn.disabled = true; }
+
+  var total = 0, regeneradas = 0;
+
+  for (var aId in STATE.areas) {
+    for (var i = 0; i < STATE.areas[aId].photos.length; i++) {
+      var p = STATE.areas[aId].photos[i];
+      if (p.storageB64) continue;   // ya tiene imagen
+      total++;
+
+      // Intentar desde displayUrl si existe
+      if (p.displayUrl) {
+        try {
+          var b64 = await resizeForStorage(p.displayUrl, 800);
+          if (b64) { p.storageB64 = b64; regeneradas++; }
+        } catch(e) {}
+      }
+    }
+  }
+
+  if (regeneradas > 0) {
+    await saveSession(true);
+    showToast('✓ ' + regeneradas + ' foto' + (regeneradas !== 1 ? 's' : '') + ' recuperada' + (regeneradas !== 1 ? 's' : '') + ' — recargando reporte…');
+    setTimeout(function() { buildReport(); }, 600);
+  } else {
+    showToast('ℹ ' + total + ' fotos sin imagen disponible. Las observaciones se muestran como texto en el reporte.');
+  }
+
+  if (btn) { btn.textContent = '🔄 Recargar fotos'; btn.disabled = false; }
 }
 
 // ── LOGIN — contraseña protegida ────────────────────────────────────
