@@ -762,6 +762,126 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .lv-empty .icon { font-size: 2.5rem; margin-bottom: .8rem; opacity: .25; }
 .lv-empty p { font-size: .82rem; line-height: 1.7; }
 
+
+/* ── Formularios especiales por área ─────────────────────────────── */
+#special-form-wrap {
+  padding: 0 1.2rem 1.4rem;
+  display: none;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+#special-form-wrap.visible { display: flex; }
+
+/* Tabla de Evaluación de Alimentos */
+.eval-table {
+  width: 100%; border-collapse: collapse;
+  background: #fff; border-radius: 8px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.09);
+  font-family: var(--f-b);
+}
+.eval-table thead tr { background: var(--dark); }
+.eval-table thead th {
+  padding: .65rem 1rem; text-align: left;
+  font-size: .62rem; letter-spacing: .18em; font-weight: 700; color: #fff;
+}
+.eval-table tbody tr { border-bottom: 1px solid var(--border); }
+.eval-table tbody tr:last-child { border-bottom: none; }
+.eval-table tbody tr:nth-child(even) { background: var(--off); }
+.eval-table td { padding: .5rem .8rem; vertical-align: top; }
+.eval-platillo {
+  font-size: .78rem; font-weight: 700; color: var(--gold);
+  letter-spacing: .04em; white-space: nowrap;
+}
+.eval-obs-ta {
+  width: 100%; border: 1px solid var(--border); border-radius: 4px;
+  padding: .4rem .6rem; font-size: .75rem; font-family: var(--f-b);
+  resize: vertical; min-height: 44px; outline: none; color: var(--dark);
+  transition: border-color .15s;
+}
+.eval-obs-ta:focus { border-color: var(--gold); }
+.eval-tiempo {
+  display: flex; align-items: center; gap: .4rem;
+}
+.eval-tiempo input[type=number] {
+  width: 58px; border: 1px solid var(--border); border-radius: 4px;
+  padding: .35rem .4rem; font-size: .78rem; font-weight: 700;
+  text-align: center; outline: none; font-family: var(--f-b);
+  color: var(--dark);
+}
+.eval-tiempo input:focus { border-color: var(--gold); }
+.eval-tiempo-rojo { color: var(--red) !important; border-color: var(--red) !important; }
+.eval-add-row {
+  width: 100%; padding: .5rem; border: 1.5px dashed var(--border);
+  border-radius: 6px; background: none; font-size: .7rem;
+  color: var(--mid); cursor: pointer; transition: all .15s;
+  font-family: var(--f-b);
+}
+.eval-add-row:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Nota general */
+.sf-nota-wrap {
+  background: #fff; border-radius: 8px;
+  padding: 1rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,.09);
+}
+.sf-nota-label {
+  font-size: .58rem; font-weight: 800; letter-spacing: .18em;
+  color: var(--mid); margin-bottom: .5rem;
+}
+.sf-nota-ta {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 5px;
+  padding: .55rem .8rem; font-size: .82rem; font-family: var(--f-b);
+  resize: vertical; min-height: 70px; outline: none; color: var(--dark);
+  transition: border-color .15s; line-height: 1.55;
+}
+.sf-nota-ta:focus { border-color: var(--gold); }
+
+/* Cualidades de la empresa */
+.cual-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+}
+@media (max-width: 700px) { .cual-grid { grid-template-columns: 1fr; } }
+.cual-card {
+  background: #fff; border-radius: 8px;
+  padding: 1.1rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,.09);
+  display: flex; flex-direction: column; gap: .65rem;
+}
+.cual-card-title {
+  font-size: .58rem; font-weight: 800; letter-spacing: .18em;
+  color: var(--dark); border-bottom: 1px solid var(--border);
+  padding-bottom: .4rem; margin-bottom: .1rem;
+}
+.cual-item {
+  display: flex; align-items: center; gap: .55rem;
+}
+.cual-check {
+  width: 16px; height: 16px; border-radius: 3px;
+  border: 2px solid var(--border); flex-shrink: 0;
+  cursor: pointer; transition: all .15s; appearance: none;
+  -webkit-appearance: none; background: #fff;
+}
+.cual-check:checked {
+  background: var(--green); border-color: var(--green);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center;
+}
+.cual-label { font-size: .75rem; color: var(--dark); line-height: 1.35; }
+.cual-seg-btns { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .2rem; }
+.cual-seg-btn {
+  padding: .28rem .65rem; border-radius: 20px;
+  border: 1.5px solid var(--border); background: var(--off);
+  font-size: .68rem; font-weight: 600; color: var(--mid);
+  cursor: pointer; transition: all .13s;
+}
+.cual-seg-btn.sel { background: var(--gold); color: #fff; border-color: var(--gold); }
+.sf-save-btn {
+  align-self: flex-end;
+  padding: .5rem 1.4rem; background: var(--dark); color: #fff;
+  border: none; border-radius: var(--r); font-size: .72rem;
+  font-weight: 700; letter-spacing: .08em; cursor: pointer;
+  transition: background .15s; font-family: var(--f-b);
+}
+.sf-save-btn:hover { background: var(--gold); }
+
 @media print {
   #topbar, #sidebar, .rpt-bar, #login-screen { display: none !important; }
   #app { display: block !important; overflow: visible !important; }
@@ -1180,6 +1300,7 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
       <div class="dz-text">Arrastra fotos aquí · o haz clic para seleccionar</div>
       <div class="dz-sub">JPG · PNG · HEIC · DNG · RAW · CR2 · NEF · ARW · TIFF y más</div>
     </div>
+    <div id="special-form-wrap"></div>
     <div id="photo-grid"></div>
   </div>
 
@@ -1301,11 +1422,12 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '7.0',
+    version:        '8.5',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
     climaState:     JSON.parse(JSON.stringify(CLIMA_STATE)),
+    sfState:        JSON.parse(JSON.stringify(window.SF_STATE || {})),
   };
 
   // Comprime imágenes en paralelo (solo las que aún no tienen storageB64)
@@ -1438,6 +1560,12 @@ function loadSession() {
     // Restaura Clima Laboral
     if (saved.climaState) {
       Object.assign(CLIMA_STATE, saved.climaState);
+    }
+
+    // Restaura SF_STATE (formularios especiales)
+    if (saved.sfState) {
+      if (!window.SF_STATE) window.SF_STATE = {};
+      Object.assign(window.SF_STATE, saved.sfState);
     }
 
     // FIX: Asegurar que áreas nuevas existan aunque no estén en localStorage antiguo
@@ -1746,11 +1874,35 @@ function updateAnalyzeBtn() {
 function switchArea(id) {
   STATE.currentArea = id;
   const area = AREAS.find(a => a.id === id);
-  document.getElementById('area-title').textContent = area.name;
+  document.getElementById('area-title').textContent = area ? area.name : id;
   renderAreaNav();
+  renderSpecialForm(id);
   renderGrid();
   updateProgress();
   updateAnalyzeBtn();
+}
+
+// Renderiza formulario especial según el área
+function renderSpecialForm(id) {
+  const wrap = document.getElementById('special-form-wrap');
+  const dz   = document.getElementById('drop-zone');
+  const SPECIAL = ['alimentos', 'eval_alimentos', 'cualidades'];
+
+  if (!SPECIAL.includes(id)) {
+    wrap.classList.remove('visible');
+    wrap.innerHTML = '';
+    dz.style.display = '';
+    return;
+  }
+
+  wrap.classList.add('visible');
+  dz.style.display = 'none'; // La foto se sube desde el formulario
+
+  if (id === 'alimentos' || id === 'eval_alimentos') {
+    wrap.innerHTML = buildEvalAlimentosForm(id);
+  } else if (id === 'cualidades') {
+    wrap.innerHTML = buildCualidadesForm();
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -2061,7 +2213,24 @@ function renderGrid() {
 }
 
 function buildCard(p) {
-  const area   = AREAS.find(a => STATE.areas[a.id].photos.some(ph => ph.id === p.id));
+  // Si es entrada de formulario (sin imagen), mostrar card de texto
+  if (p.isFormEntry) {
+    const col = {'critico':'#C0392B','observacion':'#E07B00','correcto':'#2E7D32'}[p.alert] || '#888';
+    const lbl = {'critico':'CRÍTICO','observacion':'OBSERVACIÓN','correcto':'CORRECTO'}[p.alert] || 'FORMULARIO';
+    const noteTxt = (p.notes || []).join('\n');
+    return `<div class="card" data-id="${p.id}" data-state="confirmed"
+              style="flex-direction:column;min-height:auto;grid-column:1/-1;border-color:${col};">
+      <div style="padding:.7rem 1rem;background:${col}12;border-bottom:2px solid ${col};">
+        <span style="font-size:.62rem;font-weight:800;letter-spacing:.1em;color:${col}">📋 ${lbl} — ${esc(p.name)}</span>
+      </div>
+      <div style="padding:.8rem 1rem;white-space:pre-wrap;font-size:.78rem;line-height:1.6;color:var(--dark);flex:1;">${esc(noteTxt)}</div>
+      <div style="padding:.4rem .8rem;background:var(--cream);border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+        <button class="btn-del-card" onclick="delPhoto('${p.id}')" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }
+
+  const area   = AREAS.find(a => STATE.areas[a.id] && STATE.areas[a.id].photos.some(ph => ph.id === p.id));
   const areaId = area ? area.id : STATE.currentArea;
 
   const dotsHtml = p.markers.map((m, i) =>
@@ -3650,6 +3819,307 @@ function imgToBase64(src) {
     img.onerror = function() { resolve(null); };
     img.src = src;
   });
+}
+
+
+/* ─────────────────────────────────────────────────────────────────
+   FORMULARIOS ESPECIALES POR ÁREA
+───────────────────────────────────────────────────────────────── */
+
+// ── Estado de los formularios especiales
+if (!window.SF_STATE) window.SF_STATE = {
+  alimentos:     { rows: [], nota: '' },
+  eval_alimentos:{ rows: [], nota: '' },
+  cualidades:    { checks: {}, segmentos: [], nota: '' },
+};
+
+// Platillos precargados según imagen compartida
+const EVAL_ALIMENTOS_DEFAULT = [
+  { platillo: 'BEBIDAS',             obs: '', tiempo: 5,  rojo: false },
+  { platillo: 'EGG TRUFFLE SANDWICH',obs: '', tiempo: 10, rojo: false },
+  { platillo: 'BANANA GOLI 7:26',    obs: '', tiempo: 10, rojo: false },
+  { platillo: 'EXPRESSO SMOOTHIE',   obs: '', tiempo: 5,  rojo: false },
+  { platillo: 'PASTEL DE HIGO',      obs: '', tiempo: 5,  rojo: false },
+];
+
+function initSFRows(areaId) {
+  if (!SF_STATE[areaId]) SF_STATE[areaId] = { rows: [], nota: '' };
+  if (!SF_STATE[areaId].rows.length) {
+    SF_STATE[areaId].rows = EVAL_ALIMENTOS_DEFAULT.map(function(r) {
+      return { platillo: r.platillo, obs: r.obs, tiempo: r.tiempo, rojo: r.rojo };
+    });
+  }
+}
+
+function buildEvalAlimentosForm(areaId) {
+  initSFRows(areaId);
+  var rows = SF_STATE[areaId].rows;
+  var nota = SF_STATE[areaId].nota || '';
+  var label = 'EVALUACIÓN DE ALIMENTOS';
+
+  var rowsHtml = rows.map(function(r, i) {
+    var tiempoClass = r.rojo ? ' class="eval-tiempo-rojo"' : '';
+    var obsEsc = (r.obs || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return [
+      '<tr>',
+        '<td class="eval-platillo">' + esc(r.platillo) + '</td>',
+        '<td><textarea class="eval-obs-ta" rows="2" placeholder="Observaciones…"',
+          ' data-area="' + areaId + '" data-idx="' + i + '" data-field="obs"',
+          ' onchange="sfUpdateRow(this)">' + obsEsc + '</textarea></td>',
+        '<td><div class="eval-tiempo">',
+          '<input type="number" min="0" max="120"' + tiempoClass,
+            ' value="' + r.tiempo + '"',
+            ' data-area="' + areaId + '" data-idx="' + i + '"',
+            ' onchange="sfUpdateTiempo(this)">',
+          ' min',
+        '</div></td>',
+      '</tr>'
+    ].join('');
+  }).join('');
+
+  return [
+    '<div style="background:#fff;border-radius:8px;padding:.8rem 1.2rem .5rem;box-shadow:0 2px 8px rgba(0,0,0,.09);margin-bottom:.5rem;">',
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;">',
+        '<div style="font-family:var(--f-t);font-size:.72rem;font-weight:800;letter-spacing:.12em;color:var(--dark);">📋 ' + label + '</div>',
+        '<button class="btn btn-dark" style="font-size:.62rem;" onclick="triggerUploadSF(\'' + areaId + '\')">📷 + Foto</button>',
+      '</div>',
+      '<table class="eval-table">',
+        '<thead><tr>',
+          '<th style="width:22%">ALIMENTO</th>',
+          '<th>OBSERVACIONES</th>',
+          '<th style="width:12%">TIEMPO</th>',
+        '</tr></thead>',
+        '<tbody id="eval-tbody-' + areaId + '">' + rowsHtml + '</tbody>',
+      '</table>',
+      '<button class="eval-add-row" style="margin-top:.5rem;" onclick="addEvalRow(\'' + areaId + '\')">＋ Agregar platillo</button>',
+    '</div>',
+    '<div class="sf-nota-wrap">',
+      '<div class="sf-nota-label">NOTA GENERAL</div>',
+      '<textarea class="sf-nota-ta"',
+        ' data-area="' + areaId + '" data-field="nota"',
+        ' placeholder="Notas generales: tiempos en rojo, venta sugestiva, complementos de mesa, etc…"',
+        ' onchange="sfUpdateNota(this)">' + esc(nota) + '</textarea>',
+    '</div>',
+    '<button class="sf-save-btn" onclick="saveSFToArea(\'' + areaId + '\')">💾 Guardar evaluación en el reporte</button>'
+  ].join('');
+}
+
+
+function sfUpdateRow(el) {
+  var area  = el.dataset.area;
+  var idx   = parseInt(el.dataset.idx);
+  var field = el.dataset.field;
+  SF_STATE[area].rows[idx][field] = el.value;
+  sfDirty();
+}
+
+function sfUpdateTiempo(el) {
+  var area = el.dataset.area;
+  var idx  = parseInt(el.dataset.idx);
+  var val  = parseFloat(el.value) || 0;
+  SF_STATE[area].rows[idx].tiempo = val;
+  var esRojo = val > 15;
+  SF_STATE[area].rows[idx].rojo = esRojo;
+  el.className = esRojo ? 'eval-tiempo-rojo' : '';
+  sfDirty();
+}
+
+function sfUpdateNota(el) {
+  var area  = el.dataset.area;
+  SF_STATE[area].nota = el.value;
+  sfDirty();
+}
+
+function checkTiempoRojo(input, idx, areaId) {
+  var val = +input.value;
+  SF_STATE[areaId].rows[idx].tiempo = val;
+  // Marcar en rojo si supera el tiempo estándar (15 min)
+  var esRojo = val > 15;
+  SF_STATE[areaId].rows[idx].rojo = esRojo;
+  input.className = esRojo ? 'eval-tiempo-rojo' : '';
+  sfDirty();
+}
+
+function addEvalRow(areaId) {
+  var nombre = prompt('Nombre del platillo o bebida:');
+  if (!nombre) return;
+  SF_STATE[areaId].rows.push({ platillo: nombre.toUpperCase(), obs: '', tiempo: 10, rojo: false });
+  renderSpecialForm(areaId);
+}
+
+function triggerUploadSF(areaId) {
+  // Cambiar a esa área y abrir selector de archivo
+  STATE.currentArea = areaId;
+  document.getElementById('file-input').click();
+}
+
+function saveSFToArea(areaId) {
+  // Construir notas a partir del formulario y añadir como foto de texto al área
+  var rows = SF_STATE[areaId].rows;
+  var nota = SF_STATE[areaId].nota;
+
+  // Crear entrada de texto resumen en el área
+  var resumen = rows.map(function(r) {
+    return r.platillo + ': ' + (r.obs || 'Sin obs.') + ' — ' + r.tiempo + ' min' + (r.rojo ? ' ⚠ROJO' : '');
+  }).join('\n');
+  if (nota) resumen += '\nNOTA: ' + nota;
+
+  // Agregar como nota a una foto especial de formulario
+  var existingForm = STATE.areas[areaId].photos.find(function(p) { return p.id === areaId + '_form'; });
+  if (existingForm) {
+    existingForm.notes = [resumen];
+    existingForm.alert = 'observacion';
+  } else {
+    STATE.areas[areaId].photos.unshift({
+      id:           areaId + '_form',
+      displayUrl:   null,
+      apiDataUrl:   null,
+      storageB64:   null,
+      file:         null,
+      name:         'Formulario ' + areaId,
+      alert:        'observacion',
+      state:        'confirmed',
+      notes:        [resumen],
+      markers:      [],
+      aiSuggestion: null,
+      isFormEntry:  true,
+    });
+  }
+
+  markDirty();
+  saveSession(true);
+  showToast('✓ Evaluación guardada en el reporte');
+  renderAreaNav();
+  updateProgress();
+}
+
+function sfDirty() { markDirty(); }
+
+// ── CUALIDADES DE LA EMPRESA ──────────────────────────────────────
+
+const CUALIDADES_ITEMS = [
+  'Trayectoria consolidada',
+  'Reputación reconocida',
+  'Clientes fieles',
+  'Comida muy muy rica',
+  'Lugar ya acreditado',
+  'Personal amable y agradable',
+];
+
+const TARGET_ITEMS = ['Familiar', 'Amigos', 'Deportistas', 'Mujeres'];
+const SEGMENTOS    = ['C', 'B', 'B+', 'A', 'A+'];
+
+function buildCualidadesForm() {
+  if (!SF_STATE.cualidades) SF_STATE.cualidades = {};
+  if (!SF_STATE.cualidades.checks)   SF_STATE.cualidades.checks   = {};
+  if (!SF_STATE.cualidades.segmentos)SF_STATE.cualidades.segmentos= [];
+  if (!SF_STATE.cualidades.target)   SF_STATE.cualidades.target   = [];
+  if (!SF_STATE.cualidades.nota)     SF_STATE.cualidades.nota     = '';
+
+  var cualHtml = CUALIDADES_ITEMS.map(function(item, i) {
+    var checked = SF_STATE.cualidades.checks['c' + i] ? 'checked' : '';
+    return [
+      '<div class="cual-item">',
+        '<input type="checkbox" class="cual-check" id="cc' + i + '" ' + checked,
+          ' data-idx="' + i + '" onchange="sfToggleCual(this)">',
+        '<label class="cual-label" for="cc' + i + '">' + item + '</label>',
+      '</div>'
+    ].join('');
+  }).join('');
+
+  var targetHtml = TARGET_ITEMS.map(function(item) {
+    var sel = (SF_STATE.cualidades.target || []).includes(item) ? 'sel' : '';
+    return '<button class="cual-seg-btn ' + sel + '" data-val="' + item + '" onclick="toggleTarget(this)">' + item + '</button>';
+  }).join('');
+
+  var segHtml = SEGMENTOS.map(function(s) {
+    var sel = (SF_STATE.cualidades.segmentos || []).includes(s) ? 'sel' : '';
+    return '<button class="cual-seg-btn ' + sel + '" data-val="' + s + '" onclick="toggleSeg(this)">' + s + '</button>';
+  }).join('');
+
+  var nota = esc(SF_STATE.cualidades.nota || '');
+
+  return [
+    '<div class="cual-grid">',
+      '<div class="cual-card">',
+        '<div class="cual-card-title">CUALIDADES DE LA EMPRESA</div>',
+        cualHtml,
+      '</div>',
+      '<div class="cual-card">',
+        '<div class="cual-card-title">TARGET</div>',
+        '<div style="font-size:.62rem;color:var(--mid);margin-bottom:.4rem">Perfil de cliente</div>',
+        '<div class="cual-seg-btns" style="margin-bottom:.8rem">' + targetHtml + '</div>',
+        '<div class="cual-card-title" style="margin-top:.5rem">SEGMENTO</div>',
+        '<div class="cual-seg-btns">' + segHtml + '</div>',
+      '</div>',
+    '</div>',
+    '<div class="sf-nota-wrap">',
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">',
+        '<div class="sf-nota-label">OBSERVACIONES ADICIONALES</div>',
+        '<button class="btn btn-dark" style="font-size:.62rem;" onclick="triggerUploadSF(\'cualidades\')">📷 + Foto</button>',
+      '</div>',
+      '<textarea class="sf-nota-ta" data-area="cualidades" data-field="nota" onchange="sfUpdateNota(this)"',
+        ' placeholder="Contexto, observaciones del auditor sobre la empresa, posicionamiento de marca, etc…">',
+        nota,
+      '</textarea>',
+    '</div>',
+    '<button class="sf-save-btn" onclick="saveCualidades()">💾 Guardar en el reporte</button>'
+  ].join('');
+}
+
+
+function sfToggleCual(el) {
+  SF_STATE.cualidades.checks['c' + el.dataset.idx] = el.checked;
+  sfDirty();
+}
+
+function toggleTarget(btn) {
+  var item = btn.dataset.val;
+  if (!SF_STATE.cualidades.target) SF_STATE.cualidades.target = [];
+  var idx = SF_STATE.cualidades.target.indexOf(item);
+  if (idx >= 0) { SF_STATE.cualidades.target.splice(idx,1); btn.classList.remove('sel'); }
+  else          { SF_STATE.cualidades.target.push(item);    btn.classList.add('sel'); }
+  sfDirty();
+}
+
+function toggleSeg(btn) {
+  var s = btn.dataset.val;
+  if (!SF_STATE.cualidades.segmentos) SF_STATE.cualidades.segmentos = [];
+  var idx = SF_STATE.cualidades.segmentos.indexOf(s);
+  if (idx >= 0) { SF_STATE.cualidades.segmentos.splice(idx,1); btn.classList.remove('sel'); }
+  else          { SF_STATE.cualidades.segmentos.push(s);       btn.classList.add('sel'); }
+  sfDirty();
+}
+
+function saveCualidades() {
+  var c = SF_STATE.cualidades;
+  var marcadas = CUALIDADES_ITEMS.filter(function(item, i) { return c.checks['c' + i]; });
+  var target   = (c.target    || []).join(', ');
+  var segs     = (c.segmentos || []).join(', ');
+  var nota     = c.nota || '';
+
+  var resumen = '✅ CUALIDADES:\n' + (marcadas.length ? marcadas.join(', ') : 'Ninguna seleccionada') +
+    '\n\nTARGET: ' + (target || '—') +
+    '\nSEGMENTO: ' + (segs || '—') +
+    (nota ? '\n\nNOTAS: ' + nota : '');
+
+  var existing = STATE.areas['cualidades'].photos.find(function(p) { return p.id === 'cualidades_form'; });
+  if (existing) {
+    existing.notes = [resumen];
+  } else {
+    STATE.areas['cualidades'].photos.unshift({
+      id: 'cualidades_form', displayUrl: null, apiDataUrl: null,
+      storageB64: null, file: null, name: 'Formulario Cualidades',
+      alert: 'correcto', state: 'confirmed',
+      notes: [resumen], markers: [], aiSuggestion: null, isFormEntry: true,
+    });
+  }
+
+  markDirty();
+  saveSession(true);
+  showToast('✓ Cualidades guardadas en el reporte');
+  renderAreaNav();
+  updateProgress();
 }
 
 // ── LOGIN — contraseña protegida ────────────────────────────────────
