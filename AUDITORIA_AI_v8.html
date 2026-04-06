@@ -905,6 +905,45 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 }
 .ai-ext-ta:focus { background: rgba(26,107,138,.04); border-radius: 3px; }
 
+/* ── LOGIN SCREEN ──────────────────────────────────────────────────── */
+#login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--dark);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.ls-box {
+  background: #fff; border-radius: 12px;
+  padding: 2.8rem 2.4rem 2.2rem;
+  width: 360px; max-width: 94vw;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.ls-logo { font-family: var(--f-t); font-size: .72rem; letter-spacing: .38em; font-weight: 300; color: var(--mid); margin-bottom: .3rem; }
+.ls-logo .hi { color: var(--orange); }
+.ls-ksup { font-size: .52rem; letter-spacing: .28em; color: #bbb; margin-bottom: 1.4rem; }
+.ls-sep { width: 36px; height: 2px; background: var(--gold); margin: 0 auto 1.4rem; }
+.ls-title { font-family: var(--f-t); font-size: 1rem; font-weight: 800; letter-spacing: .08em; color: var(--dark); margin-bottom: .3rem; }
+.ls-sub { font-size: .68rem; color: var(--mid); margin-bottom: 1.6rem; line-height: 1.5; }
+.ls-input {
+  width: 100%; border: 2px solid var(--border); border-radius: var(--r);
+  padding: .7rem 1rem; font-size: 1.15rem; font-weight: 700;
+  letter-spacing: .3em; text-align: center; text-transform: uppercase;
+  outline: none; font-family: monospace; color: var(--dark);
+  transition: border-color .2s; margin-bottom: .85rem;
+}
+.ls-input:focus { border-color: var(--gold); }
+.ls-input.err { border-color: var(--red); animation: shake .35s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+.ls-btn {
+  width: 100%; padding: .78rem; background: var(--dark); color: #fff;
+  border: none; border-radius: var(--r); font-size: .75rem; font-weight: 700;
+  letter-spacing: .1em; cursor: pointer; transition: background .15s; margin-bottom: .5rem;
+}
+.ls-btn:hover { background: #3d4f56; }
+.ls-err { font-size: .68rem; color: var(--red); min-height: 1.1rem; margin-top: .15rem; }
+.ls-footer { margin-top: 2rem; font-size: .52rem; letter-spacing: .18em; color: rgba(255,255,255,.18); font-family: var(--f-t); }
+
 /* ── Clima Laboral Tab ─────────────────────────────────────────────── */
 #clima-view {
   flex: 1; overflow-y: auto;
@@ -1004,7 +1043,23 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════ 2. HTML STRUCTURE ══════ -->
+<!-- ══════════════════ LOGIN SCREEN ══════════════════════════════════ -->
+<div id="login-screen">
+  <div class="ls-box">
+    <div class="ls-logo"><span class="hi">D</span>ELA<span class="hi">M</span>ORA<span class="hi">Z</span>UMARÁN</div>
+    <div class="ls-ksup">KITCHEN SUPPORT</div>
+    <div class="ls-sep"></div>
+    <div class="ls-title">ACCESO RESTRINGIDO</div>
+    <div class="ls-sub">Sistema de Auditoría Operativa<br>Ingresa tu contraseña para continuar</div>
+    <input class="ls-input" id="ls-pwd" type="password" maxlength="30"
+           placeholder="••••••••"
+           onkeydown="if(event.key==='Enter')checkLogin()"
+           autocomplete="current-password">
+    <button class="ls-btn" onclick="checkLogin()">INGRESAR →</button>
+    <div class="ls-err" id="ls-err"></div>
+  </div>
+  <div class="ls-footer">DMZ KITCHEN SUPPORT · SISTEMA INTERNO · ACCESO SOLO PERSONAL AUTORIZADO</div>
+</div>
 
 <!-- Topbar -->
 <div id="topbar">
@@ -3372,12 +3427,41 @@ Responde siempre en español. Sé directo, honesto y orientado a acción.`;
   }
 }
 
-// ── START
-init();
+// ── LOGIN — contraseña protegida ────────────────────────────────────
+// Para cambiar la contraseña edita solo esta línea:
+const DMZ_PWD = 'DMZ2026';   // <-- cambia aquí tu contraseña
+
+(function() {
+  // Si ya está autenticado en esta sesión, ocultar login directo
+  if (sessionStorage.getItem('dmz_auth') === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  }
+  // Si no, esperar al botón
+})();
+
+function checkLogin() {
+  const inp = document.getElementById('ls-pwd');
+  const err = document.getElementById('ls-err');
+  const val = inp.value;
+
+  if (val === DMZ_PWD) {
+    sessionStorage.setItem('dmz_auth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  } else {
+    err.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+    inp.classList.add('err');
+    inp.value = '';
+    setTimeout(() => {
+      inp.classList.remove('err');
+      err.textContent = '';
+      inp.focus();
+    }, 1400);
+  }
+}
+
 </script>
-
-
-<!-- Delivery modal -->
 <div id="delivery-modal">
   <div class="dm-inner">
     <div class="dm-title">📤 ENTREGAR AL CLIENTE</div>
