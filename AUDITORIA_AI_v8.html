@@ -1800,7 +1800,10 @@ function loadSession() {
         }
         if (!photo.displayUrl) {
           photo.state = 'empty';
-          photo.name  = photo.name + ' (imagen no disponible)';
+          // Limpiar nombre — evitar repetir "(imagen no disponible)"
+          if (!photo.name.includes('(imagen no disponible)')) {
+            photo.name = photo.name + ' (imagen no disponible)';
+          }
         }
         STATE.areas[aId].photos.push(photo);
         // Evita colisión de IDs
@@ -2353,11 +2356,40 @@ async function processFiles(files) {
       continue;
     }
 
+    // Cross-check: buscar si ya existe una foto con el mismo nombre (sin imagen)
+    const cleanName = file.name.replace(/\s*\(imagen no disponible\)/g, '').trim();
+    let matchedPhoto = null;
+
+    for (const aId in STATE.areas) {
+      const existing = STATE.areas[aId].photos.find(function(p) {
+        const pName = (p.name || '').replace(/\s*\(imagen no disponible\)/g, '').trim();
+        return pName === cleanName && !p.storageB64 && !p.displayUrl;
+      });
+      if (existing) { matchedPhoto = existing; break; }
+    }
+
+    if (matchedPhoto) {
+      // ✓ MATCH — actualizar la foto existente con la imagen nueva
+      matchedPhoto.displayUrl = URL.createObjectURL(processedFile);
+      matchedPhoto.name       = file.name;   // limpiar nombre
+      matchedPhoto.file       = processedFile;
+      if (matchedPhoto.state === 'empty' && matchedPhoto.notes.some(n => n.trim())) {
+        matchedPhoto.state = 'confirmed';   // ya tenía observaciones — marcar confirmada
+      }
+      // Generar storageB64 inmediatamente
+      resizeForStorage(matchedPhoto.displayUrl, 800).then(function(b64) {
+        if (b64) { matchedPhoto.storageB64 = b64; markDirty(); renderGrid(); renderAreaNav(); }
+      });
+      // No agregar foto nueva — ya actualizamos la existente
+      continue;
+    }
+
+    // No hay match — crear foto nueva normalmente
     const photo = {
       id:           newPid(),
       displayUrl:   URL.createObjectURL(processedFile),
       apiDataUrl:   null,
-      storageB64:   null,   // se genera async abajo
+      storageB64:   null,
       file:         processedFile,
       name:         file.name,
       alert:        null,
@@ -2368,13 +2400,10 @@ async function processFiles(files) {
     };
     STATE.areas[STATE.currentArea].photos.push(photo);
 
-    // Generar storageB64 inmediatamente para que el reporte funcione
+    // Generar storageB64 inmediatamente
     (function(ph, pf) {
       resizeForStorage(URL.createObjectURL(pf), 800).then(function(b64) {
-        if (b64) {
-          ph.storageB64 = b64;
-          markDirty();
-        }
+        if (b64) { ph.storageB64 = b64; markDirty(); }
       });
     })(photo, processedFile);
   }
@@ -3212,6 +3241,7 @@ function buildReport() {
     <button class="btn btn-gold" onclick="printReport()">🖨 PDF / Imprimir</button>
     <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">📤 Entregar al Cliente</button>
     <button class="btn btn-outline" onclick="recargarFotosReporte()" id="btn-recarga-fotos" title="Si las fotos aparecen negras, haz clic aquí">🔄 Recargar fotos</button>
+    <button class="btn btn-ai" onclick="abrirCrossCheck()" id="btn-crosscheck" title="Sube las fotos originales y se cruzarán automáticamente con las observaciones guardadas">🔗 Cross-check fotos</button>
   </div>
   <div class="rpt-cover">
     <div>
@@ -5057,6 +5087,91 @@ function pasoAddCard() {
   markDirty();
 }
 
+
+/* ─────────────────────────────────────────────────────────────────
+   CROSS-CHECK MASIVO — subir fotos y cruzar con observaciones existentes
+───────────────────────────────────────────────────────────────── */
+function abrirCrossCheck() {
+  // Crear input multiple para subir todas las fotos de golpe
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.accept = 'image/*,.dng,.raw,.cr2,.cr3,.nef,.nrw,.arw,.orf,.rw2,.raf,.tif,.tiff';
+  input.onchange = function(e) {
+    processCrossCheckFiles(Array.from(e.target.files));
+  };
+  input.click();
+}
+
+async function processCrossCheckFiles(files) {
+  if (!files.length) return;
+
+  var btn = document.getElementById('btn-crosscheck');
+  if (btn) { btn.textContent = '⏳ Cruzando ' + files.length + ' fotos…'; btn.disabled = true; }
+
+  var matched = 0, nuevas = 0, errors = 0;
+  var toProcess = [];
+
+  // Crear mapa de todas las fotos sin imagen indexado por nombre limpio
+  var sinImagen = {};
+  for (var aId in STATE.areas) {
+    STATE.areas[aId].photos.forEach(function(p) {
+      if (!p.storageB64 && !p.displayUrl) {
+        var cleanName = (p.name || '').replace(/\s*\(imagen no disponible\)/g, '').trim();
+        // Indexar por nombre base y también sin extensión
+        sinImagen[cleanName] = p;
+        var sinExt = cleanName.replace(/\.[^.]+$/, '');
+        sinImagen[sinExt] = p;
+      }
+    });
+  }
+
+  showToast('Procesando ' + files.length + ' archivos… espera');
+
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var cleanName = file.name.replace(/\s*\(imagen no disponible\)/g, '').trim();
+    var sinExt    = cleanName.replace(/\.[^.]+$/, '');
+
+    // Buscar match
+    var match = sinImagen[cleanName] || sinImagen[sinExt];
+
+    try {
+      var processed = await toDisplayableBlob(file);
+      var b64 = await resizeForStorage(URL.createObjectURL(processed), 800);
+
+      if (match && b64) {
+        match.displayUrl  = URL.createObjectURL(processed);
+        match.storageB64  = b64;
+        match.file        = processed;
+        match.name        = file.name;
+        if (match.state !== 'confirmed' && match.notes && match.notes.some(function(n){ return n.trim(); })) {
+          match.state = 'confirmed';
+        }
+        matched++;
+      } else if (b64) {
+        // Foto nueva sin match — no agregar duplicados
+        nuevas++;
+      }
+    } catch(e) {
+      errors++;
+    }
+  }
+
+  await saveSession(true);
+  renderGrid();
+  renderAreaNav();
+
+  var msg = '✓ Cross-check: ' + matched + ' fotos cruzadas';
+  if (nuevas)  msg += ', ' + nuevas + ' sin coincidencia';
+  if (errors)  msg += ', ' + errors + ' errores';
+  showToast(msg);
+
+  if (btn) { btn.textContent = '🔗 Cross-check fotos'; btn.disabled = false; }
+
+  // Ir al reporte para ver el resultado
+  setTimeout(function() { buildReport(); setMode('rep'); }, 800);
+}
 
 /* ─────────────────────────────────────────────────────────────────
    RECARGAR FOTOS EN REPORTE
