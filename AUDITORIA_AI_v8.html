@@ -763,9 +763,19 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .lv-empty p { font-size: .82rem; line-height: 1.7; }
 
 @media print {
-  #topbar, #sidebar, .rpt-bar { display: none !important; }
-  #report-view { display: block !important; }
+  #topbar, #sidebar, .rpt-bar, #login-screen { display: none !important; }
+  #app { display: block !important; overflow: visible !important; }
+  #report-view { display: block !important; overflow: visible !important; height: auto !important; }
+  #main, #dash-view, #clima-view { display: none !important; }
   .rpt-area { page-break-inside: avoid; }
+  .rpt-photo img { 
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    width: 100% !important;
+    height: 280px !important;
+    object-fit: cover !important;
+  }
+  body { overflow: visible !important; height: auto !important; }
 }
 
 /* ── Save indicator ────────────────────────────────────────────── */
@@ -2638,7 +2648,7 @@ function buildReport() {
   document.getElementById('report-view').innerHTML =
   `<div class="rpt-bar">
     <span><span style="opacity:.4">REPORTE · </span>${esc(client.toUpperCase())} · ${date}</span>
-    <button class="btn btn-gold" onclick="window.print()">🖨 PDF / Imprimir</button>
+    <button class="btn btn-gold" onclick="printReport()">🖨 PDF / Imprimir</button>
     <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">📤 Entregar al Cliente</button>
   </div>
   <div class="rpt-cover">
@@ -3107,7 +3117,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 <div id="report-content" style="display:none">
   <div class="rpt-bar">
     <span><span style="opacity:.4">REPORTE · </span>${clientEsc.toUpperCase()} · ${date}</span>
-    <button onclick="window.print()">🖨 PDF / Imprimir</button>
+    <button onclick="printReport()">🖨 PDF / Imprimir</button>
   </div>
   <div class="rpt-cover">
     <div>
@@ -3563,6 +3573,83 @@ Responde siempre en español. Sé directo, honesto y orientado a acción.`;
   } catch(err) {
     wrap.innerHTML = `<div class="cl-result"><div class="cl-spinner-wrap" style="color:var(--red)">⚠ Error: ${esc(err.message)} — <button onclick="analyzeClima()" style="border:none;background:none;color:var(--ai);cursor:pointer;font-weight:600;font-size:.72rem">Reintentar</button></div></div>`;
   }
+}
+
+// ── IMPRIMIR / PDF — convierte imágenes a base64 antes de imprimir
+async function printReport() {
+  // Asegurarse de estar en modo reporte
+  if (document.getElementById('report-view').style.display === 'none') {
+    setMode('rep');
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  showToast('Preparando PDF… por favor espera');
+
+  // Recopilar todas las <img> del reporte y convertir a base64
+  const reportView = document.getElementById('report-view');
+  const imgs = Array.from(reportView.querySelectorAll('img'));
+
+  // Para cada imagen: si su src es blob o está vacío, buscar storageB64
+  const origSrcs = [];
+  for (const img of imgs) {
+    origSrcs.push(img.src);
+    // Si ya es base64, no hacer nada
+    if (img.src.startsWith('data:')) continue;
+    // Si es blob URL o relativa, convertir
+    if (img.src && img.src !== window.location.href) {
+      try {
+        const b64 = await imgToBase64(img.src);
+        if (b64) img.src = b64;
+      } catch(e) { /* mantener como está */ }
+    }
+  }
+
+  // Buscar también imágenes por storageB64 de las fotos
+  // (para las que tienen src vacío o roto)
+  let imgIdx = 0;
+  Object.values(STATE.areas).forEach(function(area) {
+    area.photos.forEach(function(p) {
+      if (p.storageB64 && imgIdx < imgs.length) {
+        const img = imgs[imgIdx];
+        if (!img.src || img.src === window.location.href || img.naturalWidth === 0) {
+          img.src = 'data:image/jpeg;base64,' + p.storageB64;
+        }
+        imgIdx++;
+      }
+    });
+  });
+
+  // Dar tiempo a que las imágenes carguen
+  await new Promise(r => setTimeout(r, 800));
+  
+  window.print();
+
+  // Restaurar srcs originales después de imprimir
+  setTimeout(function() {
+    imgs.forEach(function(img, i) {
+      if (origSrcs[i]) img.src = origSrcs[i];
+    });
+  }, 2000);
+}
+
+// Convierte una URL de imagen a base64
+function imgToBase64(src) {
+  return new Promise(function(resolve) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch(e) { resolve(null); }
+    };
+    img.onerror = function() { resolve(null); };
+    img.src = src;
+  });
 }
 
 // ── LOGIN — contraseña protegida ────────────────────────────────────
