@@ -3418,7 +3418,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 <body>
 
 <!-- ── LOGIN SCREEN ──────────────────────────────────── -->
-<div id="login-screen">
+<div id="ls-login-screen">
   <div class="ls-box">
     <div class="ls-brand"><span style="color:var(--orange)">D</span>ELA<span style="color:var(--orange)">M</span>ORA<span style="color:var(--orange)">Z</span>UMARÁN</div>
     <div class="ls-title">REPORTE DE AUDITORÍA</div>
@@ -3485,7 +3485,7 @@ function incUses() {
   const lbl = document.getElementById('ls-uses-lbl');
   if (lbl) lbl.textContent = remaining > 0 ? 'Accesos disponibles: ' + remaining + ' / ' + MAX_USES : '';
   if (uses >= MAX_USES) {
-    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('ls-login-screen').style.display = 'none';
     document.getElementById('expired-screen').style.display = 'flex';
   }
 })();
@@ -3495,7 +3495,7 @@ function checkCode() {
   if (!val) return;
   if (btoa(val) === CODE_B64) {
     incUses();
-    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('ls-login-screen').style.display = 'none';
     document.getElementById('report-content').style.display = 'block';
   } else {
     const errEl = document.getElementById('ls-err');
