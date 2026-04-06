@@ -964,6 +964,175 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 }
 .hist-nueva-btn:hover { background: #b5841f; }
 
+
+/* ── RESUMEN EJECUTIVO + PLAN DE ACCIÓN ──────────────────────── */
+.rpt-resumen-wrap {
+  background: #fff;
+  border-top: 3px solid var(--gold);
+  padding: 2.5rem 3rem;
+}
+.rpt-resumen-title {
+  font-family: var(--f-t); font-size: 1.35rem;
+  font-weight: 800; letter-spacing: .05em; margin-bottom: .2rem;
+}
+.rpt-resumen-sub {
+  font-size: .58rem; letter-spacing: .22em;
+  color: var(--mid); margin-bottom: 2rem;
+}
+.rpt-two-col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2rem; margin-bottom: 2rem;
+}
+@media (max-width: 700px) { .rpt-two-col { grid-template-columns: 1fr; } }
+.rpt-obs-col, .rpt-acc-col {
+  display: flex; flex-direction: column; gap: .8rem;
+}
+.rpt-col-head {
+  font-size: .6rem; font-weight: 800; letter-spacing: .22em;
+  padding: .55rem .9rem; color: #fff; border-radius: 4px 4px 0 0;
+}
+.rpt-obs-col .rpt-col-head { background: var(--dark); }
+.rpt-acc-col .rpt-col-head { background: var(--ai); }
+.rpt-obs-list {
+  border: 1px solid var(--border); border-radius: 0 0 6px 6px;
+  overflow: hidden;
+}
+.rpt-obs-item {
+  display: flex; align-items: flex-start; gap: .7rem;
+  padding: .6rem .9rem; border-bottom: 1px solid var(--border);
+  font-size: .74rem; line-height: 1.5; color: var(--dark);
+}
+.rpt-obs-item:last-child { border-bottom: none; }
+.rpt-obs-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: .3rem;
+}
+.rpt-obs-area {
+  font-size: .56rem; font-weight: 800; letter-spacing: .1em;
+  color: var(--mid); margin-bottom: .1rem;
+}
+
+/* Plan de Acción — tabla editable */
+.rpt-plan-wrap {
+  background: #fff;
+  border-top: 3px solid var(--ai);
+  padding: 2.5rem 3rem;
+}
+.rpt-plan-title {
+  font-family: var(--f-t); font-size: 1.35rem;
+  font-weight: 800; letter-spacing: .05em; margin-bottom: .2rem;
+}
+.rpt-plan-sub {
+  font-size: .58rem; letter-spacing: .22em;
+  color: var(--mid); margin-bottom: 1.5rem;
+}
+.plan-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .72rem; margin-bottom: 1.2rem;
+}
+.plan-table th {
+  padding: .5rem .8rem; background: var(--dark); color: #fff;
+  font-size: .58rem; letter-spacing: .14em; font-weight: 700;
+  text-align: left;
+}
+.plan-table td {
+  padding: .5rem .7rem; border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.plan-table tr:nth-child(even) td { background: var(--off); }
+.plan-table tr:last-child td { border-bottom: none; }
+.plan-ta {
+  width: 100%; border: 1px solid var(--border); border-radius: 4px;
+  padding: .35rem .5rem; font-size: .72rem; font-family: var(--f-b);
+  resize: vertical; min-height: 36px; outline: none; color: var(--dark);
+  background: transparent; transition: border-color .15s;
+}
+.plan-ta:focus { border-color: var(--gold); background: #fff; }
+.plan-select {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: .3rem .4rem; font-size: .68rem; font-family: var(--f-b);
+  color: var(--dark); outline: none; background: transparent;
+  width: 100%; transition: border-color .15s;
+}
+.plan-select:focus { border-color: var(--gold); background: #fff; }
+.plan-badge {
+  display: inline-block; padding: .2rem .55rem; border-radius: 3px;
+  font-size: .6rem; font-weight: 700; letter-spacing: .08em; color: #fff;
+}
+.plan-add-btn {
+  padding: .45rem 1.1rem; border: 1.5px dashed var(--border);
+  border-radius: 5px; background: none; font-size: .7rem;
+  color: var(--mid); cursor: pointer; transition: all .15s;
+  font-family: var(--f-b);
+}
+.plan-add-btn:hover { border-color: var(--ai); color: var(--ai); }
+.plan-del-btn {
+  border: none; background: none; color: var(--mid);
+  font-size: .85rem; cursor: pointer; padding: .2rem .4rem;
+  border-radius: 3px; transition: all .15s;
+}
+.plan-del-btn:hover { background: #fee; color: var(--red); }
+
+/* Próximos Pasos */
+.rpt-pasos-wrap {
+  background: var(--cream);
+  border-top: 3px solid var(--orange);
+  padding: 2.5rem 3rem;
+}
+.rpt-pasos-title {
+  font-family: var(--f-t); font-size: 1.35rem;
+  font-weight: 800; letter-spacing: .05em; margin-bottom: .2rem;
+}
+.rpt-pasos-sub {
+  font-size: .58rem; letter-spacing: .22em;
+  color: var(--mid); margin-bottom: 1.5rem;
+}
+.pasos-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+@media (max-width: 700px) { .pasos-grid { grid-template-columns: 1fr; } }
+.paso-card {
+  background: #fff; border-radius: 8px;
+  padding: 1rem 1.1rem; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: .5rem;
+  border-top: 3px solid;
+}
+.paso-num {
+  font-family: var(--f-t); font-size: 1.6rem;
+  font-weight: 200; line-height: 1; color: var(--border);
+}
+.paso-ta {
+  width: 100%; border: 1px solid var(--border); border-radius: 4px;
+  padding: .4rem .6rem; font-size: .74rem; font-family: var(--f-b);
+  resize: vertical; min-height: 56px; outline: none; color: var(--dark);
+  transition: border-color .15s; line-height: 1.55;
+}
+.paso-ta:focus { border-color: var(--orange); }
+.paso-meta {
+  display: flex; gap: .5rem;
+}
+.paso-meta input, .paso-meta select {
+  flex: 1; border: 1px solid var(--border); border-radius: 4px;
+  padding: .3rem .45rem; font-size: .67rem; font-family: var(--f-b);
+  color: var(--dark); outline: none; background: transparent;
+}
+.paso-meta input:focus, .paso-meta select:focus { border-color: var(--orange); }
+.paso-add-btn {
+  padding: .45rem 1.1rem; border: 1.5px dashed var(--border);
+  border-radius: 5px; background: none; font-size: .7rem;
+  color: var(--mid); cursor: pointer; transition: all .15s;
+  font-family: var(--f-b);
+}
+.paso-add-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+@media print {
+  .plan-ta, .plan-select, .paso-ta, .paso-meta input, .paso-meta select {
+    border: none !important;
+    background: transparent !important;
+  }
+}
+
 @media print {
   #topbar, #sidebar, .rpt-bar, #login-screen { display: none !important; }
   #app { display: block !important; overflow: visible !important; }
@@ -1512,6 +1681,7 @@ async function saveSession(silent) {
     areas:          {},
     climaState:     JSON.parse(JSON.stringify(CLIMA_STATE)),
     sfState:        JSON.parse(JSON.stringify(window.SF_STATE || {})),
+    planState:      JSON.parse(JSON.stringify(window.PLAN_STATE || {})),
   };
 
   // Comprime imágenes en paralelo (solo las que aún no tienen storageB64)
@@ -1649,7 +1819,22 @@ function loadSession() {
 
     // Restaura SF_STATE (formularios especiales)
     if (saved.sfState) {
-      if (!window.SF_STATE) window.SF_STATE = {};
+      // ── Estado Plan de Acción y Próximos Pasos
+if (!window.PLAN_STATE) window.PLAN_STATE = {
+  acciones: [
+    { accion: '', area: '', responsable: '', plazo: 'INMEDIATO', prioridad: 'critico' },
+    { accion: '', area: '', responsable: '', plazo: 'CORTO PLAZO', prioridad: 'observacion' },
+    { accion: '', area: '', responsable: '', plazo: 'MEDIO PLAZO', prioridad: 'correcto' },
+  ],
+  pasos: [
+    { texto: '', fecha: '', responsable: '' },
+    { texto: '', fecha: '', responsable: '' },
+    { texto: '', fecha: '', responsable: '' },
+  ],
+  notaGeneral: '',
+};
+
+if (!window.SF_STATE) window.SF_STATE = {};
       Object.assign(window.SF_STATE, saved.sfState);
     }
 
@@ -2947,6 +3132,9 @@ function buildReport() {
       </table>
     </div>
   </div>` : ''}
+  ${buildResumenEjecutivo()}
+  ${buildPlanAccion()}
+  ${buildProximosPasos()}
   ${buildAreasEvaluadasSection()}
   ${buildClimaReportSection()}`;
 }
@@ -3915,6 +4103,21 @@ function imgToBase64(src) {
 ───────────────────────────────────────────────────────────────── */
 
 // ── Estado de los formularios especiales
+// ── Estado Plan de Acción y Próximos Pasos
+if (!window.PLAN_STATE) window.PLAN_STATE = {
+  acciones: [
+    { accion: '', area: '', responsable: '', plazo: 'INMEDIATO', prioridad: 'critico' },
+    { accion: '', area: '', responsable: '', plazo: 'CORTO PLAZO', prioridad: 'observacion' },
+    { accion: '', area: '', responsable: '', plazo: 'MEDIO PLAZO', prioridad: 'correcto' },
+  ],
+  pasos: [
+    { texto: '', fecha: '', responsable: '' },
+    { texto: '', fecha: '', responsable: '' },
+    { texto: '', fecha: '', responsable: '' },
+  ],
+  notaGeneral: '',
+};
+
 if (!window.SF_STATE) window.SF_STATE = {
   alimentos:     { rows: [], nota: '' },
   eval_alimentos:{ rows: [], nota: '' },
@@ -4465,6 +4668,250 @@ function histActionExport(btn) {
 function histActionDelete(btn) {
   var card   = btn.closest('.hist-card');
   histDelete(card.dataset.hkey, card.dataset.hclient);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────
+   RESUMEN EJECUTIVO — consolida todas las observaciones del reporte
+───────────────────────────────────────────────────────────────── */
+function buildResumenEjecutivo() {
+  // Recopilar todas las observaciones de todas las áreas
+  var criticos    = [];
+  var observaciones = [];
+  var correctos   = [];
+
+  AREAS.forEach(function(area) {
+    var photos = STATE.areas[area.id] ? STATE.areas[area.id].photos : [];
+    photos.forEach(function(p) {
+      if (!p.notes) return;
+      var notas = p.notes.filter(function(n) { return n && n.trim(); });
+      if (!notas.length) return;
+
+      // Usar hallazgo IA si existe, sino las notas
+      var s = p.aiSuggestion;
+      var texto = (s && s.hallazgo) ? s.hallazgo : notas[0];
+      if (!texto || !texto.trim()) return;
+
+      var item = { area: area.name, texto: texto, foto: p.name };
+
+      if (p.alert === 'critico')      criticos.push(item);
+      else if (p.alert === 'observacion') observaciones.push(item);
+      else if (p.alert === 'correcto')    correctos.push(item);
+    });
+  });
+
+  if (!criticos.length && !observaciones.length && !correctos.length) return '';
+
+  function buildList(items, color, titulo) {
+    if (!items.length) return '';
+    var rows = items.map(function(it) {
+      return '<div class="rpt-obs-item">' +
+        '<div class="rpt-obs-dot" style="background:' + color + '"></div>' +
+        '<div>' +
+          '<div class="rpt-obs-area">' + esc(it.area) + '</div>' +
+          '<div>' + esc(it.texto) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    return '<div style="margin-bottom:1rem;">' +
+      '<div style="font-size:.58rem;font-weight:800;letter-spacing:.16em;color:' + color + ';margin-bottom:.4rem;">' + titulo + ' (' + items.length + ')</div>' +
+      '<div class="rpt-obs-list">' + rows + '</div>' +
+    '</div>';
+  }
+
+  var date = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+  var clientName = esc((STATE.client || 'CLIENTE').toUpperCase());
+
+  return '<div class="rpt-resumen-wrap">' +
+    '<div class="rpt-resumen-title">Resumen Ejecutivo</div>' +
+    '<div class="rpt-resumen-sub">CONSOLIDADO DE OBSERVACIONES · ' + clientName + ' · ' + date + '</div>' +
+    '<div class="rpt-two-col">' +
+      '<div class="rpt-obs-col">' +
+        '<div class="rpt-col-head">HALLAZGOS Y OBSERVACIONES</div>' +
+        buildList(criticos, '#C0392B', 'CRÍTICOS') +
+        buildList(observaciones, '#E07B00', 'OBSERVACIONES') +
+        buildList(correctos, '#2E7D32', 'CORRECTOS') +
+      '</div>' +
+      '<div class="rpt-acc-col">' +
+        '<div class="rpt-col-head">RECOMENDACIONES IA</div>' +
+        buildRecomendacionesIA() +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function buildRecomendacionesIA() {
+  var recs = [];
+  AREAS.forEach(function(area) {
+    var photos = STATE.areas[area.id] ? STATE.areas[area.id].photos : [];
+    photos.forEach(function(p) {
+      var s = p.aiSuggestion;
+      if (!s || s.error || !s.recomendacion) return;
+      recs.push({
+        area: area.name,
+        rec: s.recomendacion,
+        impl: s.implementacion || '',
+        resp: s.responsable || '',
+        tiempo: s.tiempo || '',
+        nivel: s.nivel || 'observacion',
+      });
+    });
+  });
+
+  if (!recs.length) {
+    return '<div class="rpt-obs-list"><div class="rpt-obs-item" style="color:var(--mid);font-size:.7rem;">' +
+      'Usa el botón "🤖 Analizar área con IA" en CAPTURA para generar recomendaciones automáticas.' +
+    '</div></div>';
+  }
+
+  var TC = { 'INMEDIATO': '#C0392B', 'CORTO PLAZO': '#E07B00', 'MEDIO PLAZO': '#2E7D32' };
+  var rows = recs.map(function(r) {
+    var col = TC[r.tiempo] || '#888';
+    return '<div class="rpt-obs-item" style="flex-direction:column;gap:.3rem;">' +
+      '<div style="display:flex;align-items:center;gap:.5rem;">' +
+        '<span style="font-size:.56rem;font-weight:800;letter-spacing:.1em;color:var(--mid);">' + esc(r.area) + '</span>' +
+        (r.tiempo ? '<span class="plan-badge" style="background:' + col + ';font-size:.52rem;">' + r.tiempo + '</span>' : '') +
+        (r.resp ? '<span style="font-size:.58rem;color:var(--mid);">· ' + esc(r.resp) + '</span>' : '') +
+      '</div>' +
+      '<div style="font-size:.73rem;color:var(--dark);">' + esc(r.rec) + '</div>' +
+      (r.impl ? '<div style="font-size:.67rem;color:var(--mid);font-style:italic;">' + esc(r.impl) + '</div>' : '') +
+    '</div>';
+  }).join('');
+
+  return '<div class="rpt-obs-list">' + rows + '</div>';
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PLAN DE ACCIÓN — tabla editable de acciones a implementar
+───────────────────────────────────────────────────────────────── */
+function buildPlanAccion() {
+  var acciones = PLAN_STATE.acciones || [];
+  var TC = { 'INMEDIATO': '#C0392B', 'CORTO PLAZO': '#E07B00', 'MEDIO PLAZO': '#2E7D32' };
+
+  var rows = acciones.map(function(a, i) {
+    var col = TC[a.prioridad === 'critico' ? 'INMEDIATO' : a.prioridad === 'observacion' ? 'CORTO PLAZO' : 'MEDIO PLAZO'] || '#888';
+    return '<tr>' +
+      '<td style="width:3%;text-align:center;font-weight:700;color:var(--mid);font-size:.65rem;">' + (i+1) + '</td>' +
+      '<td style="width:35%"><textarea class="plan-ta" rows="2" placeholder="Describir la acción concreta a implementar…"' +
+        ' data-plan-idx="' + i + '" data-plan-field="accion"' +
+        ' onchange="planUpdate(this)">' + esc(a.accion) + '</textarea></td>' +
+      '<td style="width:18%"><textarea class="plan-ta" rows="2" placeholder="Área afectada"' +
+        ' data-plan-idx="' + i + '" data-plan-field="area"' +
+        ' onchange="planUpdate(this)">' + esc(a.area) + '</textarea></td>' +
+      '<td style="width:16%"><input type="text" class="plan-ta" placeholder="Chef / Gerente / Steward"' +
+        ' style="min-height:0;height:36px;"' +
+        ' data-plan-idx="' + i + '" data-plan-field="responsable"' +
+        ' onchange="planUpdate(this)" value="' + esc(a.responsable) + '"></td>' +
+      '<td style="width:16%"><select class="plan-select"' +
+        ' data-plan-idx="' + i + '" data-plan-field="plazo"' +
+        ' onchange="planUpdate(this)">' +
+        '<option value="INMEDIATO"' + (a.plazo === 'INMEDIATO' ? ' selected' : '') + '>INMEDIATO</option>' +
+        '<option value="CORTO PLAZO"' + (a.plazo === 'CORTO PLAZO' ? ' selected' : '') + '>CORTO PLAZO</option>' +
+        '<option value="MEDIO PLAZO"' + (a.plazo === 'MEDIO PLAZO' ? ' selected' : '') + '>MEDIO PLAZO</option>' +
+      '</select></td>' +
+      '<td style="width:6%;text-align:center;">' +
+        '<button class="plan-del-btn" data-plan-idx="' + i + '" onclick="planDelRow(this)">×</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+
+  return '<div class="rpt-plan-wrap">' +
+    '<div class="rpt-plan-title">Plan de Acción</div>' +
+    '<div class="rpt-plan-sub">ACCIONES A IMPLEMENTAR · RESPONSABLES Y PLAZOS</div>' +
+    '<table class="plan-table" id="plan-table">' +
+      '<thead><tr>' +
+        '<th style="width:3%">#</th>' +
+        '<th style="width:35%">ACCIÓN A IMPLEMENTAR</th>' +
+        '<th style="width:18%">ÁREA</th>' +
+        '<th style="width:16%">RESPONSABLE</th>' +
+        '<th style="width:16%">PLAZO</th>' +
+        '<th style="width:6%"></th>' +
+      '</tr></thead>' +
+      '<tbody id="plan-tbody">' + rows + '</tbody>' +
+    '</table>' +
+    '<button class="plan-add-btn" onclick="planAddRow()">＋ Agregar acción</button>' +
+  '</div>';
+}
+
+function planUpdate(el) {
+  var idx   = parseInt(el.dataset.planIdx);
+  var field = el.dataset.planField;
+  if (!PLAN_STATE.acciones[idx]) return;
+  PLAN_STATE.acciones[idx][field] = el.value;
+  markDirty();
+}
+
+function planAddRow() {
+  PLAN_STATE.acciones.push({ accion: '', area: '', responsable: '', plazo: 'CORTO PLAZO', prioridad: 'observacion' });
+  buildReport();
+  setMode('rep');
+  markDirty();
+}
+
+function planDelRow(btn) {
+  var idx = parseInt(btn.dataset.planIdx);
+  PLAN_STATE.acciones.splice(idx, 1);
+  buildReport();
+  setMode('rep');
+  markDirty();
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PRÓXIMOS PASOS — 3 tarjetas editables con fecha y responsable
+───────────────────────────────────────────────────────────────── */
+function buildProximosPasos() {
+  var pasos = PLAN_STATE.pasos || [];
+  var colors = ['#C0392B', '#E07B00', '#2E7D32'];
+
+  var cards = pasos.map(function(p, i) {
+    var col = colors[i % colors.length];
+    return '<div class="paso-card" style="border-top-color:' + col + ';">' +
+      '<div class="paso-num" style="color:' + col + '">0' + (i+1) + '</div>' +
+      '<textarea class="paso-ta" rows="3" placeholder="Describir el próximo paso o actividad…"' +
+        ' data-paso-idx="' + i + '" data-paso-field="texto"' +
+        ' onchange="pasoUpdate(this)">' + esc(p.texto) + '</textarea>' +
+      '<div class="paso-meta">' +
+        '<input type="date" data-paso-idx="' + i + '" data-paso-field="fecha"' +
+          ' onchange="pasoUpdate(this)" value="' + esc(p.fecha) + '" title="Fecha límite">' +
+        '<input type="text" placeholder="Responsable" data-paso-idx="' + i + '" data-paso-field="responsable"' +
+          ' onchange="pasoUpdate(this)" value="' + esc(p.responsable) + '">' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  var notaHtml = '<div style="background:#fff;border-radius:8px;padding:1rem 1.2rem;box-shadow:var(--shadow);margin-top:1rem;">' +
+    '<div style="font-size:.58rem;font-weight:800;letter-spacing:.18em;color:var(--mid);margin-bottom:.5rem;">NOTAS ADICIONALES DEL AUDITOR</div>' +
+    '<textarea class="paso-ta" style="min-height:80px;" placeholder="Observaciones finales, compromisos del cliente, acuerdos de seguimiento, fecha de próxima visita…"' +
+      ' data-paso-nota="1" onchange="pasoNotaUpdate(this)">' + esc(PLAN_STATE.notaGeneral || '') + '</textarea>' +
+  '</div>';
+
+  return '<div class="rpt-pasos-wrap">' +
+    '<div class="rpt-pasos-title">Próximos Pasos</div>' +
+    '<div class="rpt-pasos-sub">ACTIVIDADES · FECHAS LÍMITE · RESPONSABLES</div>' +
+    '<div class="pasos-grid" id="pasos-grid">' + cards + '</div>' +
+    '<button class="paso-add-btn" onclick="pasoAddCard()">＋ Agregar paso</button>' +
+    notaHtml +
+  '</div>';
+}
+
+function pasoUpdate(el) {
+  var idx   = parseInt(el.dataset.pasoIdx);
+  var field = el.dataset.pasoField;
+  if (!PLAN_STATE.pasos[idx]) return;
+  PLAN_STATE.pasos[idx][field] = el.value;
+  markDirty();
+}
+
+function pasoNotaUpdate(el) {
+  PLAN_STATE.notaGeneral = el.value;
+  markDirty();
+}
+
+function pasoAddCard() {
+  PLAN_STATE.pasos.push({ texto: '', fecha: '', responsable: '' });
+  buildReport();
+  setMode('rep');
+  markDirty();
 }
 
 // ── LOGIN — contraseña protegida ────────────────────────────────────
