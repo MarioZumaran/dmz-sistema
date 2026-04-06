@@ -1398,6 +1398,10 @@ function loadSession() {
           aiSuggestion: sp.aiSuggestion || null,
         };
         // Fotos sin imagen en storage se marcan como sin imagen
+        if (!photo.displayUrl && photo.storageB64) {
+          // Intentar regenerar blob URL desde storageB64
+          photo.displayUrl = b64ToObjectURL(photo.storageB64);
+        }
         if (!photo.displayUrl) {
           photo.state = 'empty';
           photo.name  = photo.name + ' (imagen no disponible)';
@@ -1425,6 +1429,11 @@ function loadSession() {
     if (saved.climaState) {
       Object.assign(CLIMA_STATE, saved.climaState);
     }
+
+    // FIX: Asegurar que áreas nuevas existan aunque no estén en localStorage antiguo
+    AREAS.forEach(function(a) {
+      if (!STATE.areas[a.id]) STATE.areas[a.id] = { photos: [] };
+    });
 
     return loaded > 0;
   } catch(e) {
@@ -2516,8 +2525,12 @@ function buildReport() {
         `<div class="ann-dot" style="left:${m.x*100}%;top:${m.y*100}%;background:${col}">${i+1}</div>`
       ).join('');
       const notes = p.notes.filter(n => n.trim());
+      // FIX: usar storageB64 si existe (persiste), de lo contrario blob URL
+      const imgSrc = p.storageB64
+        ? 'data:image/jpeg;base64,' + p.storageB64
+        : (p.displayUrl || '');
       return `<div class="rpt-photo">
-        <img src="${p.displayUrl}" alt="" loading="lazy">
+        <img src="${imgSrc}" alt="" loading="lazy">
         ${mkrs}
         <div class="rpt-caption">
           <span class="rpt-badge" style="background:${col}">${icon} ${lbl}</span>
