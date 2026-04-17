@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.5                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.6                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.5</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.6</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -649,28 +649,34 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .rpt-ss:last-child { border-right: none; }
 .rpt-photos {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 2px; background: var(--border);
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem; padding: 1rem; background: var(--off);
 }
-.rpt-photo { position: relative; background: #111; overflow: hidden; aspect-ratio: 4/3; }
-.rpt-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.rpt-photo {
+  position: relative; background: #111;
+  border-radius: 6px; overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  break-inside: avoid; page-break-inside: avoid;
+}
+.rpt-photo img {
+  width: 100%; aspect-ratio: 4/3;
+  object-fit: cover; object-position: center;
+  display: block; flex-shrink: 0;
+}
 .rpt-caption {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  background: rgba(10,14,20,0.62);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255,255,255,0.10);
-  padding: 1rem 1rem 0.7rem;
+  background: #1a1f2b;
+  padding: .65rem .85rem .7rem;
+  border-top: 2px solid rgba(255,255,255,0.06);
 }
 .rpt-badge {
   display: inline-block; padding: .18rem .55rem; border-radius: 3px;
   font-size: .6rem; font-weight: 700; letter-spacing: .1em; color: #fff;
-  margin-bottom: .35rem;
+  margin-bottom: .4rem;
 }
 .rpt-note {
-  font-size: .7rem; color: rgba(255,255,255,.92);
-  line-height: 1.55; text-align: justify;
-  text-shadow: 0 1px 3px rgba(0,0,0,.7);
+  font-size: .68rem; color: rgba(255,255,255,.88);
+  line-height: 1.6; text-align: left;
 }
 .rpt-note::before { content: "· "; }
 .rpt-hall { background: #fff; }
@@ -1717,7 +1723,7 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.5',
+    version:        '9.6',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
