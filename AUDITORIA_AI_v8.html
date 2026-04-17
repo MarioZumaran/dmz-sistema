@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.3                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.4                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.3</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.4</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -145,7 +145,7 @@ button { cursor: pointer; font-family: var(--f-b); }
 .mode-btn:not(.active):hover { background: rgba(255,255,255,.14); }
 
 /* ── App layout ────────────────────────────────────────────────── */
-#app { display: flex; flex: 1; overflow: hidden; }
+#app { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
 /* ── Sidebar ───────────────────────────────────────────────────── */
 #sidebar {
@@ -923,6 +923,7 @@ textarea.note-ta, .cl-section-body,
 #hallazgos-view {
   flex: 1; overflow-y: auto; display: none; flex-direction: column;
   padding: 1.4rem; gap: 1.2rem; background: var(--off);
+  min-height: 0;
 }
 #hallazgos-view.visible { display: flex; }
 .hz-header {
@@ -938,7 +939,7 @@ textarea.note-ta, .cl-section-body,
 }
 .hz-lbl { font-size: .6rem; letter-spacing: .2em; font-weight: 700; color: var(--mid); margin-bottom: .5rem; }
 .hz-textarea {
-  width: 100%; min-height: 140px; border: 1.5px solid var(--border);
+  width: 100%; min-height: 100px; max-height: 180px; border: 1.5px solid var(--border);
   border-radius: var(--r); padding: .75rem 1rem;
   font-family: var(--f-b); font-size: .84rem; line-height: 1.65;
   color: var(--dark); outline: none; resize: vertical;
@@ -987,7 +988,7 @@ textarea.note-ta, .cl-section-body,
 
 /* Action Plan table */
 .hz-plan-wrap {
-  background: #fff; border-radius: var(--r); overflow: hidden;
+  background: #fff; border-radius: var(--r); overflow: visible;
   box-shadow: var(--shadow); border: 1px solid var(--border);
 }
 .hz-plan-head {
@@ -1716,7 +1717,7 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.3',
+    version:        '9.4',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
