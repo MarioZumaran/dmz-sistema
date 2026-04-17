@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.0                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.1                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.0</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.1</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -1628,7 +1628,7 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.0',
+    version:        '9.1',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
@@ -2185,6 +2185,7 @@ async function processFiles(files) {
       id:           newPid(),
       displayUrl:   URL.createObjectURL(processedFile),
       apiDataUrl:   null,
+      storageB64:   null,
       file:         processedFile,
       name:         file.name,
       alert:        null,
@@ -2194,6 +2195,10 @@ async function processFiles(files) {
       aiSuggestion: null,
     };
     STATE.areas[STATE.currentArea].photos.push(photo);
+    // Convierte a base64 inmediatamente para persistencia
+    resizeForStorage(photo.displayUrl, 800).then(b64 => {
+      if (b64) { photo.storageB64 = b64; }
+    });
   }
 
   renderGrid();
@@ -2851,8 +2856,9 @@ function buildReport() {
         `<div class="ann-dot" style="left:${m.x*100}%;top:${m.y*100}%;background:${col}">${i+1}</div>`
       ).join('');
       const notes = p.notes.filter(n => n.trim());
+      const imgSrc = p.storageB64 ? 'data:image/jpeg;base64,' + p.storageB64 : (p.displayUrl || '');
       return `<div class="rpt-photo">
-        <img src="${p.displayUrl}" alt="" loading="lazy">
+        <img src="${imgSrc}" alt="" loading="lazy">
         ${mkrs}
         <div class="rpt-caption">
           <span class="rpt-badge" style="background:${col}">${icon} ${lbl}</span>
