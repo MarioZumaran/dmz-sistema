@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.2                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.3                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.2</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.3</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -1604,6 +1604,83 @@ function updateSaveIndicator() {
   if (smv) smv.textContent = _lastSaved.toLocaleString('es-MX');
 }
 
+
+// ══════════════════════════════════════════════════════
+//  IndexedDB — almacenamiento de fotos (sin límite ~5MB)
+// ══════════════════════════════════════════════════════
+const IDB_NAME    = 'dmz_audit_photos';
+const IDB_STORE   = 'photos';
+const IDB_VERSION = 1;
+let _idb = null;
+
+function openIDB() {
+  if (_idb) return Promise.resolve(_idb);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { _idb = e.target.result; resolve(_idb); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function idbPutPhoto(id, b64) {
+  try {
+    const db    = await openIDB();
+    const tx    = db.transaction(IDB_STORE, 'readwrite');
+    const store = tx.objectStore(IDB_STORE);
+    store.put({ id, b64 });
+    return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+  } catch(e) { console.warn('IDB put error:', e); }
+}
+
+async function idbGetPhoto(id) {
+  try {
+    const db    = await openIDB();
+    const tx    = db.transaction(IDB_STORE, 'readonly');
+    const store = tx.objectStore(IDB_STORE);
+    return new Promise((res, rej) => {
+      const req      = store.get(id);
+      req.onsuccess  = e => res(e.target.result ? e.target.result.b64 : null);
+      req.onerror    = e => rej(e.target.error);
+    });
+  } catch(e) { console.warn('IDB get error:', e); return null; }
+}
+
+async function idbDeletePhoto(id) {
+  try {
+    const db    = await openIDB();
+    const tx    = db.transaction(IDB_STORE, 'readwrite');
+    const store = tx.objectStore(IDB_STORE);
+    store.delete(id);
+  } catch(e) { console.warn('IDB delete error:', e); }
+}
+
+async function idbGetAllIds() {
+  try {
+    const db    = await openIDB();
+    const tx    = db.transaction(IDB_STORE, 'readonly');
+    const store = tx.objectStore(IDB_STORE);
+    return new Promise((res, rej) => {
+      const req     = store.getAllKeys();
+      req.onsuccess = e => res(e.target.result || []);
+      req.onerror   = e => rej(e.target.error);
+    });
+  } catch(e) { return []; }
+}
+
+async function idbClearAll() {
+  try {
+    const db    = await openIDB();
+    const tx    = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).clear();
+  } catch(e) { console.warn('IDB clear error:', e); }
+}
+
 // Comprime imagen a base64 para almacenamiento (800px, 0.72q)
 function resizeForStorage(displayUrl, maxPx) {
   return new Promise(resolve => {
@@ -1632,14 +1709,14 @@ function b64ToObjectURL(b64) {
   } catch(e) { return null; }
 }
 
-// ── Guarda sesión en localStorage
+// ── Guarda sesión: texto en localStorage, fotos en IndexedDB
 async function saveSession(silent) {
   const dot = document.getElementById('save-dot');
   if (dot) dot.className = 'save-dot saving';
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.2',
+    version:        '9.3',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
@@ -1647,7 +1724,7 @@ async function saveSession(silent) {
     hallazgosState: JSON.parse(JSON.stringify(HZ_STATE)),
   };
 
-  // Comprime imágenes en paralelo (solo las que aún no tienen storageB64)
+  // Fotos: guarda en IndexedDB (sin límite), solo metadatos en localStorage
   const tasks = [];
   for (const aId in STATE.areas) {
     saveState.areas[aId] = { photos: [] };
@@ -1660,15 +1737,24 @@ async function saveSession(silent) {
         notes:        p.notes,
         markers:      p.markers,
         aiSuggestion: p.aiSuggestion,
-        storageB64:   p.storageB64 || null,
+        // NO guardamos b64 en localStorage — va a IndexedDB
       };
       saveState.areas[aId].photos.push(savedPhoto);
 
-      if (!p.storageB64 && p.displayUrl) {
+      // Guarda imagen en IndexedDB si no está ya guardada
+      if (p.displayUrl && !p._idbSaved) {
         tasks.push(
-          resizeForStorage(p.displayUrl, 800).then(b64 => {
-            if (b64) { p.storageB64 = b64; savedPhoto.storageB64 = b64; }
+          resizeForStorage(p.displayUrl, 900).then(b64 => {
+            if (b64) {
+              p.storageB64 = b64;
+              p._idbSaved  = true;
+              return idbPutPhoto(p.id, b64);
+            }
           })
+        );
+      } else if (p.storageB64 && !p._idbSaved) {
+        tasks.push(
+          idbPutPhoto(p.id, p.storageB64).then(() => { p._idbSaved = true; })
         );
       }
     }
@@ -1684,13 +1770,13 @@ async function saveSession(silent) {
     if (dot) dot.className = 'save-dot err';
     const lbl = document.getElementById('save-label');
     if (lbl) lbl.textContent = 'Error al guardar';
-    if (!silent) showToast('⚠ Almacenamiento lleno — exporta el JSON para respaldo');
+    if (!silent) showToast('⚠ Error al guardar — exporta JSON como respaldo');
     console.warn('Save error:', e);
   }
 }
 
-// ── Carga sesión desde localStorage
-function loadSession() {
+// ── Carga sesión: metadatos de localStorage, fotos de IndexedDB
+async function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
@@ -1701,7 +1787,6 @@ function loadSession() {
     const el = document.getElementById('inp-client');
     if (el) el.value = STATE.client;
 
-    // Restaura áreas personalizadas antes del loop de fotos
     if (saved.customAreaDefs && saved.customAreaDefs.length) {
       for (const def of saved.customAreaDefs) {
         _registerCustomArea(def);
@@ -1709,14 +1794,16 @@ function loadSession() {
     }
 
     let loaded = 0;
+    // Carga metadatos primero (sin fotos)
     for (const aId in saved.areas) {
       if (!STATE.areas[aId]) continue;
       for (const sp of (saved.areas[aId].photos || [])) {
         const photo = {
           id:           sp.id,
-          displayUrl:   sp.storageB64 ? b64ToObjectURL(sp.storageB64) : null,
+          displayUrl:   null,
           apiDataUrl:   null,
-          storageB64:   sp.storageB64 || null,
+          storageB64:   null,
+          _idbSaved:    false,
           file:         null,
           name:         sp.name,
           alert:        sp.alert,
@@ -1725,18 +1812,49 @@ function loadSession() {
           markers:      sp.markers || [],
           aiSuggestion: sp.aiSuggestion || null,
         };
-        // Fotos sin imagen en storage se marcan como sin imagen
-        if (!photo.displayUrl) {
-          photo.state = 'empty';
-          photo.name  = photo.name + ' (imagen no disponible)';
-        }
         STATE.areas[aId].photos.push(photo);
-        // Evita colisión de IDs
         const n = parseInt((sp.id || '').replace('p', ''));
         if (!isNaN(n) && n >= _pidCnt) _pidCnt = n + 1;
         loaded++;
       }
     }
+
+    // Carga fotos desde IndexedDB en paralelo (no bloquea UI)
+    openIDB().then(() => {
+      const photoTasks = [];
+      for (const aId in STATE.areas) {
+        for (const photo of STATE.areas[aId].photos) {
+          photoTasks.push(
+            idbGetPhoto(photo.id).then(b64 => {
+              if (b64) {
+                photo.storageB64  = b64;
+                photo.displayUrl  = b64ToObjectURL(b64);
+                photo._idbSaved   = true;
+              } else {
+                // Fallback: si no está en IDB, busca en el JSON guardado (compatibilidad v9.1)
+                const sp = (saved.areas[aId]?.photos || []).find(x => x.id === photo.id);
+                if (sp && sp.storageB64) {
+                  photo.storageB64 = sp.storageB64;
+                  photo.displayUrl = b64ToObjectURL(sp.storageB64);
+                  // Migra a IDB automáticamente
+                  idbPutPhoto(photo.id, sp.storageB64);
+                  photo._idbSaved = true;
+                } else {
+                  photo.state = 'empty';
+                  photo.name  = (photo.name || '') + ' (imagen no disponible)';
+                }
+              }
+            })
+          );
+        }
+      }
+      Promise.all(photoTasks).then(() => {
+        renderGrid();
+        renderAreaNav();
+        updateProgress();
+        showToast('✓ Fotos restauradas');
+      });
+    }).catch(e => console.warn('IDB load error:', e));
 
     if (saved.savedAt) {
       _lastSaved = new Date(saved.savedAt);
@@ -1749,14 +1867,8 @@ function loadSession() {
       if (smv) smv.textContent = ts;
     }
 
-    // Restaura Clima v2
-    if (saved.cl2State) {
-      Object.assign(CL2_STATE, saved.cl2State);
-    }
-    // Restaura Hallazgos
-    if (saved.hallazgosState) {
-      Object.assign(HZ_STATE, saved.hallazgosState);
-    }
+    if (saved.cl2State)       Object.assign(CL2_STATE, saved.cl2State);
+    if (saved.hallazgosState) Object.assign(HZ_STATE,  saved.hallazgosState);
 
     return loaded > 0;
   } catch(e) {
@@ -2197,6 +2309,7 @@ async function processFiles(files) {
       displayUrl:   URL.createObjectURL(processedFile),
       apiDataUrl:   null,
       storageB64:   null,
+      _idbSaved:    false,
       file:         processedFile,
       name:         file.name,
       alert:        null,
@@ -2206,9 +2319,13 @@ async function processFiles(files) {
       aiSuggestion: null,
     };
     STATE.areas[STATE.currentArea].photos.push(photo);
-    // Convierte a base64 inmediatamente para persistencia
-    resizeForStorage(photo.displayUrl, 800).then(b64 => {
-      if (b64) { photo.storageB64 = b64; }
+    // Guarda en IndexedDB inmediatamente (sin límite de espacio)
+    resizeForStorage(photo.displayUrl, 900).then(b64 => {
+      if (b64) {
+        photo.storageB64 = b64;
+        photo._idbSaved  = true;
+        idbPutPhoto(photo.id, b64);
+      }
     });
   }
 
@@ -2610,6 +2727,7 @@ function delPhoto(pid) {
   if (!confirm('¿Eliminar esta foto?')) return;
   const photo = findPhoto(pid);
   if (photo && photo.displayUrl) URL.revokeObjectURL(photo.displayUrl); // libera memoria
+  if (photo && photo.id) idbDeletePhoto(photo.id); // limpia IndexedDB
   for (const aId in STATE.areas) {
     STATE.areas[aId].photos = STATE.areas[aId].photos.filter(p => p.id !== pid);
   }
