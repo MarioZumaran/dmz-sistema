@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporte de Degustación · DMZ Kitchen Support</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:#f5f0e8;min-height:100vh;padding:0 0 2rem;color:#2c2c2a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.dmz-wrap{max-width:1100px;margin:0 auto;padding:0 1rem}
+.dmz-header{background:#f5f0e8;border-bottom:3px solid #e8a040;padding:1.2rem 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.2rem}
+.dmz-logo-area{display:flex;align-items:center;gap:1rem}
+.dmz-clock-zone{width:88px;height:88px;border-radius:50%;border:3px solid #2c2c2a;overflow:hidden;cursor:pointer;position:relative;background:#e0d8cc;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.dmz-clock-zone img{width:100%;height:100%;object-fit:cover;display:none}
+.dmz-clock-placeholder{font-size:10px;color:#888;text-align:center;line-height:1.5;letter-spacing:.05em;text-transform:uppercase;font-family:'Montserrat',sans-serif;font-weight:600}
+.dmz-clock-input{display:none}
+.dmz-brand{letter-spacing:.12em;font-size:.78rem;font-weight:700;color:#2c2c2a;text-transform:uppercase;line-height:1.6}
+.dmz-brand span{color:#e8a040}
+.dmz-title-block{text-align:right}
+.dmz-main-title{font-size:1.5rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2c2c2a}
+.dmz-sub-title{font-size:.6rem;letter-spacing:.2em;color:#888;text-transform:uppercase;margin-top:.2rem}
+.dmz-meta{background:#fff;border-radius:8px;padding:1rem 1.4rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.8rem;border:1px solid #e0d8cc;margin-bottom:1.2rem}
+.dmz-meta-field{display:flex;flex-direction:column;gap:.25rem}
+.dmz-meta-label{font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;color:#888;font-weight:700}
+.dmz-meta-input{font-family:'Montserrat',sans-serif;font-size:.78rem;background:none;border:none;border-bottom:1.5px solid #e0d8cc;padding:.25rem 0;color:#2c2c2a;outline:none;font-weight:500;width:100%}
+.dmz-meta-input:focus{border-bottom-color:#e8a040}
+.dmz-section{margin-bottom:1.2rem}
+.dmz-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;flex-wrap:wrap;gap:.5rem}
+.dmz-section-label{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:#888;font-weight:700;border-left:3px solid #e8a040;padding-left:.5rem}
+.dmz-btn-add{font-family:'Montserrat',sans-serif;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;background:#e8a040;color:#fff;border:none;border-radius:4px;padding:.38rem .9rem;cursor:pointer}
+.dmz-btn-add:hover{background:#d4902e}
+.dmz-table-wrap{background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e0d8cc;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.72rem}
+thead tr{background:#2c2c2a;color:#f5f0e8}
+th{padding:.55rem .7rem;text-align:left;font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;white-space:nowrap}
+td{padding:.5rem .6rem;border-bottom:1px solid #f0ebe0;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:#faf7f2}
+.food-name-input{font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;color:#e8a040;background:none;border:none;border-bottom:1.5px solid #e0d8cc;width:100%;outline:none;padding:.15rem 0;text-transform:uppercase;min-width:140px}
+.food-name-input:focus{border-bottom-color:#e8a040}
+.cell-input{font-family:'Montserrat',sans-serif;font-size:.7rem;background:none;border:none;border-bottom:1px solid #e8e2d8;width:100%;outline:none;padding:.15rem 0;color:#2c2c2a;resize:vertical}
+.cell-input:focus{border-bottom-color:#e8a040}
+.cell-select{font-family:'Montserrat',sans-serif;font-size:.68rem;color:#2c2c2a;background:transparent;border:none;border-bottom:1px solid #e8e2d8;outline:none;width:100%;padding:.15rem 0;cursor:pointer}
+.cell-select:focus{border-bottom-color:#e8a040}
+.time-input{font-family:'Montserrat',sans-serif;font-size:.7rem;background:none;border:none;border-bottom:1px solid #e8e2d8;width:70px;outline:none;padding:.15rem 0;color:#2c2c2a;text-align:center}
+.time-input:focus{border-bottom-color:#e8a040}
+.foto-cell{position:relative;width:60px;height:52px;background:#f0ebe0;border-radius:5px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1.5px dashed #c8bfb0}
+.foto-cell:hover{border-color:#e8a040}
+.foto-cell img{width:100%;height:100%;object-fit:cover;display:none;border-radius:3px}
+.foto-ph{font-size:20px;color:#b8b0a0}
+.btn-del{background:none;border:none;cursor:pointer;color:#c8bfb0;font-size:15px;line-height:1;padding:.2rem}
+.btn-del:hover{color:#e24b4a}
+.star-rating{display:flex;gap:2px}
+.star{cursor:pointer;font-size:14px;color:#e0d8cc;line-height:1;user-select:none}
+.star.on{color:#e8a040}
+.dmz-tiempos{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.9rem;background:#fff;border-radius:8px;padding:1.2rem 1.4rem;border:1px solid #e0d8cc}
+.dmz-tiempo-item{display:flex;flex-direction:column;gap:.3rem}
+.dmz-tiempo-label{font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:#888;font-weight:700}
+.dmz-tiempo-val{display:flex;align-items:center;gap:.4rem}
+.dmz-tiempo-num{font-family:'Montserrat',sans-serif;font-size:1.4rem;font-weight:800;color:#e8a040;background:none;border:none;border-bottom:2px solid #e0d8cc;outline:none;width:70px}
+.dmz-tiempo-num:focus{border-bottom-color:#e8a040}
+.dmz-tiempo-unit{font-size:.6rem;color:#888;letter-spacing:.1em;text-transform:uppercase}
+.dmz-notas-area{background:#fff;border-radius:8px;padding:1.2rem 1.4rem;border:1px solid #e0d8cc}
+.dmz-notas-ta{font-family:'Montserrat',sans-serif;font-size:.75rem;width:100%;background:none;border:none;border-bottom:1.5px solid #e0d8cc;outline:none;resize:vertical;min-height:60px;color:#2c2c2a;padding:.3rem 0;line-height:1.7}
+.dmz-notas-ta:focus{border-bottom-color:#e8a040}
+.dmz-actions{display:flex;gap:.7rem;margin:1.2rem 0;flex-wrap:wrap}
+.dmz-btn-sec{font-family:'Montserrat',sans-serif;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;background:none;color:#2c2c2a;border:1.5px solid #2c2c2a;border-radius:4px;padding:.38rem .9rem;cursor:pointer}
+.dmz-btn-sec:hover{background:#2c2c2a;color:#fff}
+.dmz-footer{text-align:center;margin-top:2rem;padding:.8rem 0;border-top:2px solid #e8a040}
+.dmz-footer-text{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:#888;font-weight:700}
+.dmz-footer-text span{color:#e8a040}
+@media print{
+  .dmz-btn-add,.dmz-btn-sec,.btn-del,.dmz-actions{display:none!important}
+  body{background:#fff}
+  .dmz-header{border-bottom:2px solid #e8a040}
+}
+</style>
+</head>
+<body>
+<div class="dmz-wrap">
+
+  <div class="dmz-header">
+    <div class="dmz-logo-area">
+      <div class="dmz-clock-zone" onclick="document.getElementById('clock-upload').click()" title="Clic para cargar foto del restaurante">
+        <img id="clock-img" alt="Foto restaurante">
+        <div class="dmz-clock-placeholder" id="clock-ph">FOTO<br>LUGAR</div>
+      </div>
+      <input type="file" class="dmz-clock-input" id="clock-upload" accept="image/*" onchange="loadClockPhoto(event)">
+      <div>
+        <div class="dmz-brand"><span>DELAMORA</span>ZUMARÁN</div>
+        <div class="dmz-brand" style="font-size:.62rem;font-weight:500;letter-spacing:.1em;color:#888">KITCHEN SUPPORT</div>
+        <div style="font-size:.5rem;letter-spacing:.14em;color:#bbb;text-transform:uppercase;margin-top:.15rem">Consultoría Gastronómica · Puebla, México</div>
+      </div>
+    </div>
+    <div class="dmz-title-block">
+      <div class="dmz-main-title">REPORTE DE DEGUSTACIÓN</div>
+      <div class="dmz-sub-title">EVALUACIÓN · TIEMPOS DE SERVICIO · OBSERVACIONES</div>
+    </div>
+  </div>
+
+  <!-- METADATOS -->
+  <div class="dmz-meta">
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">Restaurante / Cliente</span>
+      <input class="dmz-meta-input" placeholder="Nombre del establecimiento">
+    </div>
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">Auditor DMZ</span>
+      <input class="dmz-meta-input" placeholder="Nombre del consultor">
+    </div>
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">Fecha de visita</span>
+      <input class="dmz-meta-input" type="date">
+    </div>
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">Turno evaluado</span>
+      <input class="dmz-meta-input" placeholder="Desayuno / Comida / Cena">
+    </div>
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">Mesa evaluada</span>
+      <input class="dmz-meta-input" placeholder="Ej: Mesa 5 / Terraza">
+    </div>
+    <div class="dmz-meta-field">
+      <span class="dmz-meta-label">No. de comensales</span>
+      <input class="dmz-meta-input" type="number" placeholder="0" min="1">
+    </div>
+  </div>
+
+  <!-- TABLA DE PLATILLOS -->
+  <div class="dmz-section">
+    <div class="dmz-section-head">
+      <span class="dmz-section-label">Evaluación de platillos y bebidas</span>
+      <button class="dmz-btn-add" onclick="addRow()">+ Agregar platillo</button>
+    </div>
+    <div class="dmz-table-wrap">
+      <table id="degu-table">
+        <thead>
+          <tr>
+            <th style="width:68px">Foto</th>
+            <th style="min-width:150px">Platillo / Bebida</th>
+            <th style="width:110px">Categoría</th>
+            <th style="min-width:140px">Obs. Presentación</th>
+            <th style="min-width:140px">Obs. Sabor / Temp.</th>
+            <th style="width:100px">Calificación</th>
+            <th style="width:80px">T. llegada</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="degu-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TIEMPOS DE SERVICIO -->
+  <div class="dmz-section">
+    <div class="dmz-section-head">
+      <span class="dmz-section-label">Tiempos de servicio registrados</span>
+    </div>
+    <div class="dmz-tiempos">
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Llegada a mesa</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">HH:MM</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Atención inicial (saludo)</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Entrega de menú</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Toma de orden</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Llegada de bebidas</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Primer platillo</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Presentación de cuenta</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00"><span class="dmz-tiempo-unit">min:seg</span></div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Tiempo total de visita</span>
+        <div class="dmz-tiempo-val"><input class="dmz-tiempo-num" type="text" value="0:00" style="width:80px"><span class="dmz-tiempo-unit">HH:MM</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVALUACIÓN DEL SERVICIO -->
+  <div class="dmz-section">
+    <div class="dmz-section-head">
+      <span class="dmz-section-label">Evaluación del servicio</span>
+    </div>
+    <div class="dmz-tiempos" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Amabilidad del personal</span>
+        <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+          <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+        </div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Conocimiento del menú</span>
+        <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+          <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+        </div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Limpieza general</span>
+        <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+          <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+        </div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Presentación de alimentos</span>
+        <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+          <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+        </div>
+      </div>
+      <div class="dmz-tiempo-item">
+        <span class="dmz-tiempo-label">Experiencia general</span>
+        <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+          <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+          <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES FINALES -->
+  <div class="dmz-section">
+    <div class="dmz-section-head">
+      <span class="dmz-section-label">Observaciones finales y recomendaciones</span>
+    </div>
+    <div class="dmz-notas-area">
+      <div class="dmz-meta-label" style="margin-bottom:.5rem">Observaciones generales</div>
+      <textarea class="dmz-notas-ta" rows="3" placeholder="Descripción de hallazgos, contexto de la visita, comportamiento del equipo…"></textarea>
+      <div class="dmz-meta-label" style="margin-top:.9rem;margin-bottom:.5rem">Recomendaciones inmediatas</div>
+      <textarea class="dmz-notas-ta" rows="3" placeholder="Acciones prioritarias recomendadas al establecimiento…"></textarea>
+      <div class="dmz-meta-label" style="margin-top:.9rem;margin-bottom:.5rem">Compromisos del establecimiento</div>
+      <textarea class="dmz-notas-ta" rows="2" placeholder="Acuerdos y compromisos firmados en visita…"></textarea>
+    </div>
+  </div>
+
+  <div class="dmz-actions">
+    <button class="dmz-btn-sec" onclick="window.print()">&#128438; Imprimir / Guardar PDF</button>
+    <button class="dmz-btn-sec" onclick="clearAll()">&#10011; Nueva visita</button>
+  </div>
+
+  <div class="dmz-footer">
+    <div class="dmz-footer-text">POWERED BY <span>DMZ</span> &nbsp;·&nbsp; DELAMORAZUMARÁN &nbsp;·&nbsp; KITCHEN SUPPORT</div>
+  </div>
+
+</div>
+
+<script>
+let rowId = 0;
+
+function addRow(name, cat, obsP, obsS, time) {
+  const id = ++rowId;
+  const tbody = document.getElementById('degu-body');
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + id;
+  tr.innerHTML = `
+    <td>
+      <div class="foto-cell" onclick="document.getElementById('foto-${id}').click()" title="Clic para cargar foto de evidencia">
+        <input type="file" id="foto-${id}" accept="image/*" style="display:none" onchange="loadFoto(event,${id})">
+        <img id="foto-img-${id}" alt="evidencia">
+        <span class="foto-ph" id="foto-ph-${id}">&#128247;</span>
+      </div>
+    </td>
+    <td><input class="food-name-input" value="${name||''}" placeholder="NOMBRE DEL PLATILLO"></td>
+    <td>
+      <select class="cell-select">
+        <option>BEBIDAS</option>
+        <option>ENTRADAS</option>
+        <option>SOPAS</option>
+        <option>PLATO FUERTE</option>
+        <option>POSTRES</option>
+        <option>DESAYUNOS</option>
+        <option>SNACKS</option>
+        <option>OTRO</option>
+      </select>
+    </td>
+    <td><textarea class="cell-input" rows="2" placeholder="Presentación, temperatura, porción…">${obsP||''}</textarea></td>
+    <td><textarea class="cell-input" rows="2" placeholder="Sabor, sazón, cocción…">${obsS||''}</textarea></td>
+    <td>
+      <div class="star-rating" onmouseleave="hoverStars(this,-1)">
+        <span class="star" onclick="setStars(this.parentNode,1)" onmouseover="hoverStars(this.parentNode,1)">&#9733;</span>
+        <span class="star" onclick="setStars(this.parentNode,2)" onmouseover="hoverStars(this.parentNode,2)">&#9733;</span>
+        <span class="star" onclick="setStars(this.parentNode,3)" onmouseover="hoverStars(this.parentNode,3)">&#9733;</span>
+        <span class="star" onclick="setStars(this.parentNode,4)" onmouseover="hoverStars(this.parentNode,4)">&#9733;</span>
+        <span class="star" onclick="setStars(this.parentNode,5)" onmouseover="hoverStars(this.parentNode,5)">&#9733;</span>
+      </div>
+    </td>
+    <td><input class="time-input" value="${time||'0:00'}" placeholder="0:00"></td>
+    <td><button class="btn-del" onclick="delRow(${id})" title="Eliminar fila">&#10005;</button></td>
+  `;
+  tbody.appendChild(tr);
+  if (cat) {
+    const sel = tr.querySelector('select');
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].text === cat) { sel.selectedIndex = i; break; }
+    }
+  }
+}
+
+function delRow(id) {
+  const row = document.getElementById('row-' + id);
+  if (row) row.remove();
+}
+
+function loadFoto(e, id) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('foto-img-' + id);
+    const ph  = document.getElementById('foto-ph-' + id);
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadClockPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('clock-img');
+    const ph  = document.getElementById('clock-ph');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function setStars(container, n) {
+  container.dataset.val = n;
+  container.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('on', i < n));
+}
+
+function hoverStars(container, n) {
+  const val = parseInt(container.dataset.val || 0);
+  container.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('on', n < 0 ? i < val : i < n);
+  });
+}
+
+function clearAll() {
+  if (!confirm('¿Borrar todo y comenzar una nueva visita?')) return;
+  document.getElementById('degu-body').innerHTML = '';
+  rowId = 0;
+  document.querySelectorAll('input:not([type=file]),textarea').forEach(el => {
+    if (el.type === 'date' || el.classList.contains('dmz-tiempo-num')) {
+      el.value = el.classList.contains('dmz-tiempo-num') ? '0:00' : '';
+    } else { el.value = ''; }
+  });
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('on'));
+  const ci = document.getElementById('clock-img');
+  if (ci) { ci.src = ''; ci.style.display = 'none'; }
+  const cp = document.getElementById('clock-ph');
+  if (cp) cp.style.display = '';
+  initRows();
+}
+
+function initRows() {
+  addRow('BEBIDAS','BEBIDAS','','','');
+  addRow('','DESAYUNOS','','','');
+  addRow('','PLATO FUERTE','','','');
+}
+
+initRows();
+</script>
+</body>
+</html>
