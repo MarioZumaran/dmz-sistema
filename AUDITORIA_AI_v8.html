@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.6                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.7                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.6</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.7</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -43,6 +43,40 @@
   --f-t: 'Raleway', 'Trebuchet MS', Arial, sans-serif;
   --f-b: 'Inter', system-ui, -apple-system, Arial, sans-serif;
 }
+
+/* ── Historial view ─────────────────────────────────────────────── */
+#hist-view {
+  flex: 1; overflow-y: auto; display: none; flex-direction: column;
+  padding: 1.4rem; gap: 1rem; background: var(--off); min-height: 0;
+}
+#hist-view.visible { display: flex; }
+.hist-header {
+  background: #fff; border-radius: var(--r); padding: 1rem 1.3rem;
+  box-shadow: var(--shadow); border-left: 4px solid var(--gold);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .6rem;
+}
+.hist-title { font-family: var(--f-t); font-size: 1.1rem; font-weight: 800; letter-spacing: .07em; }
+.hist-sub   { font-size: .6rem; color: var(--mid); letter-spacing: .1em; margin-top: .15rem; }
+.hist-empty { padding: 3rem 1rem; text-align: center; color: var(--mid); font-size: .8rem; line-height: 1.8; }
+.hist-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .85rem; }
+.hist-card  {
+  background: #fff; border-radius: var(--r); padding: 1rem 1.2rem;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: .5rem;
+  transition: box-shadow .15s, transform .15s;
+}
+.hist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-1px); }
+.hist-card-client { font-family: var(--f-t); font-size: .95rem; font-weight: 700; color: var(--dark); }
+.hist-card-date   { font-size: .65rem; color: var(--mid); letter-spacing: .05em; }
+.hist-card-kpis   { display: flex; gap: .5rem; margin-top: .2rem; flex-wrap: wrap; }
+.hist-kpi { font-size: .68rem; font-weight: 700; padding: .18rem .5rem; border-radius: 3px; color: #fff; }
+.hist-kpi.c { background: var(--red); }
+.hist-kpi.o { background: var(--amber); }
+.hist-kpi.k { background: var(--green); }
+.hist-kpi.p { background: var(--gold); color: var(--dark); }
+.hist-card-areas  { font-size: .68rem; color: var(--mid); }
+.hist-card-actions { display: flex; gap: .4rem; margin-top: .4rem; flex-wrap: wrap; }
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;300;400;600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
@@ -1340,6 +1374,7 @@ td:hover .hz-edit-hint { opacity: 1; }
       <button class="mode-btn" id="btn-hz" onclick="setMode('hz')">📝 HALLAZGOS</button>
       <button class="mode-btn" id="btn-clima2" onclick="setMode('clima2')">🧑‍🤝‍🧑 CLIMA</button>
       <button class="mode-btn" id="btn-rep" onclick="setMode('rep')">📋 REPORTE</button>
+      <button class="mode-btn" id="btn-hist" onclick="setMode('hist')">🗂 HISTORIAL</button>
     </div>
     <!-- Save indicator -->
     <div class="save-wrap">
@@ -1536,6 +1571,21 @@ td:hover .hz-edit-hint { opacity: 1; }
 
   <!-- Report view -->
   <div id="report-view"></div>
+
+  <!-- Historial view -->
+  <div id="hist-view">
+    <div class="hist-header">
+      <div>
+        <div class="hist-title">🗂 HISTORIAL DE AUDITORÍAS</div>
+        <div class="hist-sub">AUDITORÍAS GUARDADAS EN ESTE DISPOSITIVO</div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="importHistSession()" style="font-size:.65rem">⬆ Importar JSON</button>
+        <button class="btn btn-outline" onclick="clearHistorial()" style="font-size:.65rem;color:var(--red);border-color:var(--red)">🗑 Limpiar todo</button>
+      </div>
+    </div>
+    <div id="hist-grid-wrap" class="hist-empty">Cargando historial…</div>
+  </div>
 </div>
 
 <!-- Annotation modal -->
@@ -1723,7 +1773,7 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.6',
+    version:        '9.7',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
@@ -2096,14 +2146,17 @@ function setMode(m) {
   document.getElementById('btn-hz').classList.toggle('active',     m === 'hz');
   document.getElementById('btn-clima2').classList.toggle('active', m === 'clima2');
   document.getElementById('btn-rep').classList.toggle('active',    m === 'rep');
+  document.getElementById('btn-hist').classList.toggle('active',   m === 'hist');
   document.getElementById('main').style.display          = m === 'cap'    ? 'flex'  : 'none';
   document.getElementById('dash-view').style.display     = m === 'dash'   ? 'block' : 'none';
   document.getElementById('hallazgos-view').classList.toggle('visible', m === 'hz');
   document.getElementById('clima2-view').classList.toggle('visible',    m === 'clima2');
   document.getElementById('report-view').style.display   = m === 'rep'    ? 'block' : 'none';
+  document.getElementById('hist-view').classList.toggle('visible',   m === 'hist');
   if (m === 'dash')   buildDash();
   if (m === 'rep')    buildReport();
   if (m === 'clima2') buildClima2View();
+  if (m === 'hist')   buildHistorial();
 }
 
 function onKeyInput() {
@@ -3104,6 +3157,7 @@ function buildReport() {
     <span><span style="opacity:.4">REPORTE · </span>${esc(client.toUpperCase())} · ${date}</span>
     <div style="display:flex;gap:.5rem;align-items:center">
       <button class="btn btn-gold" onclick="exportReportePDF()">⬇ Descargar PDF</button>
+      <button class="btn btn-outline" onclick="saveToHistorial()" style="font-size:.67rem">🗂 Guardar en Historial</button>
       <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">📤 Entregar al Cliente</button>
     </div>
   </div>
@@ -4417,6 +4471,269 @@ async function exportHallazgosPDF() {
     showToast('⚠ Error: ' + err.message);
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+//  HISTORIAL DE AUDITORÍAS — IndexedDB
+// ══════════════════════════════════════════════════════════════
+const HIST_STORE = 'historial';
+const HIST_IDB   = 'dmz_historial';
+
+function openHistIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HIST_IDB, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(HIST_STORE)) {
+        const store = db.createObjectStore(HIST_STORE, { keyPath: 'id' });
+        store.createIndex('savedAt', 'savedAt', { unique: false });
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function saveToHistorial() {
+  // Guarda snapshot de la sesión actual en el historial
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.client) return;
+
+    // Recopila fotos desde IDB para incluir en el snapshot
+    const snap = JSON.parse(JSON.stringify(saved));
+    const photoTasks = [];
+    for (const aId in STATE.areas) {
+      if (!snap.areas[aId]) snap.areas[aId] = { photos: [] };
+      for (const sp of snap.areas[aId].photos || []) {
+        photoTasks.push(
+          idbGetPhoto(sp.id).then(b64 => {
+            if (b64) sp.storageB64 = b64;
+          })
+        );
+      }
+    }
+    await Promise.all(photoTasks);
+
+    // Calcular stats
+    let totC=0, totO=0, totK=0, totAll=0;
+    for (const aId in snap.areas) {
+      for (const p of (snap.areas[aId].photos || [])) {
+        if (p.alert==='critico') totC++;
+        else if (p.alert==='observacion') totO++;
+        else if (p.alert==='correcto') totK++;
+        totAll++;
+      }
+    }
+
+    const entry = {
+      id:      'hist_' + Date.now(),
+      savedAt: new Date().toISOString(),
+      client:  saved.client,
+      version: saved.version || '?',
+      stats:   { c: totC, o: totO, k: totK, total: totAll },
+      areas:   Object.keys(snap.areas).filter(a => (snap.areas[a].photos||[]).length > 0),
+      snapshot: snap,
+    };
+
+    const db    = await openHistIDB();
+    const tx    = db.transaction(HIST_STORE, 'readwrite');
+    tx.objectStore(HIST_STORE).put(entry);
+    await new Promise((res,rej) => { tx.oncomplete=res; tx.onerror=rej; });
+    showToast('✓ Auditoría guardada en historial');
+  } catch(e) {
+    console.warn('saveToHistorial error:', e);
+    showToast('⚠ No se pudo guardar en historial');
+  }
+}
+
+async function loadHistorialEntries() {
+  try {
+    const db    = await openHistIDB();
+    const tx    = db.transaction(HIST_STORE, 'readonly');
+    const store = tx.objectStore(HIST_STORE);
+    return new Promise((res, rej) => {
+      const req = store.getAll();
+      req.onsuccess = e => res(e.target.result || []);
+      req.onerror   = e => rej(e.target.error);
+    });
+  } catch(e) { return []; }
+}
+
+async function deleteHistEntry(id) {
+  try {
+    const db = await openHistIDB();
+    const tx = db.transaction(HIST_STORE, 'readwrite');
+    tx.objectStore(HIST_STORE).delete(id);
+    buildHistorial();
+    showToast('✓ Auditoría eliminada');
+  } catch(e) { console.warn(e); }
+}
+
+async function clearHistorial() {
+  if (!confirm('¿Eliminar todo el historial? Esta acción no se puede deshacer.')) return;
+  try {
+    const db = await openHistIDB();
+    const tx = db.transaction(HIST_STORE, 'readwrite');
+    tx.objectStore(HIST_STORE).clear();
+    buildHistorial();
+    showToast('✓ Historial limpiado');
+  } catch(e) { console.warn(e); }
+}
+
+async function loadFromHistorial(id) {
+  if (!confirm('¿Cargar esta auditoría? Los datos actuales sin guardar se perderán.')) return;
+  try {
+    const db    = await openHistIDB();
+    const tx    = db.transaction(HIST_STORE, 'readonly');
+    const store = tx.objectStore(HIST_STORE);
+    const entry = await new Promise((res,rej) => {
+      const req = store.get(id);
+      req.onsuccess = e => res(e.target.result);
+      req.onerror   = e => rej(e.target.error);
+    });
+    if (!entry || !entry.snapshot) { showToast('⚠ No se encontró la auditoría'); return; }
+
+    // Restaurar fotos a IDB
+    const snap = entry.snapshot;
+    const photoTasks = [];
+    for (const aId in snap.areas) {
+      for (const sp of (snap.areas[aId].photos || [])) {
+        if (sp.storageB64) {
+          photoTasks.push(idbPutPhoto(sp.id, sp.storageB64));
+        }
+      }
+    }
+    await Promise.all(photoTasks);
+
+    // Guardar en localStorage y recargar
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+    showToast('✓ Auditoría cargada — recargando…');
+    setTimeout(() => location.reload(), 800);
+  } catch(e) {
+    console.warn('loadFromHistorial error:', e);
+    showToast('⚠ Error al cargar auditoría');
+  }
+}
+
+async function exportHistEntry(id) {
+  try {
+    const db    = await openHistIDB();
+    const tx    = db.transaction(HIST_STORE, 'readonly');
+    const entry = await new Promise((res,rej) => {
+      const req = tx.objectStore(HIST_STORE).get(id);
+      req.onsuccess = e => res(e.target.result);
+      req.onerror   = e => rej(e.target.error);
+    });
+    if (!entry) return;
+    const blob = new Blob([JSON.stringify(entry.snapshot, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const client = (entry.client||'auditoria').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const date   = entry.savedAt.slice(0,10);
+    a.download = `dmz-auditoria-${client}-${date}.json`;
+    a.click();
+    showToast('✓ JSON exportado');
+  } catch(e) { console.warn(e); }
+}
+
+function importHistSession() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const snap = JSON.parse(text);
+      if (!snap || !snap.areas) { showToast('⚠ Archivo inválido'); return; }
+
+      // Restaurar fotos a IDB
+      const photoTasks = [];
+      for (const aId in snap.areas) {
+        for (const sp of (snap.areas[aId].photos || [])) {
+          if (sp.storageB64) photoTasks.push(idbPutPhoto(sp.id, sp.storageB64));
+        }
+      }
+      await Promise.all(photoTasks);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+      showToast('✓ Auditoría importada — recargando…');
+      setTimeout(() => location.reload(), 800);
+    } catch(e) {
+      showToast('⚠ Error al importar: ' + e.message);
+    }
+  };
+  inp.click();
+}
+
+async function buildHistorial() {
+  const wrap = document.getElementById('hist-grid-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="hist-empty">Cargando…</div>';
+
+  const entries = await loadHistorialEntries();
+  // Ordena más recientes primero
+  entries.sort((a,b) => new Date(b.savedAt) - new Date(a.savedAt));
+
+  if (!entries.length) {
+    wrap.innerHTML = `<div class="hist-empty">
+      <div style="font-size:2rem;margin-bottom:.8rem">🗂</div>
+      <strong>Sin auditorías guardadas todavía</strong><br>
+      Para guardar una auditoría en el historial, haz clic en<br>
+      <strong>"Guardar en Historial"</strong> desde el tab REPORTE.<br><br>
+      También puedes importar un archivo JSON con el botón de arriba.
+    </div>`;
+    return;
+  }
+
+  const AREA_NAMES = {
+    'exterior_fachada':'Exterior/Fachada','imagen_redes':'Imagen/Redes',
+    'alimentos':'Alimentos','servicio':'Servicio','banos':'Baños',
+    'cocina':'Cocina','almacen':'Almacén','barra':'Barra',
+    'terraza_salon':'Terraza/Salón','formatos':'Formatos','personal_rrhh':'Personal/RRHH',
+  };
+
+  const cards = entries.map(e => {
+    const d     = new Date(e.savedAt);
+    const ds    = d.toLocaleDateString('es-MX', {day:'2-digit', month:'long', year:'numeric'});
+    const ts    = d.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+    const pct   = e.stats.total ? Math.round(e.stats.k / e.stats.total * 100) : 0;
+    const areas = (e.areas || []).map(a => {
+      // Buscar nombre en customAreaDefs del snapshot
+      const custom = (e.snapshot?.customAreaDefs || []).find(x => x.id === a);
+      return custom ? custom.name : (AREA_NAMES[a] || a);
+    }).join(', ');
+
+    return `<div class="hist-card">
+      <div class="hist-card-client">${esc(e.client || 'Sin nombre')}</div>
+      <div class="hist-card-date">📅 ${ds} · ${ts}</div>
+      <div class="hist-card-kpis">
+        <span class="hist-kpi c">✕ ${e.stats.c} Críticos</span>
+        <span class="hist-kpi o">○ ${e.stats.o} Obs.</span>
+        <span class="hist-kpi k">✓ ${e.stats.k} OK</span>
+        <span class="hist-kpi p">${pct}% Cumpl.</span>
+      </div>
+      <div class="hist-card-areas">📍 ${areas || 'Sin áreas'}</div>
+      <div class="hist-card-actions">
+        <button class="btn btn-gold" onclick="loadFromHistorial('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem">
+          ↩ Cargar
+        </button>
+        <button class="btn btn-outline" onclick="exportHistEntry('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem">
+          ⬇ JSON
+        </button>
+        <button class="btn btn-outline" onclick="deleteHistEntry('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem;color:var(--red);border-color:var(--red)">
+          🗑
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.className = 'hist-grid';
+  wrap.innerHTML = cards;
+}
+
 </script>
 
 
