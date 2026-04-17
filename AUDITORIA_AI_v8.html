@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.4                ║
+║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.5                ║
 ║  ─────────────────────────────────────────────────────────────────  ║
 ║  NOVEDADES v9:                                                       ║
 ║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
@@ -22,7 +22,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.4</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v9.5</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -1717,7 +1717,7 @@ async function saveSession(silent) {
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.4',
+    version:        '9.5',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
@@ -4331,12 +4331,36 @@ async function exportReportePDF() {
     window.print();
     return;
   }
-  const el = document.getElementById('report-view');
-  if (!el || el.style.display === 'none') {
-    showToast('⚠ Ve al tab REPORTE primero');
-    return;
+
+  showToast('⏳ Cargando fotos para PDF…');
+
+  // Asegura que TODAS las fotos tienen storageB64 antes de generar el PDF
+  const photoTasks = [];
+  for (const aId in STATE.areas) {
+    for (const p of STATE.areas[aId].photos) {
+      if (!p.storageB64 && p.id) {
+        photoTasks.push(
+          idbGetPhoto(p.id).then(b64 => {
+            if (b64) { p.storageB64 = b64; }
+            else if (p.displayUrl) {
+              return resizeForStorage(p.displayUrl, 900).then(b => {
+                if (b) { p.storageB64 = b; idbPutPhoto(p.id, b); }
+              });
+            }
+          })
+        );
+      }
+    }
   }
-  // Oculta barra de controles antes de exportar
+  await Promise.all(photoTasks);
+
+  // Regenera el reporte con las fotos ya en memoria
+  buildReport();
+  await new Promise(r => setTimeout(r, 400));
+
+  const el = document.getElementById('report-view');
+  if (!el) { showToast('⚠ Ve al tab REPORTE primero'); return; }
+
   const bar = el.querySelector('.rpt-bar');
   if (bar) bar.style.display = 'none';
 
@@ -4350,7 +4374,8 @@ async function exportReportePDF() {
       margin:       [10, 10, 12, 10],
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.92 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false,
+                      imageTimeout: 30000, removeContainer: true },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
     }).from(el).save();
