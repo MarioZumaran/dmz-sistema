@@ -3419,11 +3419,12 @@ function buildDash() {
 ───────────────────────────────────────────────────────────────── */
 function buildReport() {
   const client = STATE.client || 'Cliente';
-  let totC = 0, totO = 0, totK = 0;
+  let totC = 0, totO = 0, totK = 0, totU = 0;
   AREAS.forEach(a => STATE.areas[a.id].photos.forEach(p => {
     if      (p.alert === 'critico')     totC++;
     else if (p.alert === 'observacion') totO++;
     else if (p.alert === 'correcto')    totK++;
+    else                                totU++; // sin clasificar — v9.8 fix
   }));
   const totAll = totC + totO + totK || 1;
   const gPct   = Math.round(totK / totAll * 100);
@@ -3431,23 +3432,30 @@ function buildReport() {
   let areaSections = '';
   AREAS.forEach((a, ai) => {
     const photos = STATE.areas[a.id].photos;
-    if (!photos.length) return;
+    if (!photos.length) return; // sin fotos = no aparece (correcto)
 
-    let aC = 0, aO = 0, aK = 0;
+    let aC = 0, aO = 0, aK = 0, aU = 0;
     photos.forEach(p => {
       if      (p.alert === 'critico')     aC++;
       else if (p.alert === 'observacion') aO++;
       else if (p.alert === 'correcto')    aK++;
+      else                                aU++; // v9.8: fotos sin clasificar
     });
     const aTotal = aC + aO + aK || 1;
-    const aPct   = Math.round(aK / aTotal * 100);
-    const dCol   = aC > 0 ? '#C0392B' : aO > 0 ? '#E07B00' : '#2E7D32';
-    const dLbl   = aC > 0 ? 'ÁREA DE OPORTUNIDAD CRÍTICA' : aO > 0 ? 'ÁREA EN OBSERVACIÓN' : 'ÁREA EN NIVEL CORRECTO';
+    const aPct   = aU === photos.length
+      ? null  // v9.8: 100% sin clasificar → no mostrar porcentaje falso
+      : Math.round(aK / aTotal * 100);
+    const dCol   = aC > 0 ? '#C0392B' : aO > 0 ? '#E07B00' : aU > 0 ? '#8A9096' : '#2E7D32';
+    const dLbl   = aC > 0 ? 'ÁREA DE OPORTUNIDAD CRÍTICA'
+                 : aO > 0 ? 'ÁREA EN OBSERVACIÓN'
+                 : aU > 0 ? 'FOTOS PENDIENTES DE CLASIFICAR'
+                 : 'ÁREA EN NIVEL CORRECTO';
 
     const photosHtml = photos.map(p => {
-      const col  = AC[p.alert] || '#888';
+      // v9.8: maneja fotos sin clasificar (state: empty, loading, ai no confirmado)
+      const col  = AC[p.alert] || '#8A9096';
       const lbl  = AL[p.alert] || 'SIN CLASIFICAR';
-      const icon = AI_[p.alert] || '?';
+      const icon = AI_[p.alert] || '—';
       const mkrs = p.markers.map((m, i) =>
         `<div class="ann-dot" style="left:${m.x*100}%;top:${m.y*100}%;background:${col}">${i+1}</div>`
       ).join('');
@@ -3459,6 +3467,7 @@ function buildReport() {
         <div class="rpt-caption">
           <span class="rpt-badge" style="background:${col}">${icon} ${lbl}</span>
           ${notes.map(n => `<div class="rpt-note">${esc(n)}</div>`).join('')}
+          ${!p.alert ? `<div class="rpt-note" style="color:rgba(255,255,255,.45);font-style:italic">Pendiente de clasificar en Captura</div>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -3466,15 +3475,15 @@ function buildReport() {
     let hallRows = '';
     let rowN = 0;
     photos.forEach(p => {
-      const col = AC[p.alert] || '#888';
+      const col = AC[p.alert] || '#8A9096';
       const s   = p.aiSuggestion;
       if (s && !s.error) {
         rowN++;
         const tc = TC[s.tiempo] || '#888';
         hallRows += `<tr>
           <td class="td-n">${rowN}</td>
-          <td class="td-h">${esc(s.area_oportunidad || '')}</td>
-          <td class="td-h" style="color:var(--mid);font-size:.67rem;font-style:italic">${esc(s.propuesta || '')}</td>
+          <td class="td-h">${esc(s.area_oportunidad || s.hallazgo || '')}</td>
+          <td class="td-h" style="color:var(--mid);font-size:.67rem;font-style:italic">${esc(s.propuesta || s.recomendacion || '')}</td>
           <td class="td-r">${esc(s.responsable || '')}</td>
           <td class="td-t"><span class="tbadge" style="background:${tc}">${s.tiempo || '—'}</span></td>
         </tr>`;
@@ -3486,11 +3495,15 @@ function buildReport() {
             <td class="td-n">${rowN}</td>
             <td class="td-h" colspan="2">${esc(note)}</td>
             <td class="td-r">—</td>
-            <td class="td-t"><span class="tbadge" style="background:${col}">${AL[p.alert]||'—'}</span></td>
+            <td class="td-t"><span class="tbadge" style="background:${col}">${AL[p.alert]||'PENDIENTE'}</span></td>
           </tr>`;
         });
       }
     });
+
+    const pctDisplay = aPct !== null
+      ? `<div class="pn" style="color:${dCol}">${aPct}<span style="font-size:.9rem;font-weight:200">%</span></div><div class="pl">cumplimiento</div>`
+      : `<div class="pn" style="color:var(--mid);font-size:1rem;">—</div><div class="pl" style="color:var(--mid);">sin clasificar</div>`;
 
     areaSections += `<div class="rpt-area">
       <div class="rpt-ah" style="border-left-color:${dCol}">
@@ -3501,15 +3514,13 @@ function buildReport() {
             <div class="rpt-ah-tag" style="color:${dCol}">${dLbl}</div>
           </div>
         </div>
-        <div class="rpt-ah-pct">
-          <div class="pn" style="color:${dCol}">${aPct}<span style="font-size:.9rem;font-weight:200">%</span></div>
-          <div class="pl">cumplimiento</div>
-        </div>
+        <div class="rpt-ah-pct">${pctDisplay}</div>
       </div>
       <div class="rpt-sbar">
         <div class="rpt-ss" style="color:#C0392B">${aC} Críticos</div>
         <div class="rpt-ss" style="color:#E07B00">${aO} Observaciones</div>
         <div class="rpt-ss" style="color:#2E7D32">${aK} Correctos</div>
+        ${aU > 0 ? `<div class="rpt-ss" style="color:var(--mid)">${aU} Sin clasificar</div>` : ''}
       </div>
       <div class="rpt-photos">${photosHtml}</div>
       ${hallRows ? `<div class="rpt-hall">
@@ -3534,16 +3545,21 @@ function buildReport() {
     </div>`;
   }
 
-  // Dashboard al final del reporte
+  // Dashboard al final del reporte — v9.8: incluye áreas sin clasificar
   let dashRows = '';
   AREAS.forEach((a, ai) => {
     const photos = STATE.areas[a.id].photos;
     if (!photos.length) return;
-    let aC=0, aO=0, aK=0;
-    photos.forEach(p => { if(p.alert==='critico')aC++; else if(p.alert==='observacion')aO++; else if(p.alert==='correcto')aK++; });
+    let aC=0, aO=0, aK=0, aU=0;
+    photos.forEach(p => {
+      if(p.alert==='critico') aC++;
+      else if(p.alert==='observacion') aO++;
+      else if(p.alert==='correcto') aK++;
+      else aU++;
+    });
     const aT   = aC + aO + aK || 1;
-    const aPct = Math.round(aK / aT * 100);
-    const col  = aPct < 30 ? '#C0392B' : aPct < 60 ? '#E07B00' : '#2E7D32';
+    const aPct = aU === photos.length ? null : Math.round(aK / aT * 100);
+    const col  = aPct === null ? '#8A9096' : aPct < 30 ? '#C0392B' : aPct < 60 ? '#E07B00' : '#2E7D32';
     dashRows += `<tr>
       <td style="color:var(--mid);font-size:.64rem;font-weight:700;text-align:center">${String(ai+1).padStart(2,'0')}</td>
       <td style="font-weight:600">${a.name}</td>
@@ -3551,8 +3567,10 @@ function buildReport() {
       <td style="color:#E07B00;font-weight:700;text-align:center">${aO}</td>
       <td style="color:#2E7D32;font-weight:700;text-align:center">${aK}</td>
       <td>
-        <div class="mbar"><div style="width:${aPct}%;background:${col};height:100%;border-radius:2px"></div></div>
-        <b style="color:${col};font-size:.68rem">${aPct}%</b>
+        ${aPct !== null
+          ? `<div class="mbar"><div style="width:${aPct}%;background:${col};height:100%;border-radius:2px"></div></div><b style="color:${col};font-size:.68rem">${aPct}%</b>`
+          : `<span style="font-size:.65rem;color:var(--mid);font-style:italic">${aU} sin clasificar</span>`
+        }
       </td>
     </tr>`;
   });
