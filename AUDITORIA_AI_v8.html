@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <!--
-╔══════════════════════════════════════════════════════════════════════╗
-║  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v9.7                ║
-║  ─────────────────────────────────────────────────────────────────  ║
-║  NOVEDADES v9:                                                       ║
-║   ✓ RESPALDO: v8 intacto — este es archivo independiente            ║
-║   ✓ Áreas Dinámicas: editar / renombrar / reordenar desde UI        ║
-║   ✓ Clima Laboral v2: 5-10 colaboradores × 13 preguntas exactas     ║
-║   ✓ Resumen por pregunta consolidando todas las respuestas          ║
-║   ✓ Sección Clima completa integrada en el reporte PDF              ║
-║   ✓ Heredado v8: PDF html2pdf, fotos cover, branding DMZ,           ║
-║     Hallazgos+Resúmenes, Plan de Acción por turnos                  ║
-║                                                                      ║
-║  FLUJO: Captura → Hallazgos → Clima v2 → Reporte PDF               ║
-║                                                                      ║
-║  DEPENDENCIAS: html2pdf.js CDN                                       ║
-║  API: Anthropic claude-haiku-4-5 / claude-sonnet-4-20250514         ║
-╚══════════════════════════════════════════════════════════════════════╝
+
+  AUDITORIA OPERATIVA · DMZ KITCHEN SUPPORT · v10.0               
+    
+  NOVEDADES v10:                                                      
+   + Modulo Calificacion de Alimentos (temperatura, estandar,        
+     organoléptica) — nuevo tab ALIMENTOS                            
+   + Diccionario Activo de Sanitizacion de textos (Regex)            
+   + Reporte Unificado: Clima + Alimentos + Hallazgos en un PDF      
+   + Resaltado automatico de palabras clave criticas en reporte      
+   + Google Drive OAuth 2.0 — respaldo en nube al guardar            
+   + Preparacion backend: fetch async listo para servidor externo    
+   + Prohibido uso de emojis — interfaz 100% ejecutiva              
+   Heredado v9.7: IndexedDB, areas dinamicas, clima v2,           
+     historial, plan de accion por turnos, entregable cliente        
+                                                                      
+  FLUJO: Captura → Alimentos → Hallazgos → Clima → Reporte PDF      
+                                                                      
+  DEPENDENCIAS: html2pdf.js CDN                                       
+  API: Anthropic claude-haiku-4-5 / claude-sonnet-4-20250514         
+
 -->
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Auditoría Operativa · DMZ Kitchen Support v9.7</title>
+<title>Auditoría Operativa · DMZ Kitchen Support v10.0</title>
 <script>
 // heic2any cargado lazy — si falla (CORS / offline), se ignora gracefully
 (function() {
@@ -44,7 +47,7 @@
   --f-b: 'Inter', system-ui, -apple-system, Arial, sans-serif;
 }
 
-/* ── Historial view ─────────────────────────────────────────────── */
+/*  Historial view  */
 #hist-view {
   flex: 1; overflow-y: auto; display: none; flex-direction: column;
   padding: 1.4rem; gap: 1rem; background: var(--off); min-height: 0;
@@ -81,7 +84,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;300;400;600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
 <style>
-/* ── Variables ─────────────────────────────────────────────────── */
+/*  Variables  */
 :root {
   --gold:   #C9952A;
   --dark:   #2D3A3F;
@@ -112,7 +115,7 @@ body {
 }
 button { cursor: pointer; font-family: var(--f-b); }
 
-/* ── Topbar ────────────────────────────────────────────────────── */
+/*  Topbar  */
 #topbar {
   height: 52px;
   background: var(--dark);
@@ -178,10 +181,10 @@ button { cursor: pointer; font-family: var(--f-b); }
 .mode-btn:not(.active) { background: rgba(255,255,255,.08); color: rgba(255,255,255,.55); }
 .mode-btn:not(.active):hover { background: rgba(255,255,255,.14); }
 
-/* ── App layout ────────────────────────────────────────────────── */
+/*  App layout  */
 #app { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
-/* ── Sidebar ───────────────────────────────────────────────────── */
+/*  Sidebar  */
 #sidebar {
   width: 196px;
   flex-shrink: 0;
@@ -235,7 +238,7 @@ button { cursor: pointer; font-family: var(--f-b); }
 .global-nums { display: flex; gap: .5rem; }
 .gn { font-size: .62rem; font-weight: 700; }
 
-/* ── Main capture ──────────────────────────────────────────────── */
+/*  Main capture  */
 #main {
   flex: 1;
   overflow-y: auto;
@@ -339,7 +342,7 @@ button { cursor: pointer; font-family: var(--f-b); }
   max-width: 860px;
 }
 
-/* ── Photo card ────────────────────────────────────────────────── */
+/*  Photo card  */
 .card {
   background: #fff;
   border-radius: 8px;
@@ -569,7 +572,7 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .empty-state .icon { font-size: 2.2rem; margin-bottom: .6rem; opacity: .3; }
 .empty-state p { font-size: .76rem; line-height: 1.7; }
 
-/* ── Annotation modal ──────────────────────────────────────────── */
+/*  Annotation modal  */
 #ann-modal {
   position: fixed; inset: 0; z-index: 1000;
   background: rgba(0,0,0,.82);
@@ -630,7 +633,7 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
   display: flex; justify-content: flex-end; gap: .5rem;
 }
 
-/* ── Report view ───────────────────────────────────────────────── */
+/*  Report view  */
 #report-view {
   flex: 1;
   overflow-y: auto;
@@ -752,7 +755,7 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .d-table tbody tr:hover td { background: var(--cream); }
 .mbar { width: 100px; height: 5px; background: #F0EDE8; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: .4rem; overflow: hidden; }
 
-/* ── Live Dashboard view ───────────────────────────────────────── */
+/*  Live Dashboard view  */
 #dash-view {
   flex: 1;
   overflow-y: auto;
@@ -808,7 +811,7 @@ textarea.note-ta::placeholder { color: #c4bfb8; }
 .lv-empty .icon { font-size: 2.5rem; margin-bottom: .8rem; opacity: .25; }
 .lv-empty p { font-size: .82rem; line-height: 1.7; }
 
-/* ── v9 typography overrides — justified text throughout ───────── */
+/*  v9 typography overrides — justified text throughout  */
 .rpt-table td, .rpt-hall td, .rpt-note,
 .ai-text, .ai-propuesta, .ai-ext-ta,
 textarea.note-ta, .cl-section-body,
@@ -819,7 +822,7 @@ textarea.note-ta, .cl-section-body,
 .rpt-cover, .rpt-ah-name, .rpt-ah-tag { letter-spacing: .03em; }
 #report-view { font-family: var(--f-b); }
 
-/* ── Area edit/delete buttons in sidebar ──────────────────────── */
+/*  Area edit/delete buttons in sidebar  */
 .ani-edit-btn, .ani-del-btn {
   background: none; border: none; padding: .1rem .25rem;
   font-size: .72rem; line-height: 1; cursor: pointer;
@@ -839,7 +842,7 @@ textarea.note-ta, .cl-section-body,
 }
 .sb-reorder-hint:hover { color: var(--gold); }
 
-/* ── Clima v2 styles ──────────────────────────────────────────── */
+/*  Clima v2 styles  */
 #clima2-view {
   flex: 1; overflow-y: auto; display: none; flex-direction: column;
   padding: 1.4rem; gap: 1.2rem; background: var(--off);
@@ -1085,7 +1088,7 @@ td:hover .hz-edit-hint { opacity: 1; }
   font-weight: 600; letter-spacing: .07em;
 }
 
-/* ── PDF print styles v8 ───────────────────────────────────────── */
+/*  PDF print styles v8  */
 @media print {
   #topbar, #sidebar, .rpt-bar { display: none !important; }
   #report-view { display: block !important; }
@@ -1102,7 +1105,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 }
 .dmz-powered span { color: var(--gold); }
 
-/* ── Save indicator ────────────────────────────────────────────── */
+/*  Save indicator  */
 .save-wrap {
   display: flex; align-items: center; gap: .4rem;
   background: rgba(255,255,255,.05);
@@ -1131,7 +1134,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 }
 .btn-save-sm:hover { color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.3); }
 
-/* ── Toast ─────────────────────────────────────────────────────── */
+/*  Toast  */
 #toast {
   position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%) translateY(8px);
   background: var(--dark); color: #fff;
@@ -1143,7 +1146,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ── Session modal ─────────────────────────────────────────────── */
+/*  Session modal  */
 #session-modal {
   position: fixed; inset: 0; z-index: 1500;
   background: rgba(0,0,0,.72);
@@ -1175,7 +1178,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 .sm-btn-outline { background: none; border: 1px solid var(--border); color: var(--dark); }
 .sm-btn-outline:hover { border-color: var(--gold); color: var(--gold); }
 
-/* ── Delivery modal ────────────────────────────────────────────── */
+/*  Delivery modal  */
 #delivery-modal {
   display: none; position: fixed; inset: 0; z-index: 1000;
   background: rgba(45,58,63,.55); backdrop-filter: blur(3px);
@@ -1213,7 +1216,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 .dm-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1.4rem; }
 .dm-prog-wrap { margin-top:.6rem; }
 
-/* ── AI Extended Fields (Hallazgo / Recomendación / Implementación) ── */
+/*  AI Extended Fields (Hallazgo / Recomendación / Implementación)  */
 .ai-ext-block {
   background: rgba(26,107,138,.04);
   border: 1px solid rgba(26,107,138,.15);
@@ -1239,8 +1242,108 @@ td:hover .hz-edit-hint { opacity: 1; }
 }
 .ai-ext-ta:focus { background: rgba(26,107,138,.04); border-radius: 3px; }
 
-/* ── Clima Laboral Tab ─────────────────────────────────────────────── */
-#clima-view {
+
+/*  Modulo Calificacion de Alimentos  */
+#alimentos-view {
+  flex: 1; overflow-y: auto; display: none; flex-direction: column;
+  padding: 1.4rem; gap: 1.2rem; background: var(--off);
+}
+#alimentos-view.visible { display: flex; }
+.ali-header {
+  background: #fff; border-radius: var(--r); padding: 1.1rem 1.3rem;
+  box-shadow: var(--shadow); border-left: 4px solid var(--amber);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.ali-title { font-family: var(--f-t); font-size: 1.1rem; font-weight: 800; letter-spacing: .07em; }
+.ali-sub { font-size: .6rem; color: var(--mid); letter-spacing: .1em; margin-top: .15rem; }
+.ali-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+.ali-card {
+  background: #fff; border-radius: var(--r); box-shadow: var(--shadow);
+  border: 1px solid var(--border); overflow: hidden;
+  transition: box-shadow .15s;
+}
+.ali-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.ali-card-head {
+  background: var(--dark); color: #fff;
+  padding: .55rem 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .62rem; letter-spacing: .12em; font-weight: 700;
+}
+.ali-card-num { color: var(--gold); font-family: var(--f-t); font-size: 1rem; font-weight: 800; }
+.ali-card-body { padding: .9rem 1rem; display: flex; flex-direction: column; gap: .6rem; }
+.ali-field { display: flex; flex-direction: column; gap: .2rem; }
+.ali-field label {
+  font-size: .6rem; font-weight: 700; letter-spacing: .14em;
+  color: var(--mid); text-transform: uppercase;
+}
+.ali-input {
+  border: 1.5px solid var(--border); border-radius: 4px;
+  padding: .4rem .65rem; font-size: .82rem; font-family: var(--f-b);
+  color: var(--dark); outline: none; transition: border-color .15s;
+  background: #fff;
+}
+.ali-input:focus { border-color: var(--gold); }
+.ali-row { display: flex; gap: .6rem; }
+.ali-row .ali-field { flex: 1; }
+.ali-status-row { display: flex; gap: .4rem; margin-top: .1rem; }
+.ali-status-btn {
+  flex: 1; padding: .42rem .4rem; border-radius: 4px; border: 2px solid transparent;
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; cursor: pointer;
+  transition: all .15s;
+}
+.ali-status-btn.cumple {
+  color: var(--green); background: rgba(46,125,50,.07);
+  border-color: rgba(46,125,50,.25);
+}
+.ali-status-btn.desviacion {
+  color: var(--red); background: rgba(192,57,43,.07);
+  border-color: rgba(192,57,43,.25);
+}
+.ali-status-btn.cumple.sel { background: var(--green); color: #fff; border-color: var(--green); }
+.ali-status-btn.desviacion.sel { background: var(--red); color: #fff; border-color: var(--red); }
+.ali-badge {
+  display: inline-block; font-size: .58rem; font-weight: 700; letter-spacing: .08em;
+  padding: .15rem .45rem; border-radius: 2px; color: #fff;
+}
+.ali-temp-alert { font-size: .64rem; color: var(--red); font-weight: 600; margin-top: .15rem; display: none; }
+.ali-add-wrap { display: flex; justify-content: center; padding: .5rem 0; }
+.ali-footer {
+  padding: .65rem 1rem; border-top: 1px solid var(--border);
+  background: var(--cream); display: flex; gap: .5rem; align-items: center;
+  justify-content: space-between; flex-wrap: wrap;
+}
+.ali-summary-chip {
+  font-size: .64rem; font-weight: 700; padding: .2rem .6rem;
+  border-radius: 3px; color: #fff;
+}
+
+/*  Google Drive connect strip  */
+#drive-strip {
+  display: none; align-items: center; gap: .6rem;
+  padding: .38rem 1.4rem; background: #F0F7FF;
+  border-bottom: 1px solid #BDD7F8;
+  font-size: .67rem; color: #1a4a80; flex-shrink: 0;
+}
+#drive-strip.show { display: flex; }
+#drive-strip .ds-icon { font-weight: 700; letter-spacing: .08em; color: #1a6ab5; }
+#drive-status { font-size: .64rem; font-style: italic; }
+
+/*  Keyword highlight in report  */
+.kw-highlight { font-weight: 700; color: #000; }
+
+/*  Reporte Unificado section dividers  */
+.rpt-module-divider {
+  background: var(--dark); color: #fff;
+  padding: .55rem 2rem;
+  font-family: var(--f-t); font-size: .68rem; letter-spacing: .28em;
+  font-weight: 700; border-top: 3px solid var(--gold);
+}
+
   flex: 1; overflow-y: auto;
   display: none; flex-direction: column;
   padding: 1.4rem;
@@ -1338,7 +1441,7 @@ td:hover .hz-edit-hint { opacity: 1; }
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════ 2. HTML STRUCTURE ══════ -->
+<!--  2. HTML STRUCTURE  -->
 
 <!-- Topbar -->
 <div id="topbar">
@@ -1369,21 +1472,30 @@ td:hover .hz-edit-hint { opacity: 1; }
       <input id="inp-key" type="password" placeholder="sk-ant-api03-… (opcional)" oninput="onKeyInput()">
     </div>
     <div class="mode-btns">
-      <button class="mode-btn active" id="btn-cap" onclick="setMode('cap')">📷 CAPTURA</button>
-      <button class="mode-btn" id="btn-dash" onclick="setMode('dash')">📊 DASHBOARD</button>
-      <button class="mode-btn" id="btn-hz" onclick="setMode('hz')">📝 HALLAZGOS</button>
-      <button class="mode-btn" id="btn-clima2" onclick="setMode('clima2')">🧑‍🤝‍🧑 CLIMA</button>
-      <button class="mode-btn" id="btn-rep" onclick="setMode('rep')">📋 REPORTE</button>
-      <button class="mode-btn" id="btn-hist" onclick="setMode('hist')">🗂 HISTORIAL</button>
+      <button class="mode-btn active" id="btn-cap"       onclick="setMode('cap')">CAPTURA</button>
+      <button class="mode-btn"        id="btn-dash"      onclick="setMode('dash')">DASHBOARD</button>
+      <button class="mode-btn"        id="btn-ali"       onclick="setMode('ali')">ALIMENTOS</button>
+      <button class="mode-btn"        id="btn-hz"        onclick="setMode('hz')">HALLAZGOS</button>
+      <button class="mode-btn"        id="btn-clima2"    onclick="setMode('clima2')">CLIMA</button>
+      <button class="mode-btn"        id="btn-rep"       onclick="setMode('rep')">REPORTE</button>
+      <button class="mode-btn"        id="btn-hist"      onclick="setMode('hist')">HISTORIAL</button>
     </div>
     <!-- Save indicator -->
     <div class="save-wrap">
       <div class="save-dot" id="save-dot"></div>
       <span id="save-label">Sin guardar</span>
     </div>
-    <button class="btn-save" onclick="manualSave()">💾 Guardar</button>
-    <button class="btn-save-sm" onclick="openSessionModal()" title="Exportar / Importar / Nueva sesión">⋯</button>
+    <button class="btn-save" onclick="manualSave()">Guardar</button>
+    <button class="btn-save-sm" onclick="openSessionModal()" title="Exportar / Importar / Nueva sesión">···</button>
   </div>
+</div>
+
+<!-- Google Drive connection strip -->
+<div id="drive-strip">
+  <span class="ds-icon">DRIVE</span>
+  <span id="drive-status">No conectado</span>
+  <button class="btn btn-outline" onclick="driveConnect()" style="font-size:.6rem;padding:.2rem .6rem;margin-left:.5rem">Conectar Drive</button>
+  <button class="btn btn-outline" onclick="DRIVE_CONFIG.connected=false;DRIVE_CONFIG.token=null;localStorage.removeItem(DRIVE_CONFIG.tokenKey);updateDriveStrip(false)" style="font-size:.6rem;padding:.2rem .6rem;color:var(--mid)">Desconectar</button>
 </div>
 
 <div id="app">
@@ -1420,14 +1532,14 @@ td:hover .hz-edit-hint { opacity: 1; }
       <div class="main-header-right">
         <!-- FIX v4: botón habilitado apenas hay fotos (key validada en analyzeAll) -->
         <button class="btn btn-ai" id="btn-analyze-all" onclick="analyzeAll()" disabled>
-          ⚡ Analizar área
+          Analizar area
         </button>
-        <button class="btn btn-dark" onclick="triggerUpload()">＋ Fotos</button>
+        <button class="btn btn-dark" onclick="triggerUpload()">+ Fotos</button>
       </div>
     </div>
     <!-- Key warning banner (se muestra si intenta usar IA sin key válida) -->
     <div id="key-warning">
-      ⚠ Ingresa tu API Key en la barra superior para habilitar el análisis automático de fotografías.
+      Ingresa tu API Key en la barra superior para habilitar el análisis automático de fotografías.
       <button onclick="document.getElementById('key-warning').classList.remove('show');document.getElementById('inp-key').focus();"
         style="margin-left:.5rem;background:none;border:1px solid #F5D78A;border-radius:4px;padding:.2rem .6rem;font-size:.62rem;cursor:pointer;color:#7A5500">
         Ingresar key
@@ -1441,7 +1553,7 @@ td:hover .hz-edit-hint { opacity: 1; }
       accept="image/*,.dng,.raw,.cr2,.cr3,.nef,.nrw,.arw,.orf,.rw2,.raf,.pef,.srw,.x3f,.3fr,.fff,.iiq,.rwl,.mrw,.bay,.cap,.iiq,.eip,.dcs,.dcr,.drf,.k25,.kdc,.mef,.mos,.ptx,.pxn,.r3d,.rwz,.srf,.sr2,.tif,.tiff"
       onchange="onFileSelect(event)" style="display:none">
     <div class="drop-zone" id="drop-zone">
-      <div class="dz-icon">📸</div>
+      <div class="dz-icon"></div>
       <div class="dz-text">Arrastra fotos aquí · o haz clic para seleccionar</div>
       <div class="dz-sub">JPG · PNG · HEIC · DNG · RAW · CR2 · NEF · ARW · TIFF y más</div>
     </div>
@@ -1459,8 +1571,8 @@ td:hover .hz-edit-hint { opacity: 1; }
         <div class="cl2-sub">CAPTURA MULTI-COLABORADOR · 13 PREGUNTAS ESTÁNDAR</div>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <button class="btn btn-gold" id="btn-gen-clima2" onclick="generarResumenClima2()">⚡ Generar Resumen</button>
-        <button class="btn btn-outline" onclick="exportClima2PDF()" style="font-size:.65rem">⬇ PDF Clima</button>
+        <button class="btn btn-gold" id="btn-gen-clima2" onclick="generarResumenClima2()">Generar Resumen</button>
+        <button class="btn btn-outline" onclick="exportClima2PDF()" style="font-size:.65rem">PDF Clima</button>
       </div>
     </div>
 
@@ -1497,17 +1609,17 @@ td:hover .hz-edit-hint { opacity: 1; }
         <div class="hz-title">HALLAZGOS Y PLAN DE ACCIÓN</div>
         <div class="hz-sub">CARGA · CLASIFICACIÓN · SOLUCIONES POR TURNO</div>
       </div>
-      <button class="btn btn-gold" onclick="exportHallazgosPDF()" style="font-size:.65rem">⬇ PDF Plan de Acción</button>
+      <button class="btn btn-gold" onclick="exportHallazgosPDF()" style="font-size:.65rem">Exportar PDF Plan de Acción</button>
     </div>
 
     <!-- Texto libre de hallazgos -->
     <div class="hz-input-wrap">
       <div class="hz-lbl">INGRESA LOS HALLAZGOS DE AUDITORÍA</div>
       <textarea class="hz-textarea" id="hz-textarea"
-        placeholder="Escribe o pega aquí los hallazgos de la auditoría. El sistema los clasificará automáticamente en Crítico, Observación y Correcto.&#10;&#10;Puedes usar palabras clave como:&#10;• CRÍTICO / CRITICO / ⚠ / URGENTE → clasificado como Crítico&#10;• OBSERVACIÓN / OBSERVACION / REVISAR → Observación&#10;• CORRECTO / OK / CUMPLE / BIEN → Correcto&#10;&#10;Ejemplo:&#10;CRÍTICO: Temperatura de refrigerador a 12°C, fuera del rango de 0-4°C. Acción inmediata requerida.&#10;OBSERVACIÓN: Etiquetado de productos incompleto en el 40% de los contenedores.&#10;CORRECTO: Brigada con uniforme completo y EPP. Cumple estándar."></textarea>
+        placeholder="Escribe o pega aquí los hallazgos de la auditoría. El sistema los clasificará automáticamente en Crítico, Observación y Correcto.&#10;&#10;Puedes usar palabras clave como:&#10;• CRÍTICO / CRITICO /  / URGENTE → clasificado como Crítico&#10;• OBSERVACIÓN / OBSERVACION / REVISAR → Observación&#10;• CORRECTO / OK / CUMPLE / BIEN → Correcto&#10;&#10;Ejemplo:&#10;CRÍTICO: Temperatura de refrigerador a 12°C, fuera del rango de 0-4°C. Acción inmediata requerida.&#10;OBSERVACIÓN: Etiquetado de productos incompleto en el 40% de los contenedores.&#10;CORRECTO: Brigada con uniforme completo y EPP. Cumple estándar."></textarea>
       <div class="hz-actions">
-        <button class="btn btn-dark" onclick="clasificarHallazgos()">⚡ Clasificar Hallazgos</button>
-        <button class="btn btn-ai" id="btn-gen-plan" onclick="generarPlanAccion()" disabled>🔍 Generar Plan de Acción</button>
+        <button class="btn btn-dark" onclick="clasificarHallazgos()"> Clasificar Hallazgos</button>
+        <button class="btn btn-ai" id="btn-gen-plan" onclick="generarPlanAccion()" disabled> Generar Plan de Acción</button>
         <button class="btn btn-outline" onclick="limpiarHallazgos()">↺ Limpiar</button>
       </div>
     </div>
@@ -1518,7 +1630,7 @@ td:hover .hz-edit-hint { opacity: 1; }
       <div class="hz-summaries">
         <div class="hz-sum-card critico">
           <div class="hz-sum-head">
-            <span class="hz-sum-icon">🔴</span>
+            <span class="hz-sum-icon"></span>
             <span class="hz-sum-title" style="color:var(--red)">CRÍTICO</span>
             <span class="hz-sum-count" id="hz-cnt-critico">0</span>
           </div>
@@ -1528,7 +1640,7 @@ td:hover .hz-edit-hint { opacity: 1; }
         </div>
         <div class="hz-sum-card observa">
           <div class="hz-sum-head">
-            <span class="hz-sum-icon">◎</span>
+            <span class="hz-sum-icon"></span>
             <span class="hz-sum-title" style="color:var(--amber)">OBSERVACIONES</span>
             <span class="hz-sum-count" id="hz-cnt-observa">0</span>
           </div>
@@ -1538,7 +1650,7 @@ td:hover .hz-edit-hint { opacity: 1; }
         </div>
         <div class="hz-sum-card correcto">
           <div class="hz-sum-head">
-            <span class="hz-sum-icon">✓</span>
+            <span class="hz-sum-icon"></span>
             <span class="hz-sum-title" style="color:var(--green)">CORRECTO</span>
             <span class="hz-sum-count" id="hz-cnt-correcto">0</span>
           </div>
@@ -1569,6 +1681,30 @@ td:hover .hz-edit-hint { opacity: 1; }
     <div class="dmz-powered">POWERED BY <span>DMZ</span> · DE LA MORA ZUMARÁN · KITCHEN SUPPORT</div>
   </div>
 
+  <!-- Modulo Calificacion de Alimentos -->
+  <div id="alimentos-view">
+    <div class="ali-header">
+      <div>
+        <div class="ali-title">CALIFICACIÓN DE ALIMENTOS</div>
+        <div class="ali-sub">TEMPERATURA · ESTÁNDAR OPERATIVO · CALIDAD ORGANOLÉPTICA</div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="addAlimentoCard()">+ Agregar insumo</button>
+        <button class="btn btn-outline" onclick="exportAlimentosPDF()" style="font-size:.65rem">Exportar PDF</button>
+      </div>
+    </div>
+    <div class="ali-grid" id="ali-grid">
+      <!-- Tarjetas generadas por JS -->
+    </div>
+    <div id="ali-summary-bar" style="display:none;background:#fff;border-radius:var(--r);padding:.75rem 1.2rem;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.6rem;font-weight:700;letter-spacing:.14em;color:var(--mid);">RESUMEN:</span>
+      <span class="ali-summary-chip" id="ali-sum-cumple" style="background:var(--green)">0 Cumplen</span>
+      <span class="ali-summary-chip" id="ali-sum-desv" style="background:var(--red)">0 Desviaciones</span>
+      <span class="ali-summary-chip" id="ali-sum-total" style="background:var(--mid)">0 Total</span>
+    </div>
+    <div class="dmz-powered">POWERED BY <span>DMZ</span> · DE LA MORA ZUMARÁN · KITCHEN SUPPORT</div>
+  </div>
+
   <!-- Report view -->
   <div id="report-view"></div>
 
@@ -1576,12 +1712,12 @@ td:hover .hz-edit-hint { opacity: 1; }
   <div id="hist-view">
     <div class="hist-header">
       <div>
-        <div class="hist-title">🗂 HISTORIAL DE AUDITORÍAS</div>
+        <div class="hist-title">HISTORIAL DE AUDITORÍAS</div>
         <div class="hist-sub">AUDITORÍAS GUARDADAS EN ESTE DISPOSITIVO</div>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="importHistSession()" style="font-size:.65rem">⬆ Importar JSON</button>
-        <button class="btn btn-outline" onclick="clearHistorial()" style="font-size:.65rem;color:var(--red);border-color:var(--red)">🗑 Limpiar todo</button>
+        <button class="btn btn-outline" onclick="importHistSession()" style="font-size:.65rem">Importar JSON</button>
+        <button class="btn btn-outline" onclick="clearHistorial()" style="font-size:.65rem;color:var(--red);border-color:var(--red)">Limpiar todo</button>
       </div>
     </div>
     <div id="hist-grid-wrap" class="hist-empty">Cargando historial…</div>
@@ -1592,8 +1728,8 @@ td:hover .hz-edit-hint { opacity: 1; }
 <div id="ann-modal">
   <div class="ann-inner">
     <div class="ann-head">
-      📍 MARCAR PROBLEMAS EN LA FOTO
-      <button class="ann-close" onclick="closeAnn()">✕</button>
+      MARCAR PROBLEMAS EN LA FOTO
+      <button class="ann-close" onclick="closeAnn()"></button>
     </div>
     <div class="ann-body">
       <div class="ann-photo-area" id="ann-photo-area" onclick="placeMarker(event)">
@@ -1616,11 +1752,11 @@ td:hover .hz-edit-hint { opacity: 1; }
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════ 3. JS ══════ -->
+<!--  3. JS  -->
 <script>
-/* ─────────────────────────────────────────────────────────────────
+/* 
    CONFIG
-───────────────────────────────────────────────────────────────── */
+ */
 const CFG = {
   model: 'claude-haiku-4-5-20251001',
   apiImgSize: 800,      // v7: 800px max (era 1024) — ahorro de tokens
@@ -1629,11 +1765,11 @@ const CFG = {
 };
 
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    STORAGE — auto-save + export/import
    Auto-guarda en localStorage cada 60 s.
    Imágenes se comprimen a 800px on-demand al guardar.
-───────────────────────────────────────────────────────────────── */
+ */
 const STORAGE_KEY = 'dmz_audit_v4';
 let _saveTimer = null;
 let _unsaved   = false;        // true cuando hay cambios no guardados
@@ -1662,9 +1798,9 @@ function updateSaveIndicator() {
 }
 
 
-// ══════════════════════════════════════════════════════
+// 
 //  IndexedDB — almacenamiento de fotos (sin límite ~5MB)
-// ══════════════════════════════════════════════════════
+// 
 const IDB_NAME    = 'dmz_audit_photos';
 const IDB_STORE   = 'photos';
 const IDB_VERSION = 1;
@@ -1766,19 +1902,20 @@ function b64ToObjectURL(b64) {
   } catch(e) { return null; }
 }
 
-// ── Guarda sesión: texto en localStorage, fotos en IndexedDB
+//  Guarda sesión: texto en localStorage, fotos en IndexedDB
 async function saveSession(silent) {
   const dot = document.getElementById('save-dot');
   if (dot) dot.className = 'save-dot saving';
 
   const saveState = {
     savedAt:        new Date().toISOString(),
-    version:        '9.7',
+    version:        '10.0',
     client:         STATE.client,
     customAreaDefs: JSON.parse(JSON.stringify(STATE.customAreaDefs)),
     areas:          {},
     cl2State:       JSON.parse(JSON.stringify(CL2_STATE)),
     hallazgosState: JSON.parse(JSON.stringify(HZ_STATE)),
+    aliState:       JSON.parse(JSON.stringify(ALI_STATE)),
   };
 
   // Fotos: guarda en IndexedDB (sin límite), solo metadatos en localStorage
@@ -1822,17 +1959,19 @@ async function saveSession(silent) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
     updateSaveIndicator();
-    if (!silent) showToast('✓ Sesión guardada');
+    if (!silent) showToast('Sesion guardada');
+    // Respaldo en Drive si está autenticado (asíncrono, no bloquea UI)
+    if (DRIVE_CONFIG.connected) driveBackupSession().catch(() => {});
   } catch(e) {
     if (dot) dot.className = 'save-dot err';
     const lbl = document.getElementById('save-label');
     if (lbl) lbl.textContent = 'Error al guardar';
-    if (!silent) showToast('⚠ Error al guardar — exporta JSON como respaldo');
+    if (!silent) showToast('Error al guardar — exporta JSON como respaldo');
     console.warn('Save error:', e);
   }
 }
 
-// ── Carga sesión: metadatos de localStorage, fotos de IndexedDB
+//  Carga sesión: metadatos de localStorage, fotos de IndexedDB
 async function loadSession() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -1909,7 +2048,7 @@ async function loadSession() {
         renderGrid();
         renderAreaNav();
         updateProgress();
-        showToast('✓ Fotos restauradas');
+        showToast('Fotos restauradas');
       });
     }).catch(e => console.warn('IDB load error:', e));
 
@@ -1926,6 +2065,10 @@ async function loadSession() {
 
     if (saved.cl2State)       Object.assign(CL2_STATE, saved.cl2State);
     if (saved.hallazgosState) Object.assign(HZ_STATE,  saved.hallazgosState);
+    if (saved.aliState && saved.aliState.items) {
+      ALI_STATE.items = saved.aliState.items;
+      ALI_STATE._cnt  = saved.aliState._cnt || 0;
+    }
 
     return loaded > 0;
   } catch(e) {
@@ -1934,12 +2077,12 @@ async function loadSession() {
   }
 }
 
-// ── Guardado manual (desde botón)
+//  Guardado manual (desde botón)
 async function manualSave() {
   await saveSession(false);
 }
 
-// ── Exportar sesión como JSON
+//  Exportar sesión como JSON
 async function exportSession() {
   await saveSession(true);
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -1954,10 +2097,10 @@ async function exportSession() {
   a.click();
   URL.revokeObjectURL(url);
   closeSessionModal();
-  showToast('✓ Sesión exportada como ' + filename);
+  showToast('Sesion exportada como ' + filename);
 }
 
-// ── Importar sesión desde JSON
+//  Importar sesión desde JSON
 function importSession(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1967,10 +2110,10 @@ function importSession(e) {
       const data = JSON.parse(ev.target.result);
       if (!data.areas) throw new Error('Formato inválido');
       localStorage.setItem(STORAGE_KEY, ev.target.result);
-      showToast('✓ Sesión importada — recargando…');
+      showToast('Sesion importada — recargando…');
       setTimeout(() => location.reload(), 1200);
     } catch(err) {
-      showToast('⚠ Archivo inválido: ' + err.message);
+      showToast('Archivo invalido: ' + err.message);
     }
   };
   reader.readAsText(file);
@@ -1978,18 +2121,18 @@ function importSession(e) {
   closeSessionModal();
 }
 
-// ── Borrar sesión completa
+//  Borrar sesión completa
 function clearSession() {
   if (!confirm('¿Borrar TODA la sesión y comenzar de nuevo? Esta acción no se puede deshacer.')) return;
   localStorage.removeItem(STORAGE_KEY);
   location.reload();
 }
 
-// ── Modal de sesión
+//  Modal de sesión
 function openSessionModal()  { document.getElementById('session-modal').classList.add('open'); }
 function closeSessionModal() { document.getElementById('session-modal').classList.remove('open'); }
 
-// ── Toast
+//  Toast
 let _toastTimer = null;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -2000,7 +2143,7 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ── Auto-save cada 60 segundos (solo si hay cambios)
+//  Auto-save cada 60 segundos (solo si hay cambios)
 function startAutoSave() {
   _saveTimer = setInterval(async () => {
     if (_unsaved) await saveSession(true);
@@ -2008,9 +2151,9 @@ function startAutoSave() {
 }
 
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    STATE
-───────────────────────────────────────────────────────────────── */
+ */
 const STATE = {
   apiKey: '',
   client: '',
@@ -2019,6 +2162,242 @@ const STATE = {
   customAreaDefs: [],
   logoB64: '',
 };
+
+/* 
+   MODULO CALIFICACION DE ALIMENTOS — Estado
+ */
+let ALI_STATE = {
+  items: [],    // { id, nombre, temperatura, tempLimite, estandar, organoleptica }
+  _cnt: 0,
+};
+
+function _newAliId() { return 'ali' + (++ALI_STATE._cnt); }
+
+/* 
+   DICCIONARIO ACTIVO DE SANITIZACIÓN DE TEXTOS
+   Reemplaza lenguaje coloquial por terminología técnica ejecutiva
+ */
+const DICCIONARIO_ACTIVO = [
+  // higiene
+  { rx: /muy\s+sucio/gi,                rep: 'incumplimiento de estándar de higiene' },
+  { rx: /\bsucio\b/gi,                  rep: 'incumplimiento de estándar de higiene' },
+  { rx: /\bsuciedad\b/gi,               rep: 'deficiencia de higiene operativa' },
+  { rx: /\bmugre\b/gi,                  rep: 'acumulación de contaminante' },
+  { rx: /\bcochinero\b/gi,              rep: 'desorden operativo severo' },
+  { rx: /\bdesastre\b/gi,               rep: 'situación de incumplimiento crítico' },
+  { rx: /\bhorrible\b/gi,               rep: 'deficiencia documentada' },
+  { rx: /\bpésimo\b/gi,                 rep: 'nivel de cumplimiento crítico' },
+  { rx: /\bmalísimo\b/gi,               rep: 'nivel de cumplimiento crítico' },
+  { rx: /\bmalo\b/gi,                   rep: 'nivel de cumplimiento deficiente' },
+  // proceso
+  { rx: /masa\s+madre/gi,               rep: 'pre-fermento' },
+  { rx: /\badn\b/gi,                    rep: 'estándar de identidad' },
+  { rx: /\boler\s+mal\b/gi,             rep: 'alteración organoléptica por aromas' },
+  { rx: /\bhuele\s+mal\b/gi,            rep: 'alteración organoléptica por aromas' },
+  { rx: /\bmal\s+olor\b/gi,             rep: 'alteración organoléptica detectada' },
+  { rx: /\bse\s+ve\s+mal\b/gi,          rep: 'incumplimiento de presentación visual' },
+  { rx: /\bmuy\s+feo\b/gi,              rep: 'incumplimiento de presentación visual' },
+  // temperatura
+  { rx: /\bfrío\s+incorrecto\b/gi,      rep: 'temperatura fuera de parámetro' },
+  { rx: /\bcaliente\s+incorrecto\b/gi,  rep: 'temperatura fuera de parámetro' },
+  // actitud y personal
+  { rx: /\bflojo\b/gi,                  rep: 'bajo desempeño operativo' },
+  { rx: /\bflojera\b/gi,                rep: 'baja productividad registrada' },
+  { rx: /\bno\s+hace\s+nada\b/gi,       rep: 'ausencia de ejecución de tarea' },
+  { rx: /\bno\s+sirve\b/gi,             rep: 'desalineación del estándar de servicio' },
+  // PEPS y almacén
+  { rx: /\bno\s+hay\s+fechas\b/gi,      rep: 'ausencia de etiquetado de caducidad' },
+  { rx: /\bsin\s+fecha\b/gi,            rep: 'producto sin etiqueta de caducidad' },
+  // genéricos de severidad
+  { rx: /\bmuy\s+grave\b/gi,            rep: 'incumplimiento crítico' },
+  { rx: /\bgrave\b/gi,                  rep: 'hallazgo de alta prioridad' },
+  { rx: /\bpeligroso\b/gi,              rep: 'riesgo operativo documentado' },
+];
+
+/**
+ * Aplica el diccionario activo a un string de entrada.
+ * Retorna el texto sanitizado con terminología técnica ejecutiva.
+ */
+function sanitizarTexto(texto) {
+  if (!texto) return texto;
+  let out = texto;
+  DICCIONARIO_ACTIVO.forEach(({ rx, rep }) => {
+    out = out.replace(rx, rep);
+  });
+  return out;
+}
+
+/* 
+   RESALTADO DE PALABRAS CLAVE EN REPORTE
+ */
+const KW_HIGHLIGHT_RE = /\b(PEPS|5S|manipulaci[oó]n\s+de\s+alimentos|suciedad|cr[ií]tico|est[aá]ndar|pre-fermento)\b/gi;
+
+function highlightKeywords(html) {
+  // Solo aplica sobre nodos de texto — no dentro de atributos ni tags
+  return html.replace(KW_HIGHLIGHT_RE, '<strong class="kw-highlight">$1</strong>');
+}
+
+/* 
+   GOOGLE DRIVE OAuth 2.0 — Backup en nube
+   CLIENT_ID: registrar en Google Cloud Console con scope drive.file
+ */
+const DRIVE_CONFIG = {
+  clientId: '',         // Inyectar CLIENT_ID de Google Cloud Console
+  scope:    'https://www.googleapis.com/auth/drive.file',
+  tokenKey: 'dmz_gdrive_token',
+  connected: false,
+  token: null,
+};
+
+/** Carga el token guardado en localStorage (si no expiró) */
+function driveLoadToken() {
+  try {
+    const raw = localStorage.getItem(DRIVE_CONFIG.tokenKey);
+    if (!raw) return false;
+    const t = JSON.parse(raw);
+    if (Date.now() > t.expires_at) { localStorage.removeItem(DRIVE_CONFIG.tokenKey); return false; }
+    DRIVE_CONFIG.token = t.access_token;
+    DRIVE_CONFIG.connected = true;
+    updateDriveStrip(true);
+    return true;
+  } catch(e) { return false; }
+}
+
+/** Abre el flujo OAuth2 implicit grant para Drive */
+function driveConnect() {
+  if (!DRIVE_CONFIG.clientId) {
+    showToast('CLIENT_ID de Google Drive no configurado');
+    return;
+  }
+  const params = new URLSearchParams({
+    client_id:     DRIVE_CONFIG.clientId,
+    redirect_uri:  window.location.href.split('?')[0],
+    response_type: 'token',
+    scope:         DRIVE_CONFIG.scope,
+    prompt:        'select_account',
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+/** Intercepta el access_token del hash de retorno OAuth2 */
+function driveHandleOAuthCallback() {
+  const hash = window.location.hash;
+  if (!hash.includes('access_token')) return;
+  const params = new URLSearchParams(hash.replace('#', '?'));
+  const token   = params.get('access_token');
+  const expires = parseInt(params.get('expires_in') || '3600', 10);
+  if (token) {
+    const t = { access_token: token, expires_at: Date.now() + expires * 1000 };
+    localStorage.setItem(DRIVE_CONFIG.tokenKey, JSON.stringify(t));
+    DRIVE_CONFIG.token     = token;
+    DRIVE_CONFIG.connected = true;
+    window.history.replaceState(null, '', window.location.pathname);
+    updateDriveStrip(true);
+    showToast('Google Drive conectado correctamente');
+  }
+}
+
+/** Sube un Blob como archivo a Drive (multipart) */
+async function driveUploadFile(filename, blob, mimeType) {
+  if (!DRIVE_CONFIG.token) throw new Error('Drive no autenticado');
+  const metadata = { name: filename, mimeType };
+  const boundary = 'dmz_boundary_' + Date.now();
+  const metaStr  = JSON.stringify(metadata);
+  const arrBuf   = await blob.arrayBuffer();
+
+  // Construir multipart body manualmente
+  const encoder  = new TextEncoder();
+  const metaPart = encoder.encode(
+    '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+    metaStr + '\r\n'
+  );
+  const mediaPart = encoder.encode('--' + boundary + '\r\nContent-Type: ' + mimeType + '\r\n\r\n');
+  const closing   = encoder.encode('\r\n--' + boundary + '--');
+  const body      = new Uint8Array(metaPart.byteLength + mediaPart.byteLength + arrBuf.byteLength + closing.byteLength);
+  let off = 0;
+  [metaPart, mediaPart, new Uint8Array(arrBuf), closing].forEach(buf => {
+    body.set(buf, off); off += buf.byteLength;
+  });
+
+  const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method:  'POST',
+    headers: {
+      'Authorization': 'Bearer ' + DRIVE_CONFIG.token,
+      'Content-Type':  'multipart/related; boundary=' + boundary,
+    },
+    body,
+  });
+  if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error?.message || 'Drive upload error'); }
+  return await resp.json();
+}
+
+/** Actualiza la barra de estado Drive en el topbar */
+function updateDriveStrip(connected) {
+  const strip  = document.getElementById('drive-strip');
+  const status = document.getElementById('drive-status');
+  if (!strip) return;
+  if (connected) {
+    strip.classList.add('show');
+    if (status) status.textContent = 'Conectado — los respaldos se guardarán automáticamente en Drive';
+  } else {
+    strip.classList.remove('show');
+  }
+}
+
+/** Respaldo de sesión a Drive: JSON de metadatos + HTML de reporte */
+async function driveBackupSession() {
+  if (!DRIVE_CONFIG.connected || !DRIVE_CONFIG.token) return; // silencioso si no conectado
+  try {
+    await saveSession(true);
+    const raw    = localStorage.getItem('dmz_audit_v4');
+    if (!raw) return;
+    const client  = (STATE.client || 'auditoria').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const dateStr = new Date().toISOString().slice(0,10);
+    const jsonBlob = new Blob([raw], { type: 'application/json' });
+    await driveUploadFile(`DMZ-Auditoria-${client}-${dateStr}.json`, jsonBlob, 'application/json');
+    showToast('Sesion respaldada en Google Drive');
+  } catch(e) {
+    console.warn('Drive backup error:', e.message);
+    showToast('Aviso: respaldo Drive no completado — ' + e.message);
+  }
+}
+
+/* 
+   PREPARACION BACKEND — fetch async listo para servidor externo
+   Reemplazar BASE_URL con el endpoint de produccion cuando esté listo
+ */
+const BACKEND = {
+  BASE_URL: '',   // ej: 'https://api.dmzkitchen.com/v1'
+  enabled:  false,
+};
+
+/**
+ * Envía datos de auditoría al servidor externo.
+ * Si BACKEND.enabled === false, opera en modo local sin error.
+ */
+async function backendSyncSession(payload) {
+  if (!BACKEND.enabled || !BACKEND.BASE_URL) return { ok: false, reason: 'backend_disabled' };
+  try {
+    const resp = await fetch(BACKEND.BASE_URL + '/auditorias', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return { ok: true, data: await resp.json() };
+  } catch(e) {
+    console.warn('Backend sync error:', e.message);
+    return { ok: false, reason: e.message };
+  }
+}
+
+async function backendFetchConfig() {
+  if (!BACKEND.enabled || !BACKEND.BASE_URL) return null;
+  try {
+    const resp = await fetch(BACKEND.BASE_URL + '/config');
+    return resp.ok ? await resp.json() : null;
+  } catch(e) { return null; }
+}
 
 // Estructura de una foto:
 // { id, displayUrl, apiDataUrl, file, name, alert, state, notes, markers, aiSuggestion }
@@ -2029,9 +2408,9 @@ const STATE = {
 let _pidCnt = 0;
 const newPid = () => 'p' + (++_pidCnt);
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    AREAS
-───────────────────────────────────────────────────────────────── */
+ */
 let AREAS = [
   {
     id: 'fachada', name: 'EXTERIOR / FACHADA',
@@ -2081,14 +2460,18 @@ let AREAS = [
 
 const AC  = { critico: '#C0392B', observacion: '#E07B00', correcto: '#2E7D32' };
 const AL  = { critico: 'CRÍTICO', observacion: 'OBSERVACIÓN', correcto: 'CORRECTO' };
-const AI_ = { critico: '✕',       observacion: '◎',           correcto: '✓'         };
+const AI_ = { critico: '',       observacion: '',           correcto: ''         };
 const TC  = { INMEDIATO: '#C0392B', 'CORTO PLAZO': '#E07B00', 'MEDIO PLAZO': '#2E7D32' };
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    INIT
-───────────────────────────────────────────────────────────────── */
+ */
 function init() {
   AREAS.forEach(a => STATE.areas[a.id] = { photos: [] });
+
+  // Google Drive: interceptar callback OAuth2 y cargar token guardado
+  driveHandleOAuthCallback();
+  driveLoadToken();
 
   // Aplica logo guardado
   const _savedLogo = localStorage.getItem('dmz_logo');
@@ -2111,7 +2494,7 @@ function init() {
   startAutoSave();
 
   if (restored) {
-    showToast('✓ Sesión restaurada — ' + Object.values(STATE.areas).reduce((s,a) => s + a.photos.length, 0) + ' fotos cargadas');
+    showToast('Sesion restaurada — ' + Object.values(STATE.areas).reduce((s,a) => s + a.photos.length, 0) + ' fotos cargadas');
     // Restaura textarea y summaries de hallazgos si hay datos guardados
     if (HZ_STATE.textoOriginal) {
       const ta = document.getElementById('hz-textarea');
@@ -2137,26 +2520,26 @@ function init() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    UI — modo, nav, progreso
-───────────────────────────────────────────────────────────────── */
+ */
 function setMode(m) {
-  document.getElementById('btn-cap').classList.toggle('active',    m === 'cap');
-  document.getElementById('btn-dash').classList.toggle('active',   m === 'dash');
-  document.getElementById('btn-hz').classList.toggle('active',     m === 'hz');
-  document.getElementById('btn-clima2').classList.toggle('active', m === 'clima2');
-  document.getElementById('btn-rep').classList.toggle('active',    m === 'rep');
-  document.getElementById('btn-hist').classList.toggle('active',   m === 'hist');
-  document.getElementById('main').style.display          = m === 'cap'    ? 'flex'  : 'none';
-  document.getElementById('dash-view').style.display     = m === 'dash'   ? 'block' : 'none';
+  ['cap','dash','ali','hz','clima2','rep','hist'].forEach(id => {
+    const btn = document.getElementById('btn-' + id);
+    if (btn) btn.classList.toggle('active', m === id);
+  });
+  document.getElementById('main').style.display               = m === 'cap'    ? 'flex'  : 'none';
+  document.getElementById('dash-view').style.display          = m === 'dash'   ? 'block' : 'none';
+  document.getElementById('alimentos-view').classList.toggle('visible', m === 'ali');
   document.getElementById('hallazgos-view').classList.toggle('visible', m === 'hz');
   document.getElementById('clima2-view').classList.toggle('visible',    m === 'clima2');
-  document.getElementById('report-view').style.display   = m === 'rep'    ? 'block' : 'none';
+  document.getElementById('report-view').style.display        = m === 'rep'    ? 'block' : 'none';
   document.getElementById('hist-view').classList.toggle('visible',   m === 'hist');
   if (m === 'dash')   buildDash();
   if (m === 'rep')    buildReport();
   if (m === 'clima2') buildClima2View();
   if (m === 'hist')   buildHistorial();
+  if (m === 'ali')    buildAlimentosView();
 }
 
 function onKeyInput() {
@@ -2187,7 +2570,7 @@ function renderAreaNav() {
       <div class="ani-info">
         <div style="display:flex;align-items:center;gap:2px;">
           <span class="ani-name" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.name}</span>
-          <button class="ani-edit-btn" onclick="event.stopPropagation();openEditArea('${a.id}')" title="Editar área">✎</button>
+          <button class="ani-edit-btn" onclick="event.stopPropagation();openEditArea('${a.id}')" title="Editar área"></button>
           <button class="ani-del-btn"  onclick="event.stopPropagation();confirmDeleteArea('${a.id}')" title="Eliminar área">×</button>
         </div>
         <div class="ani-meta">${badge}<span>${cnt} foto${cnt !== 1 ? 's' : ''}</span></div>
@@ -2251,10 +2634,10 @@ function switchArea(id) {
   updateAnalyzeBtn();
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    UPLOAD — FIX v4: usa object URLs para carga INMEDIATA
    (sin FileReader ni conversión base64 en el upload)
-───────────────────────────────────────────────────────────────── */
+ */
 function triggerUpload() { document.getElementById('file-input').click(); }
 
 function setupDrop() {
@@ -2273,7 +2656,7 @@ function onFileSelect(e) {
   e.target.value = '';
 }
 
-// ── Formatos RAW soportados (extensiones)
+//  Formatos RAW soportados (extensiones)
 const RAW_EXTS = /\.(dng|raw|cr2|cr3|nef|nrw|arw|orf|rw2|raf|pef|srw|x3f|3fr|fff|iiq|eip|dcs|dcr|drf|k25|kdc|mef|mos|ptx|pxn|r3d|rwz|srf|sr2|rwl|mrw|bay|cap)$/i;
 
 /**
@@ -2318,7 +2701,7 @@ function extractJpegFromRaw(arrayBuffer) {
 async function toDisplayableBlob(file) {
   const name = file.name.toLowerCase();
 
-  // ── HEIC/HEIF
+  //  HEIC/HEIF
   if (file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(name)) {
     if (window._heicUnavailable || typeof heic2any === 'undefined') {
       throw new Error('Convierte ' + file.name + ' a JPG antes de subir (HEIC no disponible offline).');
@@ -2328,7 +2711,7 @@ async function toDisplayableBlob(file) {
     return new File([out], name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' });
   }
 
-  // ── DNG / RAW y demás formatos crudos
+  //  DNG / RAW y demás formatos crudos
   if (RAW_EXTS.test(name) || file.type === '' || file.type === 'image/x-adobe-dng'
       || file.type === 'image/x-raw' || file.type === 'image/tiff') {
     const buf  = await file.arrayBuffer();
@@ -2341,7 +2724,7 @@ async function toDisplayableBlob(file) {
     throw new Error('No se pudo extraer preview de ' + file.name + '. Exporta como JPG desde tu cámara/app.');
   }
 
-  // ── Imagen normal (JPG, PNG, WEBP, GIF, BMP…)
+  //  Imagen normal (JPG, PNG, WEBP, GIF, BMP…)
   return file;
 }
 
@@ -2349,7 +2732,7 @@ async function processFiles(files) {
   const ALL_EXTS = /\.(heic|heif|jpg|jpeg|png|gif|webp|bmp|tif|tiff|dng|raw|cr2|cr3|nef|nrw|arw|orf|rw2|raf|pef|srw|x3f|3fr|fff|iiq|eip|dcs|dcr|drf|k25|kdc|mef|mos|ptx|pxn|r3d|rwz|srf|sr2|rwl|mrw|bay|cap)$/i;
   const isImage  = f => f.type.startsWith('image/') || ALL_EXTS.test(f.name) || f.type === '';
   const imgs     = files.filter(isImage);
-  if (!imgs.length) { showToast('⚠ No se detectaron imágenes en los archivos seleccionados'); return; }
+  if (!imgs.length) { showToast(' No se detectaron imágenes en los archivos seleccionados'); return; }
 
   let errors = 0;
   showToast('Procesando ' + imgs.length + ' archivo' + (imgs.length > 1 ? 's' : '') + '…');
@@ -2359,7 +2742,7 @@ async function processFiles(files) {
     try {
       processedFile = await toDisplayableBlob(file);
     } catch(err) {
-      showToast('⚠ ' + err.message);
+      showToast(' ' + err.message);
       errors++;
       continue;
     }
@@ -2397,7 +2780,7 @@ async function processFiles(files) {
 
   const loaded = imgs.length - errors;
   if (loaded > 0) {
-    showToast('✓ ' + loaded + ' foto' + (loaded > 1 ? 's' : '') + ' cargada' + (loaded > 1 ? 's' : ''));
+    showToast('' + loaded + ' foto' + (loaded > 1 ? 's' : '') + ' cargada' + (loaded > 1 ? 's' : ''));
   }
 
   if (STATE.apiKey.startsWith('sk-ant-')) {
@@ -2407,9 +2790,9 @@ async function processFiles(files) {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    AI ANALYSIS — Anthropic Vision API
-───────────────────────────────────────────────────────────────── */
+ */
 function buildPrompt(areaName) {
   return `Eres un Chef Ejecutivo consultor con 20 años auditando operaciones de restaurantes de nivel ejecutivo.Evalúas el área "${areaName}".
 
@@ -2549,18 +2932,18 @@ async function analyzeAll() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    PHOTO CARDS
-───────────────────────────────────────────────────────────────── */
+ */
 function renderGrid() {
   const grid   = document.getElementById('photo-grid');
   const photos = STATE.areas[STATE.currentArea].photos;
 
   if (!photos.length) {
     grid.innerHTML = `<div class="empty-state">
-      <div class="icon">📷</div>
+      <div class="icon"></div>
       <p>Sin fotos en esta área.<br>
-         Arrastra imágenes aquí o usa <strong>＋ Fotos</strong>.<br>
+         Arrastra imágenes aquí o usa <strong>+ Fotos</strong>.<br>
          Si tienes API Key configurada, las fotografías serán analizadas automáticamente.</p>
     </div>`;
     return;
@@ -2601,37 +2984,37 @@ function buildCard(p) {
     const recomendacion = s.recomendacion || s.propuesta        || '';
     const implementacion= s.implementacion|| '';
     aiBlock = `<div class="ai-suggestion">
-      <div class="ai-label">⚡ ANÁLISIS DMZ<span style="font-size:.52rem;color:var(--mid);font-weight:400;letter-spacing:.04em;margin-left:.5rem">confianza ${Math.round((s.confianza||0)*100)}%</span></div>
+      <div class="ai-label"> ANÁLISIS DMZ<span style="font-size:.52rem;color:var(--mid);font-weight:400;letter-spacing:.04em;margin-left:.5rem">confianza ${Math.round((s.confianza||0)*100)}%</span></div>
       <span class="ai-nivel" style="background:${col}">${AI_[s.nivel]||'?'} ${AL[s.nivel]||s.nivel.toUpperCase()}</span>
       <div class="ai-ext-block">
         <div class="ai-ext-field">
-          <div class="ai-ext-label"><span class="icon">🔍</span> HALLAZGO</div>
+          <div class="ai-ext-label"><span class="icon"></span> HALLAZGO</div>
           <textarea class="ai-ext-ta" rows="2"
             oninput="updateAIField('${p.id}','hallazgo',this.value)"
             onchange="markDirty()">${esc(hallazgo)}</textarea>
         </div>
         <div class="ai-ext-field">
-          <div class="ai-ext-label"><span class="icon">📋</span> RECOMENDACIÓN</div>
+          <div class="ai-ext-label"><span class="icon"></span> RECOMENDACIÓN</div>
           <textarea class="ai-ext-ta" rows="2"
             oninput="updateAIField('${p.id}','recomendacion',this.value)"
             onchange="markDirty()">${esc(recomendacion)}</textarea>
         </div>
         <div class="ai-ext-field">
-          <div class="ai-ext-label"><span class="icon">🛠</span> IMPLEMENTACIÓN</div>
+          <div class="ai-ext-label"><span class="icon"></span> IMPLEMENTACIÓN</div>
           <textarea class="ai-ext-ta" rows="2"
             oninput="updateAIField('${p.id}','implementacion',this.value)"
             onchange="markDirty()">${esc(implementacion)}</textarea>
         </div>
       </div>
       <div class="ai-actions">
-        <button class="btn-confirm" onclick="confirmAI('${p.id}')">✓ Confirmar</button>
-        <button class="btn-edit-ai" onclick="editAI('${p.id}')">✏ Manual</button>
+        <button class="btn-confirm" onclick="confirmAI('${p.id}')">Confirmar</button>
+        <button class="btn-edit-ai" onclick="editAI('${p.id}')"> Manual</button>
         <button class="btn-edit-ai" onclick="analyzePhoto('${p.id}')" title="Re-analizar">↺ Re-analizar</button>
       </div>
     </div>`;
   } else if (p.aiSuggestion?.error) {
     aiBlock = `<div style="font-size:.63rem;color:var(--red);padding:.4rem .5rem;background:#fff5f5;border-radius:4px">
-      ⚠ Error IA: ${esc(p.aiSuggestion.error)}
+      Error IA: ${esc(p.aiSuggestion.error)}
       <button onclick="analyzePhoto('${p.id}')" style="border:none;background:none;color:var(--ai);cursor:pointer;font-size:.63rem;font-weight:600">Reintentar</button>
     </div>`;
   }
@@ -2641,16 +3024,16 @@ function buildCard(p) {
     confirmedBadge = `<div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .5rem;
       background:${AC[p.alert]}12;border:1px solid ${AC[p.alert]}40;border-radius:4px">
       <span style="font-size:.62rem;font-weight:700;color:${AC[p.alert]}">${AI_[p.alert]} ${AL[p.alert]}</span>
-      <span style="margin-left:auto;font-size:.58rem;color:var(--green)">✓ confirmado</span>
-      <button onclick="unconfirm('${p.id}')" style="border:none;background:none;color:var(--mid);cursor:pointer;font-size:.62rem">✏</button>
+      <span style="margin-left:auto;font-size:.58rem;color:var(--green)">confirmado</span>
+      <button onclick="unconfirm('${p.id}')" style="border:none;background:none;color:var(--mid);cursor:pointer;font-size:.62rem"></button>
     </div>`;
   }
 
   const alertRow = p.state !== 'confirmed' ? `
     <div class="alert-row">
-      <button class="al-btn red ${p.alert==='critico'?'sel':''}" onclick="setAlert('${p.id}','critico')">✕ CRÍTICO</button>
-      <button class="al-btn amb ${p.alert==='observacion'?'sel':''}" onclick="setAlert('${p.id}','observacion')">◎ OBSERVACIÓN</button>
-      <button class="al-btn grn ${p.alert==='correcto'?'sel':''}" onclick="setAlert('${p.id}','correcto')">✓ CORRECTO</button>
+      <button class="al-btn red ${p.alert==='critico'?'sel':''}" onclick="setAlert('${p.id}','critico')">CRÍTICO</button>
+      <button class="al-btn amb ${p.alert==='observacion'?'sel':''}" onclick="setAlert('${p.id}','observacion')"> OBSERVACIÓN</button>
+      <button class="al-btn grn ${p.alert==='correcto'?'sel':''}" onclick="setAlert('${p.id}','correcto')">CORRECTO</button>
     </div>` : '';
 
   const chipsArea = AREAS.find(a => a.id === areaId);
@@ -2667,7 +3050,7 @@ function buildCard(p) {
         oninput="updateNote('${p.id}',${i},this.value)"
         onkeydown="if(event.key==='Enter'&&event.shiftKey){event.preventDefault();addNote('${p.id}')}"
       >${esc(n)}</textarea>
-      ${p.notes.length > 1 ? `<button class="btn-del-note" onclick="delNote('${p.id}',${i})">✕</button>` : ''}
+      ${p.notes.length > 1 ? `<button class="btn-del-note" onclick="delNote('${p.id}',${i})"></button>` : ''}
     </div>`;
   }).join('');
 
@@ -2677,7 +3060,7 @@ function buildCard(p) {
     <div class="card-photo" onclick="openAnn('${p.id}')">
       <img src="${p.displayUrl}" alt="${esc(p.name)}" loading="lazy">
       ${dotsHtml}
-      <div class="card-photo-hint">📍 Clic para marcar puntos</div>
+      <div class="card-photo-hint">Clic para marcar puntos</div>
     </div>
     <div class="card-body">
       ${confirmedBadge}
@@ -2687,13 +3070,13 @@ function buildCard(p) {
       <div class="note-wrap">
         ${notesHtml}
         ${p.state !== 'confirmed'
-          ? `<button class="btn-add-note" onclick="addNote('${p.id}')">＋ Agregar observación · Shift+Enter</button>`
+          ? `<button class="btn-add-note" onclick="addNote('${p.id}')"> Agregar observación · Shift+Enter</button>`
           : ''}
       </div>
       <div class="card-foot" style="margin-top:auto;border-radius:0 0 6px 0;">
         <span class="card-fname">${esc(p.name)}</span>
         <div class="card-status-dot ${statusCls}"></div>
-        <button class="btn-del-card" onclick="delPhoto('${p.id}')" title="Eliminar">🗑</button>
+        <button class="btn-del-card" onclick="delPhoto('${p.id}')" title="Eliminar"></button>
       </div>
     </div>
   </div>`;
@@ -2804,9 +3187,9 @@ function refreshCard(pid) {
   old.replaceWith(tmp.firstElementChild);
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    ANNOTATION MODAL
-───────────────────────────────────────────────────────────────── */
+ */
 let ANN = { pid: null, markers: [] };
 
 function openAnn(pid) {
@@ -2858,7 +3241,7 @@ function renderAnnMarkers() {
         <div class="ann-num" style="background:${AC[m.level]||AC.critico}">${i+1}</div>
         <textarea class="ann-input" rows="2" placeholder="¿Qué hay aquí?"
           oninput="ANN.markers[${i}].text=this.value">${esc(m.text)}</textarea>
-        <button class="ann-del" onclick="ANN.markers.splice(${i},1);renderAnnMarkers()">✕</button>
+        <button class="ann-del" onclick="ANN.markers.splice(${i},1);renderAnnMarkers()"></button>
       </div>`).join('')
     : '<p style="font-size:.67rem;color:var(--mid)">Haz clic en la foto para agregar puntos.</p>';
 }
@@ -2879,9 +3262,9 @@ window.addEventListener('resize', () => {
   if (document.getElementById('ann-modal').classList.contains('open')) renderAnnMarkers();
 });
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    LIVE DASHBOARD — FIX v4: tab propio, actualización en tiempo real
-───────────────────────────────────────────────────────────────── */
+ */
 function buildDash() {
   const dv = document.getElementById('dash-view');
   if (!dv || dv.style.display === 'none') return;
@@ -2910,7 +3293,7 @@ function buildDash() {
         <span style="font-size:.62rem;color:var(--mid)">${date}</span>
       </div>
       <div class="lv-empty">
-        <div class="icon">📊</div>
+        <div class="icon"></div>
         <p>Sin datos disponibles.<br>Ve a <strong>CAPTURA</strong> y sube fotos para ver el dashboard.</p>
       </div>`;
     return;
@@ -2958,7 +3341,7 @@ function buildDash() {
         <div class="lv-title">DASHBOARD EN VIVO</div>
         <div class="lv-sub">ACTUALIZACIÓN AUTOMÁTICA · ${esc(client.toUpperCase())} · ${date}</div>
       </div>
-      <button class="btn btn-gold" onclick="setMode('rep')" style="font-size:.65rem">📋 Ver Reporte Completo</button>
+      <button class="btn btn-gold" onclick="setMode('rep')" style="font-size:.65rem"> Ver Reporte Completo</button>
     </div>
 
     <div class="lv-kpis">
@@ -3006,10 +3389,10 @@ function buildDash() {
     </div>`;
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    REPORT GENERATION — FIX v4: usa displayUrl (blob URL) en lugar
    de base64 inline → string mucho más pequeño, genera instantáneo
-───────────────────────────────────────────────────────────────── */
+ */
 function buildReport() {
   const client = STATE.client || 'Cliente';
   let totC = 0, totO = 0, totK = 0;
@@ -3152,13 +3535,22 @@ function buildReport() {
 
   const date = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
 
-  document.getElementById('report-view').innerHTML =
-  `<div class="rpt-bar">
+  // Módulo Alimentos — sección de reporte
+  const aliSection = buildAlimentosReportSection();
+
+  // Módulo Clima — sección de reporte
+  const climaSection = buildClima2ReportSection();
+
+  // Módulo Hallazgos — sección de reporte
+  const hallSection = buildHallazgosReportSection();
+
+  // Reporte HTML base (sin highlight aún para calcular)
+  let rawReport = `<div class="rpt-bar">
     <span><span style="opacity:.4">REPORTE · </span>${esc(client.toUpperCase())} · ${date}</span>
     <div style="display:flex;gap:.5rem;align-items:center">
-      <button class="btn btn-gold" onclick="exportReportePDF()">⬇ Descargar PDF</button>
-      <button class="btn btn-outline" onclick="saveToHistorial()" style="font-size:.67rem">🗂 Guardar en Historial</button>
-      <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">📤 Entregar al Cliente</button>
+      <button class="btn btn-gold" onclick="exportReportePDF()">Descargar PDF</button>
+      <button class="btn btn-outline" onclick="saveToHistorial()" style="font-size:.67rem">Guardar en Historial</button>
+      <button class="btn btn-dark" onclick="openDelivery()" style="background:var(--ai)">Entregar al Cliente</button>
     </div>
   </div>
   <div class="rpt-cover">
@@ -3177,6 +3569,9 @@ function buildReport() {
       <div class="rc-kpi"><div class="kn" style="color:var(--gold)">${gPct}%</div><div class="kl">CUMPLIMIENTO</div></div>
     </div>
   </div>
+
+  <!--  MÓDULO I: EVIDENCIA FOTOGRÁFICA  -->
+  <div class="rpt-module-divider">I · EVIDENCIA FOTOGRÁFICA POR ÁREA</div>
   ${areaSections}
   ${dashRows ? `<div class="rpt-dash">
     <div class="rpt-dt">Dashboard Global</div>
@@ -3200,14 +3595,30 @@ function buildReport() {
       </table>
     </div>
   </div>` : ''}
-  ${buildClima2ReportSection()}
-  ${buildHallazgosReportSection()}
+
+  <!--  MÓDULO II: CLIMA LABORAL  -->
+  <div class="rpt-module-divider">II · EVALUACIÓN DE CLIMA LABORAL</div>
+  ${climaSection}
+
+  <!--  MÓDULO III: CALIFICACIÓN DE ALIMENTOS  -->
+  <div class="rpt-module-divider">III · CALIFICACIÓN DE ALIMENTOS</div>
+  ${aliSection}
+
+  <!--  MÓDULO IV: HALLAZGOS Y PLAN DE ACCIÓN  -->
+  <div class="rpt-module-divider">IV · HALLAZGOS Y PLAN DE ACCIÓN</div>
+  ${hallSection}
+
   <div class="dmz-powered">POWERED BY <span style="color:var(--gold)">DMZ</span> · DE LA MORA ZUMARÁN · KITCHEN SUPPORT</div>`;
+
+  // Aplica resaltado de palabras clave (solo en secciones de texto, no en atributos)
+  rawReport = highlightKeywords(rawReport);
+
+  document.getElementById('report-view').innerHTML = rawReport;
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    UTILS
-───────────────────────────────────────────────────────────────── */
+ */
 function findPhoto(pid) {
   for (const aId in STATE.areas) {
     const p = STATE.areas[aId].photos.find(ph => ph.id === pid);
@@ -3223,12 +3634,12 @@ function esc(str) {
 }
 
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    CLIENT DELIVERY v5 — Genera HTML autocontenido con:
    · Código de acceso configurable
    · Límite de usos (device-based via localStorage)
    · Fotos embebidas en base64
-───────────────────────────────────────────────────────────────── */
+ */
 
 let _deliveryCode = '';
 
@@ -3244,7 +3655,7 @@ function openDelivery() {
   document.getElementById('dm-uses-input').value = '5';
   document.getElementById('dm-progress').style.display = 'none';
   document.getElementById('dm-generate-btn').disabled = false;
-  document.getElementById('dm-generate-btn').textContent = '⬇ Generar Entregable';
+  document.getElementById('dm-generate-btn').textContent = 'Generar Entregable';
   document.getElementById('delivery-modal').classList.add('open');
 }
 
@@ -3270,7 +3681,7 @@ async function startDelivery() {
   });
 
   if (!allPhotos.length) {
-    showToast('⚠ Sin fotos clasificadas para entregar.');
+    showToast(' Sin fotos clasificadas para entregar.');
     return;
   }
 
@@ -3308,13 +3719,13 @@ async function startDelivery() {
     URL.revokeObjectURL(url);
 
     progFill.style.width = '100%';
-    progText.textContent  = '✓ Entregable generado correctamente.';
+    progText.textContent  = 'Entregable generado correctamente.';
     setTimeout(() => {
       closeDelivery();
-      showToast('✓ Entregable generado · Código: ' + code + ' · Max ' + maxUses + ' usos');
+      showToast('Entregable generado · Código: ' + code + ' · Max ' + maxUses + ' usos');
     }, 1600);
   } catch(err) {
-    progText.textContent = '⚠ Error: ' + err.message;
+    progText.textContent = 'Error: ' + err.message;
     document.getElementById('dm-generate-btn').disabled = false;
   }
 }
@@ -3355,7 +3766,7 @@ function _buildDeliveryHtml(photos, code, maxUses, logoB64) {
       if (!p.b64) return '';
       const col  = {'critico':'#C0392B','observacion':'#E07B00','correcto':'#2E7D32'}[p.alert]||'#888';
       const lbl  = {'critico':'CRÍTICO','observacion':'OBSERVACIÓN','correcto':'CORRECTO'}[p.alert]||'—';
-      const icon = {'critico':'✕','observacion':'◎','correcto':'✓'}[p.alert]||'?';
+      const icon = {'critico':'','observacion':'','correcto':''}[p.alert]||'?';
       const nts  = (p.notes||[]).filter(n => n.trim());
       return '<div class="rpt-photo"><img src="data:image/jpeg;base64,' + p.b64 + '" alt="" loading="lazy"><div class="rpt-caption"><span class="rpt-badge" style="background:' + col + '">' + icon + ' ' + lbl + '</span>' + nts.map(n => '<div class="rpt-note">' + esc2(n) + '</div>').join('') + '</div></div>';
     }).join('');
@@ -3400,7 +3811,7 @@ function _buildDeliveryHtml(photos, code, maxUses, logoB64) {
 :root{--gold:#C9952A;--dark:#2D3A3F;--orange:#F5A623;--cream:#F5F2EC;--off:#FAFAF8;--mid:#8A9096;--border:#E5E2DC;--red:#C0392B;--amber:#E07B00;--green:#2E7D32;--f-t:'Raleway',sans-serif;--f-b:'Inter',sans-serif;--r:6px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
-/* ── Login screen ── */
+/*  Login screen  */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--dark);padding:2rem}
 .ls-box{background:#fff;border-radius:10px;padding:2.5rem 2rem;width:360px;max-width:100%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,.25)}
 .ls-brand{font-family:var(--f-t);font-size:.7rem;letter-spacing:.35em;font-weight:300;color:var(--mid);margin-bottom:.5rem}
@@ -3412,13 +3823,13 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 .ls-btn:hover{background:#3d4f56}
 .ls-err{font-size:.7rem;color:var(--red);margin-top:.6rem;min-height:1em}
 .ls-uses{font-size:.62rem;color:var(--mid);margin-top:.7rem}
-/* ── Expired screen ── */
+/*  Expired screen  */
 #expired-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:var(--dark);padding:2rem}
 .ex-box{background:#fff;border-radius:10px;padding:2.5rem 2rem;width:360px;max-width:100%;text-align:center}
 .ex-icon{font-size:2.5rem;margin-bottom:.8rem}
 .ex-title{font-family:var(--f-t);font-size:1rem;font-weight:800;letter-spacing:.08em;color:var(--red);margin-bottom:.5rem}
 .ex-msg{font-size:.75rem;color:var(--mid);line-height:1.6}
-/* ── Report wrapper ── */
+/*  Report wrapper  */
 #report-content{display:none;max-width:960px;margin:0 auto;padding:1rem}
 .rpt-bar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:.6rem 1.4rem;display:flex;align-items:center;justify-content:space-between;z-index:100;font-size:.72rem;color:var(--mid);gap:.8rem;flex-wrap:wrap}
 .rpt-bar button{padding:.38rem .9rem;background:var(--dark);color:#fff;border:none;border-radius:var(--r);font-size:.65rem;font-weight:700;letter-spacing:.06em;cursor:pointer}
@@ -3465,7 +3876,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ──────────────────────────────────── -->
+<!--  LOGIN SCREEN  -->
 <div id="login-screen">
   <div class="ls-box">
     <div class="ls-brand"><span style="color:var(--orange)">D</span>ELA<span style="color:var(--orange)">M</span>ORA<span style="color:var(--orange)">Z</span>UMARÁN</div>
@@ -3478,20 +3889,20 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
   </div>
 </div>
 
-<!-- ── EXPIRED SCREEN ────────────────────────────────── -->
+<!--  EXPIRED SCREEN  -->
 <div id="expired-screen" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:var(--dark)">
   <div class="ex-box">
-    <div class="ex-icon">🔒</div>
+    <div class="ex-icon"></div>
     <div class="ex-title">REPORTE EXPIRADO</div>
     <div class="ex-msg">Este reporte ha alcanzado el límite de ${maxUses} apertura${maxUses!==1?'s':''} permitidas.<br><br>Contacta a <strong>DMZ Kitchen Support</strong> para obtener un nuevo entregable.</div>
   </div>
 </div>
 
-<!-- ── REPORT CONTENT ─────────────────────────────────── -->
+<!--  REPORT CONTENT  -->
 <div id="report-content" style="display:none">
   <div class="rpt-bar">
     <span><span style="opacity:.4">REPORTE · </span>${clientEsc.toUpperCase()} · ${date}</span>
-    <button onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button onclick="window.print()"> Imprimir / PDF</button>
   </div>
   <div class="rpt-cover">
     <div>
@@ -3513,7 +3924,7 @@ body{font-family:var(--f-b);background:var(--off);color:var(--dark)}
 </div>
 
 <script>
-// ── Access control ──────────────────────────────────────────────
+//  Access control 
 const REPORT_ID = '${reportId}';
 const CODE_B64  = '${codeB64}';
 const MAX_USES  = ${maxUses};
@@ -3559,9 +3970,9 @@ function checkCode() {
 
 
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    LOGO – carga y persiste el logo del establecimiento
-───────────────────────────────────────────────────────────────── */
+ */
 function onLogoSelect(input) {
   const file = input.files && input.files[0];
   if (!file) return;
@@ -3571,7 +3982,7 @@ function onLogoSelect(input) {
     try { localStorage.setItem('dmz_logo', b64); } catch(err) { /* si localStorage lleno, solo RAM */ }
     STATE.logoB64 = b64;
     applyLogo(b64);
-    showToast('✓ Logo cargado');
+    showToast('Logo cargado');
   };
   reader.readAsDataURL(file);
   // Reset para poder volver a cargar el mismo archivo si se desea
@@ -3592,9 +4003,9 @@ function applyLogo(b64) {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────
+/* 
    ÁREAS PERSONALIZADAS
-───────────────────────────────────────────────────────────────── */
+ */
 /** Registra un área en AREAS + STATE sin duplicar */
 function _registerCustomArea(def) {
   if (AREAS.some(function(a) { return a.id === def.id; })) return;
@@ -3621,7 +4032,7 @@ function openEditArea(id) {
   document.getElementById('na-id').value    = id;
   document.getElementById('na-name').value  = area.name;
   document.getElementById('na-chips').value = (area.chips || []).join(', ');
-  document.getElementById('na-modal-title').textContent = '✎ EDITAR ÁREA';
+  document.getElementById('na-modal-title').textContent = ' EDITAR ÁREA';
   const m = document.getElementById('new-area-modal');
   m.style.display = 'flex';
   setTimeout(function() { document.getElementById('na-name').focus(); }, 60);
@@ -3634,7 +4045,7 @@ function closeNewArea() {
 function saveArea() {
   const existingId = (document.getElementById('na-id').value || '').trim();
   const name  = (document.getElementById('na-name').value || '').trim().toUpperCase();
-  if (!name) { showToast('⚠ Ingresa el nombre del área'); return; }
+  if (!name) { showToast(' Ingresa el nombre del área'); return; }
   const rawChips = (document.getElementById('na-chips').value || '');
   const chips    = rawChips.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -3652,7 +4063,7 @@ function saveArea() {
     // Refresh current card title if we edited active area
     const titleEl = document.getElementById('area-title');
     if (titleEl && STATE.currentArea === existingId) titleEl.textContent = name;
-    showToast('✓ Área actualizada');
+    showToast('Área actualizada');
   } else {
     // CREATE MODE
     const id  = 'custom_' + Date.now();
@@ -3660,7 +4071,7 @@ function saveArea() {
     _registerCustomArea(def);
     renderAreaNav();
     switchArea(id);
-    showToast('✓ Área "' + name + '" creada');
+    showToast('Área "' + name + '" creada');
   }
   closeNewArea();
   markDirty();
@@ -3688,7 +4099,7 @@ function confirmDeleteArea(id) {
   showToast('Área eliminada');
 }
 
-/* ── Reordenar áreas (modal simple drag-like con botones ↑ ↓) ── */
+/*  Reordenar áreas (modal simple drag-like con botones ↑ ↓)  */
 function openReorderAreas() {
   const m = document.getElementById('reorder-modal');
   renderReorderList();
@@ -3723,9 +4134,9 @@ function moveArea(idx, dir) {
 }
 
 
-/* ═══════════════════════════════════════════════════════════════════
+/* 
    CLIMA LABORAL v2 — Multi-colaborador · 13 preguntas exactas
-═══════════════════════════════════════════════════════════════════ */
+ */
 
 const CL2_PREGUNTAS = [
   '¿Te gusta tu trabajo?',
@@ -3857,7 +4268,7 @@ function addCl2Colaborador() {
   renderCl2Tabs();
   renderCl2Panel(newId);
   markDirty();
-  showToast('✓ Colaborador agregado');
+  showToast('Colaborador agregado');
 }
 
 function deleteCl2Colaborador(id) {
@@ -3954,10 +4365,10 @@ Incluye todas las preguntas que tengan al menos una respuesta. Responde en espa�
     CL2_STATE.generadoEn  = new Date().toISOString();
     markDirty();
     renderCl2Resumen(CL2_STATE.resumen);
-    showToast('✓ Resumen de clima generado');
+    showToast('Resumen de clima generado');
 
   } catch(err) {
-    body.innerHTML = `<div style="padding:1.5rem;text-align:center;color:var(--red);font-size:.76rem;">⚠ Error: ${esc(err.message)}<br><button class="btn btn-outline" onclick="generarResumenClima2()" style="margin-top:.8rem;font-size:.65rem">↻ Reintentar</button></div>`;
+    body.innerHTML = `<div style="padding:1.5rem;text-align:center;color:var(--red);font-size:.76rem;">Error: ${esc(err.message)}<br><button class="btn btn-outline" onclick="generarResumenClima2()" style="margin-top:.8rem;font-size:.65rem">Reintentar</button></div>`;
   }
 }
 
@@ -4040,7 +4451,7 @@ function buildClima2ReportSection() {
 }
 
 async function exportClima2PDF() {
-  if (typeof html2pdf === 'undefined') { showToast('⚠ Librería PDF no disponible'); return; }
+  if (typeof html2pdf === 'undefined') { showToast('Libreria PDF no disponible'); return; }
   saveCl2CurrentPanel();
   const el = document.getElementById('clima2-view');
   if (!el) return;
@@ -4048,7 +4459,7 @@ async function exportClima2PDF() {
   btns.forEach(b => b.style.display = 'none');
   const client  = (STATE.client || 'clima').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const dateStr = new Date().toISOString().slice(0,10);
-  showToast('⏳ Generando PDF de Clima…');
+  showToast('Generando PDF de Clima…');
   try {
     await html2pdf().set({
       margin: [10,10,12,10],
@@ -4057,17 +4468,17 @@ async function exportClima2PDF() {
       html2canvas: { scale:2, useCORS:true, logging:false },
       jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
     }).from(el).save();
-    showToast('✓ PDF de Clima generado');
+    showToast('PDF de Clima generado');
   } catch(e) {
-    showToast('⚠ Error: ' + e.message);
+    showToast('Error: ' + e.message);
   } finally {
     btns.forEach(b => b.style.display = '');
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
+/* 
    HALLAZGOS MODULE v9 — Clasificación + Plan de Acción DMZ
-═══════════════════════════════════════════════════════════════════ */
+ */
 
 const HZ_STATE = {
   textoOriginal: '',
@@ -4076,10 +4487,10 @@ const HZ_STATE = {
   generadoEn: null,
 };
 
-// ── START
+//  START
 init();
 
-// ── Palabras clave para clasificación local
+//  Palabras clave para clasificación local
 const HZ_KEYS = {
   critico:    /\b(cr[ií]tic[oa]|urgente|inmediato|grave|peligro|riesgo|inocuidad|contaminaci[oó]n|fuera de rango|temperatura alta|no cumple|incumple|prohibido|vencido|caducado|sin permiso|accidente|plaga|fumigaci[oó]n|infestaci[oó]n|roedor|insecto|salmonela|e\.?\s*coli|fecha vencida)\b/i,
   correcto:   /\b(correcto|cumple|bien|ok|adecuado|conforme|satisfactorio|excelente|limpio|ordenado|sin observaciones|dentro de rango|implementado|al d[ií]a|aprobado|vigente|actualizado|completo)\b/i,
@@ -4088,7 +4499,7 @@ const HZ_KEYS = {
 function clasificarHallazgos() {
   const ta = document.getElementById('hz-textarea');
   const texto = (ta.value || '').trim();
-  if (!texto) { showToast('⚠ Escribe o pega los hallazgos primero'); return; }
+  if (!texto) { showToast(' Escribe o pega los hallazgos primero'); return; }
 
   HZ_STATE.textoOriginal = texto;
   HZ_STATE.clasificados = { critico: [], observacion: [], correcto: [] };
@@ -4097,7 +4508,7 @@ function clasificarHallazgos() {
   const lineas = texto.split(/\n/).map(l => l.trim()).filter(l => l.length > 4);
 
   lineas.forEach(linea => {
-    const limpia = linea.replace(/^[\d\.\-\*•◎✓✕⚠]+\s*/,'').trim();
+    const limpia = linea.replace(/^[\d\.\-\*•]+\s*/,'').trim();
     if (!limpia) return;
     if (HZ_KEYS.critico.test(limpia)) {
       HZ_STATE.clasificados.critico.push(limpia);
@@ -4112,7 +4523,7 @@ function clasificarHallazgos() {
   document.getElementById('hz-summaries-wrap').style.display = 'block';
   document.getElementById('btn-gen-plan').disabled = false;
   markDirty();
-  showToast('✓ Hallazgos clasificados');
+  showToast('Hallazgos clasificados');
 }
 
 function renderSummaries() {
@@ -4154,7 +4565,7 @@ async function generarPlanAccion() {
 
   const { critico, observacion, correcto } = HZ_STATE.clasificados;
   const totalItems = critico.length + observacion.length + correcto.length;
-  if (!totalItems) { showToast('⚠ Primero clasifica los hallazgos'); return; }
+  if (!totalItems) { showToast('Primero clasifica los hallazgos'); return; }
 
   const body = document.getElementById('hz-plan-body');
   body.innerHTML = `<div class="hz-spinner-wrap"><div class="spinner" style="border-color:rgba(201,149,42,.2);border-top-color:var(--gold)"></div>Generando Plan de Acción…</div>`;
@@ -4227,10 +4638,10 @@ Reglas:
     HZ_STATE.generadoEn = new Date().toISOString();
     markDirty();
     renderPlanAccion();
-    showToast('✓ Plan de Acción generado');
+    showToast('Plan de Accion generado');
 
   } catch(err) {
-    body.innerHTML = `<div class="hz-plan-empty" style="color:var(--red)">⚠ Error: ${esc(err.message)}<br><button class="btn btn-outline" onclick="generarPlanAccion()" style="margin-top:.8rem;font-size:.68rem">↻ Reintentar</button></div>`;
+    body.innerHTML = `<div class="hz-plan-empty" style="color:var(--red)">Error: ${esc(err.message)}<br><button class="btn btn-outline" onclick="generarPlanAccion()" style="margin-top:.8rem;font-size:.68rem">Reintentar</button></div>`;
   }
 }
 
@@ -4259,19 +4670,19 @@ function renderPlanAccion() {
           onblur="updatePlanField(${idx},'hallazgo',this.innerText)"
           title="Clic para editar">${esc(item.hallazgo)}</div>
         <span class="tc-pri" style="background:${ccol}">${CLbl[item.categoria]||item.categoria}</span>
-        <div class="hz-edit-hint">✎ clic para editar</div>
+        <div class="hz-edit-hint"> clic para editar</div>
       </td>
       <td style="width:27%">
         <div class="hz-editable" contenteditable="true"
           onblur="updatePlanField(${idx},'solucion',this.innerText)"
           title="Clic para editar">${esc(item.solucion)}</div>
-        <div class="hz-edit-hint">✎ clic para editar</div>
+        <div class="hz-edit-hint"> clic para editar</div>
       </td>
       <td style="width:27%;color:var(--mid);font-style:italic">
         <div class="hz-editable" contenteditable="true"
           onblur="updatePlanField(${idx},'mejora',this.innerText)"
           title="Clic para editar">${esc(item.mejora)}</div>
-        <div class="hz-edit-hint">✎ clic para editar</div>
+        <div class="hz-edit-hint"> clic para editar</div>
       </td>
       <td style="text-align:center;width:10%"><span class="tc-pri" style="background:${tcol}">${esc(item.tiempo)}</span></td>
       <td style="text-align:center;width:11%"><span class="tc-turn">${esc(item.turno)}</span></td>
@@ -4292,7 +4703,7 @@ function renderPlanAccion() {
     <tbody>${rows}</tbody>
   </table>
   <div style="padding:.6rem 1rem;font-size:.62rem;color:var(--mid);border-top:1px solid var(--border);display:flex;align-items:center;gap:.4rem">
-    <span style="color:var(--gold)">✎</span> Puedes editar cualquier texto haciendo clic directamente sobre él. Los cambios se guardan automáticamente.
+    <span style="color:var(--gold)"></span> Puedes editar cualquier texto haciendo clic directamente sobre él. Los cambios se guardan automáticamente.
   </div>`;
 
   const ts = new Date(HZ_STATE.generadoEn).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
@@ -4384,15 +4795,15 @@ function buildHallazgosReportSection() {
   </div>`;
 }
 
-/* ── Exportación PDF con html2pdf.js ─────────────────────────── */
+/*  Exportación PDF con html2pdf.js  */
 async function exportReportePDF() {
   if (window._pdfUnavailable || typeof html2pdf === 'undefined') {
-    showToast('⚠ Librería PDF no disponible — usa Ctrl+P para imprimir');
+    showToast('Libreria PDF no disponible — usa Ctrl+P para imprimir');
     window.print();
     return;
   }
 
-  showToast('⏳ Cargando fotos para PDF…');
+  showToast('Procesando fotos para PDF…');
 
   // Asegura que TODAS las fotos tienen storageB64 antes de generar el PDF
   const photoTasks = [];
@@ -4419,12 +4830,12 @@ async function exportReportePDF() {
   await new Promise(r => setTimeout(r, 400));
 
   const el = document.getElementById('report-view');
-  if (!el) { showToast('⚠ Ve al tab REPORTE primero'); return; }
+  if (!el) { showToast('Ve al tab REPORTE primero'); return; }
 
   const bar = el.querySelector('.rpt-bar');
   if (bar) bar.style.display = 'none';
 
-  showToast('⏳ Generando PDF…');
+  showToast('Generando PDF…');
   const client  = (STATE.client || 'auditoria').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const dateStr = new Date().toISOString().slice(0,10);
   const filename = `DMZ-Reporte-${client}-${dateStr}.pdf`;
@@ -4439,9 +4850,9 @@ async function exportReportePDF() {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] },
     }).from(el).save();
-    showToast('✓ PDF generado: ' + filename);
+    showToast('PDF generado: ' + filename);
   } catch(err) {
-    showToast('⚠ Error al generar PDF: ' + err.message);
+    showToast('Error al generar PDF: ' + err.message);
     console.error(err);
   } finally {
     if (bar) bar.style.display = '';
@@ -4450,14 +4861,14 @@ async function exportReportePDF() {
 
 async function exportHallazgosPDF() {
   if (typeof html2pdf === 'undefined') {
-    showToast('⚠ Librería PDF no disponible');
+    showToast('Libreria PDF no disponible');
     return;
   }
   const el = document.getElementById('hz-plan-wrap');
   if (!el) return;
   const client  = (STATE.client || 'auditoria').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const dateStr = new Date().toISOString().slice(0,10);
-  showToast('⏳ Generando PDF del Plan de Acción…');
+  showToast('Generando PDF del Plan de Acción…');
   try {
     await html2pdf().set({
       margin:       [10, 10, 12, 10],
@@ -4466,15 +4877,274 @@ async function exportHallazgosPDF() {
       html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
     }).from(el).save();
-    showToast('✓ PDF del Plan de Acción generado');
+    showToast('PDF del Plan de Acción generado');
   } catch(err) {
-    showToast('⚠ Error: ' + err.message);
+    showToast('Error: ' + err.message);
   }
 }
 
-// ══════════════════════════════════════════════════════════════
+
+// 
+//  MÓDULO CALIFICACIÓN DE ALIMENTOS — v10
+// 
+
+/**
+ * Agrega una nueva tarjeta de insumo al módulo de alimentos.
+ * Si se llama desde el botón + del UI genera un ítem vacío.
+ */
+function addAlimentoCard(data) {
+  const item = data || {
+    id:           _newAliId(),
+    nombre:       '',
+    temperatura:  '',
+    tempLimite:   '',
+    estandar:     '',   // 'cumple' | 'desviacion' | ''
+    organoleptica:'',
+  };
+  if (!data) ALI_STATE.items.push(item);
+  renderAlimentosGrid();
+  markDirty();
+}
+
+/** Renderiza el grid completo de tarjetas de alimentos. */
+function buildAlimentosView() {
+  if (!ALI_STATE.items.length) {
+    // Agrega 3 tarjetas iniciales de ejemplo si está vacío
+    const defaults = [
+      { nombre: 'Producto lácteo laminado', tempLimite: '4' },
+      { nombre: 'Pre-fermento activo',       tempLimite: '5' },
+      { nombre: 'Cárnicos porcionados',      tempLimite: '4' },
+    ];
+    defaults.forEach(d => {
+      ALI_STATE.items.push({
+        id: _newAliId(), nombre: d.nombre, temperatura: '',
+        tempLimite: d.tempLimite, estandar: '', organoleptica: '',
+      });
+    });
+  }
+  renderAlimentosGrid();
+}
+
+function renderAlimentosGrid() {
+  const grid = document.getElementById('ali-grid');
+  if (!grid) return;
+
+  if (!ALI_STATE.items.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--mid);font-size:.78rem;">
+      Sin insumos registrados. Presione <strong>+ Agregar insumo</strong> para comenzar.
+    </div>`;
+    updateAliSummary();
+    return;
+  }
+
+  grid.innerHTML = ALI_STATE.items.map((item, idx) => buildAliCard(item, idx)).join('');
+  updateAliSummary();
+}
+
+function buildAliCard(item, idx) {
+  const tempNum  = parseFloat(item.temperatura);
+  const limNum   = parseFloat(item.tempLimite);
+  const tempOver = item.temperatura !== '' && !isNaN(tempNum) && !isNaN(limNum) && tempNum > limNum;
+  const esCumple = item.estandar === 'cumple';
+  const esDesv   = item.estandar === 'desviacion';
+  const estado   = esCumple ? '#2E7D32' : esDesv ? '#C0392B' : 'var(--border)';
+  const estLabel = esCumple ? 'CUMPLE' : esDesv ? 'DESVIACIÓN' : '—';
+
+  return `<div class="ali-card" id="ali-card-${item.id}" data-ali="${item.id}">
+    <div class="ali-card-head" style="border-left:3px solid ${estado}">
+      <span class="ali-card-num">${String(idx + 1).padStart(2, '0')}</span>
+      <span class="ali-badge" style="background:${estado}">${estLabel}</span>
+      <button onclick="deleteAliCard('${item.id}')"
+        style="background:none;border:none;color:rgba(255,255,255,.45);font-size:.9rem;cursor:pointer;margin-left:auto;transition:color .15s"
+        onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.45)'">×</button>
+    </div>
+    <div class="ali-card-body">
+      <div class="ali-field">
+        <label>NOMBRE DEL INSUMO / PRODUCTO</label>
+        <input class="ali-input" type="text" value="${esc(item.nombre)}"
+          placeholder="Ej: Pechuga de pollo porcionada, pre-fermento, laminados"
+          oninput="updateAliField('${item.id}','nombre',sanitizarTexto(this.value));this.value=sanitizarTexto(this.value)">
+      </div>
+      <div class="ali-row">
+        <div class="ali-field">
+          <label>TEMPERATURA REGISTRADA (°C)</label>
+          <input class="ali-input" type="number" step="0.1" value="${esc(item.temperatura)}"
+            placeholder="Ej: 3.5"
+            oninput="updateAliField('${item.id}','temperatura',this.value);checkAliTemp('${item.id}')">
+          <span class="ali-temp-alert" id="ali-ta-${item.id}"
+            style="${tempOver ? 'display:block' : 'display:none'}">
+            Temperatura supera el limite de control (${item.tempLimite} °C)
+          </span>
+        </div>
+        <div class="ali-field">
+          <label>LÍMITE DE CONTROL (°C)</label>
+          <input class="ali-input" type="number" step="0.1" value="${esc(item.tempLimite)}"
+            placeholder="Ej: 4"
+            oninput="updateAliField('${item.id}','tempLimite',this.value);checkAliTemp('${item.id}')">
+        </div>
+      </div>
+      <div class="ali-field">
+        <label>APEGO AL ESTÁNDAR OPERATIVO</label>
+        <div class="ali-status-row">
+          <button class="ali-status-btn cumple ${esCumple ? 'sel' : ''}"
+            onclick="setAliStatus('${item.id}','cumple')">CUMPLE</button>
+          <button class="ali-status-btn desviacion ${esDesv ? 'sel' : ''}"
+            onclick="setAliStatus('${item.id}','desviacion')">DESVIACIÓN</button>
+        </div>
+      </div>
+      <div class="ali-field">
+        <label>CALIDAD ORGANOLÉPTICA (VISTA, OLOR, TEXTURA)</label>
+        <input class="ali-input" type="text" value="${esc(item.organoleptica)}"
+          placeholder="Ej: Color uniforme, olor neutro, textura firme"
+          oninput="updateAliField('${item.id}','organoleptica',sanitizarTexto(this.value));this.value=sanitizarTexto(this.value)">
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateAliField(id, field, value) {
+  const item = ALI_STATE.items.find(i => i.id === id);
+  if (item) { item[field] = value; markDirty(); }
+}
+
+function setAliStatus(id, status) {
+  const item = ALI_STATE.items.find(i => i.id === id);
+  if (!item) return;
+  item.estandar = item.estandar === status ? '' : status;
+  // Re-render solo la tarjeta afectada
+  const idx  = ALI_STATE.items.indexOf(item);
+  const card = document.getElementById('ali-card-' + id);
+  if (card) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = buildAliCard(item, idx);
+    card.replaceWith(tmp.firstElementChild);
+  }
+  updateAliSummary();
+  markDirty();
+}
+
+function checkAliTemp(id) {
+  const item = ALI_STATE.items.find(i => i.id === id);
+  if (!item) return;
+  const t = parseFloat(item.temperatura);
+  const l = parseFloat(item.tempLimite);
+  const alert = document.getElementById('ali-ta-' + id);
+  if (alert) alert.style.display = (!isNaN(t) && !isNaN(l) && t > l) ? 'block' : 'none';
+}
+
+function deleteAliCard(id) {
+  ALI_STATE.items = ALI_STATE.items.filter(i => i.id !== id);
+  renderAlimentosGrid();
+  markDirty();
+}
+
+function updateAliSummary() {
+  const items   = ALI_STATE.items;
+  const cumple  = items.filter(i => i.estandar === 'cumple').length;
+  const desv    = items.filter(i => i.estandar === 'desviacion').length;
+  const total   = items.length;
+
+  const bar = document.getElementById('ali-summary-bar');
+  if (bar) bar.style.display = total ? 'flex' : 'none';
+
+  const elC = document.getElementById('ali-sum-cumple');
+  const elD = document.getElementById('ali-sum-desv');
+  const elT = document.getElementById('ali-sum-total');
+  if (elC) elC.textContent = cumple + ' Cumplen';
+  if (elD) elD.textContent = desv   + ' Desviaciones';
+  if (elT) elT.textContent = total  + ' Total';
+}
+
+/** Construye la sección del módulo de alimentos para el reporte unificado */
+function buildAlimentosReportSection() {
+  const items = ALI_STATE.items.filter(i => i.nombre || i.temperatura);
+  if (!items.length) {
+    return `<div style="padding:1.5rem 2rem;color:var(--mid);font-size:.78rem;background:#fff;border-bottom:1px solid var(--border)">
+      Sin datos de calificación de alimentos registrados en esta sesión.
+    </div>`;
+  }
+
+  const cumple = items.filter(i => i.estandar === 'cumple').length;
+  const desv   = items.filter(i => i.estandar === 'desviacion').length;
+
+  const rows = items.map((item, i) => {
+    const tempNum  = parseFloat(item.temperatura);
+    const limNum   = parseFloat(item.tempLimite);
+    const tempOver = !isNaN(tempNum) && !isNaN(limNum) && tempNum > limNum;
+    const eCol     = item.estandar === 'cumple' ? '#2E7D32' : item.estandar === 'desviacion' ? '#C0392B' : '#888';
+    const eLbl     = item.estandar === 'cumple' ? 'CUMPLE' : item.estandar === 'desviacion' ? 'DESVIACIÓN' : 'SIN CLASIFICAR';
+    const tCol     = tempOver ? '#C0392B' : '#2E7D32';
+    return `<tr>
+      <td class="td-n">${i + 1}</td>
+      <td style="font-weight:600;font-size:.72rem">${esc(item.nombre || '—')}</td>
+      <td style="text-align:center;font-size:.72rem;color:${tCol};font-weight:700">
+        ${item.temperatura !== '' ? item.temperatura + ' °C' : '—'}
+        ${item.tempLimite  !== '' ? '<span style="color:var(--mid);font-weight:400"> / lím. ' + item.tempLimite + ' °C</span>' : ''}
+      </td>
+      <td style="text-align:center">
+        <span class="tbadge" style="background:${eCol}">${eLbl}</span>
+      </td>
+      <td style="font-size:.68rem;color:var(--mid)">${esc(item.organoleptica || '—')}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="rpt-area" style="background:#fff;border-bottom:1px solid var(--border)">
+    <div class="rpt-ah" style="border-left-color:var(--amber)">
+      <div class="rpt-ah-left">
+        <div class="rpt-ah-n" style="color:var(--amber)">AL</div>
+        <div>
+          <div class="rpt-ah-name">CALIFICACIÓN DE ALIMENTOS</div>
+          <div class="rpt-ah-tag" style="color:var(--amber)">TEMPERATURA · ESTÁNDAR · CALIDAD ORGANOLÉPTICA</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <span class="tbadge" style="background:#2E7D32">${cumple} Cumplen</span>
+        <span class="tbadge" style="background:#C0392B">${desv} Desviaciones</span>
+        <span class="tbadge" style="background:var(--mid)">${items.length} Total</span>
+      </div>
+    </div>
+    <div style="padding:1rem 1.5rem;overflow-x:auto">
+      <table class="rpt-table">
+        <thead><tr>
+          <th class="td-n">#</th>
+          <th>INSUMO / PRODUCTO</th>
+          <th style="text-align:center">TEMPERATURA</th>
+          <th style="text-align:center">ESTÁNDAR</th>
+          <th>CALIDAD ORGANOLÉPTICA</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function exportAlimentosPDF() {
+  if (typeof html2pdf === 'undefined') { showToast('Libreria PDF no disponible'); return; }
+  // Construye un elemento temporal con solo la seccion de alimentos
+  const tmp  = document.createElement('div');
+  tmp.style.cssText = 'font-family:Inter,sans-serif;color:#000;padding:1.5rem';
+  tmp.innerHTML = `<div style="font-family:Raleway,sans-serif;font-size:.8rem;letter-spacing:.2em;color:#2D3A3F;margin-bottom:1.5rem;border-bottom:2px solid #C9952A;padding-bottom:.6rem">
+    DE LA MORA ZUMARÁN · KITCHEN SUPPORT — CALIFICACIÓN DE ALIMENTOS
+  </div>` + buildAlimentosReportSection();
+  document.body.appendChild(tmp);
+  const client  = (STATE.client || 'auditoria').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const dateStr = new Date().toISOString().slice(0,10);
+  try {
+    await html2pdf().set({
+      margin: [10, 10, 12, 10],
+      filename: `DMZ-Alimentos-${client}-${dateStr}.pdf`,
+      image: { type: 'jpeg', quality: 0.92 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    }).from(tmp).save();
+    showToast('PDF de alimentos generado');
+  } catch(e) { showToast('Error al generar PDF: ' + e.message); }
+  document.body.removeChild(tmp);
+}
+
+// 
 //  HISTORIAL DE AUDITORÍAS — IndexedDB
-// ══════════════════════════════════════════════════════════════
+// 
 const HIST_STORE = 'historial';
 const HIST_IDB   = 'dmz_historial';
 
@@ -4541,10 +5211,10 @@ async function saveToHistorial() {
     const tx    = db.transaction(HIST_STORE, 'readwrite');
     tx.objectStore(HIST_STORE).put(entry);
     await new Promise((res,rej) => { tx.oncomplete=res; tx.onerror=rej; });
-    showToast('✓ Auditoría guardada en historial');
+    showToast('Auditoria guardada en historial');
   } catch(e) {
     console.warn('saveToHistorial error:', e);
-    showToast('⚠ No se pudo guardar en historial');
+    showToast(' No se pudo guardar en historial');
   }
 }
 
@@ -4567,7 +5237,7 @@ async function deleteHistEntry(id) {
     const tx = db.transaction(HIST_STORE, 'readwrite');
     tx.objectStore(HIST_STORE).delete(id);
     buildHistorial();
-    showToast('✓ Auditoría eliminada');
+    showToast('Auditoría eliminada');
   } catch(e) { console.warn(e); }
 }
 
@@ -4578,7 +5248,7 @@ async function clearHistorial() {
     const tx = db.transaction(HIST_STORE, 'readwrite');
     tx.objectStore(HIST_STORE).clear();
     buildHistorial();
-    showToast('✓ Historial limpiado');
+    showToast('Historial limpiado');
   } catch(e) { console.warn(e); }
 }
 
@@ -4593,7 +5263,7 @@ async function loadFromHistorial(id) {
       req.onsuccess = e => res(e.target.result);
       req.onerror   = e => rej(e.target.error);
     });
-    if (!entry || !entry.snapshot) { showToast('⚠ No se encontró la auditoría'); return; }
+    if (!entry || !entry.snapshot) { showToast('No se encontro la auditoría'); return; }
 
     // Restaurar fotos a IDB
     const snap = entry.snapshot;
@@ -4609,11 +5279,11 @@ async function loadFromHistorial(id) {
 
     // Guardar en localStorage y recargar
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
-    showToast('✓ Auditoría cargada — recargando…');
+    showToast('Auditoria cargada — recargando…');
     setTimeout(() => location.reload(), 800);
   } catch(e) {
     console.warn('loadFromHistorial error:', e);
-    showToast('⚠ Error al cargar auditoría');
+    showToast('Error al cargar auditoría');
   }
 }
 
@@ -4634,7 +5304,7 @@ async function exportHistEntry(id) {
     const date   = entry.savedAt.slice(0,10);
     a.download = `dmz-auditoria-${client}-${date}.json`;
     a.click();
-    showToast('✓ JSON exportado');
+    showToast('JSON exportado');
   } catch(e) { console.warn(e); }
 }
 
@@ -4647,7 +5317,7 @@ function importHistSession() {
     try {
       const text = await file.text();
       const snap = JSON.parse(text);
-      if (!snap || !snap.areas) { showToast('⚠ Archivo inválido'); return; }
+      if (!snap || !snap.areas) { showToast('Archivo invalido'); return; }
 
       // Restaurar fotos a IDB
       const photoTasks = [];
@@ -4659,10 +5329,10 @@ function importHistSession() {
       await Promise.all(photoTasks);
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
-      showToast('✓ Auditoría importada — recargando…');
+      showToast('Auditoria importada — recargando…');
       setTimeout(() => location.reload(), 800);
     } catch(e) {
-      showToast('⚠ Error al importar: ' + e.message);
+      showToast('Error al importar: ' + e.message);
     }
   };
   inp.click();
@@ -4679,7 +5349,7 @@ async function buildHistorial() {
 
   if (!entries.length) {
     wrap.innerHTML = `<div class="hist-empty">
-      <div style="font-size:2rem;margin-bottom:.8rem">🗂</div>
+      <div style="font-size:2rem;margin-bottom:.8rem"></div>
       <strong>Sin auditorías guardadas todavía</strong><br>
       Para guardar una auditoría en el historial, haz clic en<br>
       <strong>"Guardar en Historial"</strong> desde el tab REPORTE.<br><br>
@@ -4708,23 +5378,23 @@ async function buildHistorial() {
 
     return `<div class="hist-card">
       <div class="hist-card-client">${esc(e.client || 'Sin nombre')}</div>
-      <div class="hist-card-date">📅 ${ds} · ${ts}</div>
+      <div class="hist-card-date">${ds} · ${ts}</div>
       <div class="hist-card-kpis">
-        <span class="hist-kpi c">✕ ${e.stats.c} Críticos</span>
-        <span class="hist-kpi o">○ ${e.stats.o} Obs.</span>
-        <span class="hist-kpi k">✓ ${e.stats.k} OK</span>
+        <span class="hist-kpi c">${e.stats.c} Críticos</span>
+        <span class="hist-kpi o">${e.stats.o} Obs.</span>
+        <span class="hist-kpi k">${e.stats.k} OK</span>
         <span class="hist-kpi p">${pct}% Cumpl.</span>
       </div>
-      <div class="hist-card-areas">📍 ${areas || 'Sin áreas'}</div>
+      <div class="hist-card-areas">${areas || 'Sin áreas'}</div>
       <div class="hist-card-actions">
         <button class="btn btn-gold" onclick="loadFromHistorial('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem">
           ↩ Cargar
         </button>
         <button class="btn btn-outline" onclick="exportHistEntry('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem">
-          ⬇ JSON
+           JSON
         </button>
         <button class="btn btn-outline" onclick="deleteHistEntry('${e.id}')" style="font-size:.65rem;padding:.3rem .7rem;color:var(--red);border-color:var(--red)">
-          🗑
+          
         </button>
       </div>
     </div>`;
@@ -4740,7 +5410,7 @@ async function buildHistorial() {
 <!-- Delivery modal -->
 <div id="delivery-modal">
   <div class="dm-inner">
-    <div class="dm-title">📤 ENTREGAR AL CLIENTE</div>
+    <div class="dm-title">ENTREGAR AL CLIENTE</div>
     <div class="dm-section">
       <div class="dm-lbl">CÓDIGO DE ACCESO</div>
       <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
@@ -4766,7 +5436,7 @@ async function buildHistorial() {
     </div>
     <div class="dm-actions">
       <button class="btn btn-outline" onclick="closeDelivery()">Cancelar</button>
-      <button class="btn btn-gold" onclick="startDelivery()" id="dm-generate-btn">⬇ Generar Entregable</button>
+      <button class="btn btn-gold" onclick="startDelivery()" id="dm-generate-btn">Generar Entregable</button>
     </div>
   </div>
 </div>
@@ -4829,7 +5499,7 @@ async function buildHistorial() {
   <div style="background:#fff;border-radius:8px;width:400px;max-width:96vw;padding:1.4rem;box-shadow:0 8px 32px rgba(0,0,0,.18);">
     <div style="font-family:var(--f-t);letter-spacing:.18em;font-size:.78rem;font-weight:600;
                 color:var(--dark);margin-bottom:1.1rem;display:flex;align-items:center;justify-content:space-between;">
-      ↕ REORDENAR ÁREAS
+      REORDENAR ÁREAS
       <button onclick="closeReorderAreas()"
               style="background:none;border:none;color:var(--mid);font-size:1rem;cursor:pointer">×</button>
     </div>
@@ -4850,7 +5520,7 @@ async function buildHistorial() {
 <!-- Session modal -->
 <div id="session-modal">
   <div class="sm-inner">
-    <div class="sm-title">💾 GESTIÓN DE SESIÓN</div>
+    <div class="sm-title">GESTIÓN DE SESIÓN</div>
     <div class="sm-row">
       <div class="sm-lbl">ÚLTIMO GUARDADO</div>
       <div class="sm-val" id="sm-last-save">—</div>
@@ -4860,15 +5530,15 @@ async function buildHistorial() {
       <div class="sm-val">Descarga un archivo JSON con todas las fotos y clasificaciones para respaldo o continuar en otro dispositivo.</div>
     </div>
     <div class="sm-actions">
-      <button class="sm-btn sm-btn-primary" onclick="exportSession()">⬇ Exportar JSON</button>
-      <button class="sm-btn sm-btn-outline" onclick="document.getElementById('import-input').click()">⬆ Importar JSON</button>
+      <button class="sm-btn sm-btn-primary" onclick="exportSession()">Exportar JSON</button>
+      <button class="sm-btn sm-btn-outline" onclick="document.getElementById('import-input').click()">Importar JSON</button>
       <input type="file" id="import-input" accept=".json" style="display:none" onchange="importSession(event)">
     </div>
     <div class="sm-row" style="margin-top:.3rem">
       <div class="sm-lbl" style="color:var(--red)">ZONA DE PELIGRO</div>
     </div>
     <div class="sm-actions">
-      <button class="sm-btn sm-btn-danger" onclick="clearSession()">🗑 Nueva sesión (borrar todo)</button>
+      <button class="sm-btn sm-btn-danger" onclick="clearSession()">Nueva sesión (borrar todo)</button>
       <button class="sm-btn sm-btn-outline" onclick="closeSessionModal()">Cerrar</button>
     </div>
   </div>
