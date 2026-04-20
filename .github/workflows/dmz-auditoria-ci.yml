@@ -1,0 +1,69 @@
+name: DMZ Auditoria — CI Continuo
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'AUDITORIA_AI_v8.html'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'AUDITORIA_AI_v8.html'
+  # Permite ejecucion manual desde GitHub UI
+  workflow_dispatch:
+  # Ejecucion programada: cada lunes 08:00 hora Ciudad de Mexico (UTC-6 = 14:00 UTC)
+  schedule:
+    - cron: '0 14 * * 1'
+
+jobs:
+  test-static:
+    name: Pruebas Estaticas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ejecutar suite de pruebas estaticas
+        run: python3 .github/scripts/test_auditoria.py
+
+      - name: Verificar deployment en GitHub Pages
+        run: |
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://mariozumaran.github.io/dmz-sistema/AUDITORIA_AI_v8.html")
+          echo "HTTP Status: $HTTP"
+          if [ "$HTTP" != "200" ]; then
+            echo "ERROR: GitHub Pages devuelve $HTTP"
+            exit 1
+          fi
+          echo "GitHub Pages OK: $HTTP"
+
+      - name: Verificar version en produccion
+        run: |
+          curl -s "https://mariozumaran.github.io/dmz-sistema/AUDITORIA_AI_v8.html" \
+          | python3 -c "
+          import sys
+          content = sys.stdin.read()
+          # Verificar que tenga version reconocida
+          import re
+          m = re.search(r'v(\d+)\.(\d+)', content)
+          if m:
+              major = int(m.group(1))
+              print(f'Version en produccion: v{m.group(1)}.{m.group(2)}')
+              if major < 10:
+                  print('WARN: Version menor a v10 en produccion')
+          else:
+              print('WARN: No se detecto numero de version')
+          "
+
+      - name: Subir reporte de pruebas
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dmz-test-report-${{ github.run_number }}
+          path: .github/reports/
+          retention-days: 30
