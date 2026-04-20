@@ -1498,6 +1498,17 @@ td:hover .hz-edit-hint { opacity: 1; }
   <button class="btn btn-outline" onclick="DRIVE_CONFIG.connected=false;DRIVE_CONFIG.token=null;localStorage.removeItem(DRIVE_CONFIG.tokenKey);updateDriveStrip(false)" style="font-size:.6rem;padding:.2rem .6rem;color:var(--mid)">Desconectar</button>
 </div>
 
+<!-- Supabase status strip -->
+<div id="sb-strip" style="
+  display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+  padding:.38rem 1.4rem;border-bottom:1px solid var(--border);
+  font-size:.67rem;flex-shrink:0;transition:background .3s;
+">
+  <span style="color:var(--mid);font-size:.62rem">Sin cuenta — datos solo en este dispositivo</span>
+  <button onclick="buildLoginModal()" class="btn btn-outline"
+    style="font-size:.6rem;padding:.2rem .6rem;margin-left:.5rem">Iniciar sesion</button>
+</div>
+
 <div id="app">
   <!-- Sidebar -->
   <nav id="sidebar">
@@ -1962,6 +1973,8 @@ async function saveSession(silent) {
     if (!silent) showToast('Sesion guardada');
     // Respaldo en Drive si está autenticado (asíncrono, no bloquea UI)
     if (DRIVE_CONFIG.connected) driveBackupSession().catch(() => {});
+    // Sincronización con Supabase si hay sesión activa
+    if (SB.ready) sbSaveAuditoria().catch(() => {});
   } catch(e) {
     if (dot) dot.className = 'save-dot err';
     const lbl = document.getElementById('save-label');
@@ -2362,41 +2375,400 @@ async function driveBackupSession() {
   }
 }
 
-/* 
-   PREPARACION BACKEND — fetch async listo para servidor externo
-   Reemplazar BASE_URL con el endpoint de produccion cuando esté listo
- */
-const BACKEND = {
-  BASE_URL: '',   // ej: 'https://api.dmzkitchen.com/v1'
-  enabled:  false,
+/* ═══════════════════════════════════════════════════════════════
+   SUPABASE BACKEND — Integración completa
+   Proyecto: dmz-auditoria | ikgdpzgmkfkpinorwiob.supabase.co
+═══════════════════════════════════════════════════════════════ */
+const SB = {
+  url:    'https://ikgdpzgmkfkpinorwiob.supabase.co',
+  anon:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrZ2Rwemdta2ZrcGlub3J3aW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTg5MTEsImV4cCI6MjA5MjI3NDkxMX0.I9vTx4CYFnzI29M3y-olEgut8v7oxAs_ajEmp90EKMo',
+  token:  null,   // se llena al hacer login
+  userId: null,
+  ready:  false,
 };
 
-/**
- * Envía datos de auditoría al servidor externo.
- * Si BACKEND.enabled === false, opera en modo local sin error.
- */
-async function backendSyncSession(payload) {
-  if (!BACKEND.enabled || !BACKEND.BASE_URL) return { ok: false, reason: 'backend_disabled' };
+// ── Headers base ─────────────────────────────────────────────────
+function sbHeaders(extra) {
+  const key = SB.token || SB.anon;
+  return {
+    'apikey':        SB.anon,
+    'Authorization': 'Bearer ' + key,
+    'Content-Type':  'application/json',
+    'Prefer':        'return=representation',
+    ...extra
+  };
+}
+
+// ── REST helper ───────────────────────────────────────────────────
+async function sbFetch(method, path, body, extra) {
+  const resp = await fetch(SB.url + path, {
+    method,
+    headers: sbHeaders(extra || {}),
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!resp.ok && resp.status !== 204) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || 'HTTP ' + resp.status);
+  }
+  if (resp.status === 204) return null;
+  return resp.json();
+}
+
+// ── AUTH — Login / Logout ─────────────────────────────────────────
+async function sbLogin(email, password) {
+  const resp = await fetch(SB.url + '/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    headers: { 'apikey': SB.anon, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error_description || data.message || 'Login fallido');
+  SB.token  = data.access_token;
+  SB.userId = data.user.id;
+  SB.ready  = true;
+  localStorage.setItem('dmz_sb_token',   data.access_token);
+  localStorage.setItem('dmz_sb_refresh', data.refresh_token);
+  localStorage.setItem('dmz_sb_user',    data.user.id);
+  return data.user;
+}
+
+async function sbRefreshToken() {
+  const refresh = localStorage.getItem('dmz_sb_refresh');
+  if (!refresh) return false;
   try {
-    const resp = await fetch(BACKEND.BASE_URL + '/auditorias', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    const resp = await fetch(SB.url + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'apikey': SB.anon, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refresh }),
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    return { ok: true, data: await resp.json() };
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    SB.token  = data.access_token;
+    SB.userId = data.user.id;
+    SB.ready  = true;
+    localStorage.setItem('dmz_sb_token',   data.access_token);
+    localStorage.setItem('dmz_sb_refresh', data.refresh_token);
+    localStorage.setItem('dmz_sb_user',    data.user.id);
+    return true;
+  } catch(e) { return false; }
+}
+
+async function sbLogout() {
+  try {
+    await fetch(SB.url + '/auth/v1/logout', {
+      method: 'POST',
+      headers: sbHeaders(),
+    });
+  } catch(e) {}
+  SB.token = null; SB.userId = null; SB.ready = false;
+  ['dmz_sb_token','dmz_sb_refresh','dmz_sb_user'].forEach(k => localStorage.removeItem(k));
+}
+
+// Restaurar sesión desde localStorage al cargar
+async function sbRestoreSession() {
+  const token   = localStorage.getItem('dmz_sb_token');
+  const userId  = localStorage.getItem('dmz_sb_user');
+  const refresh = localStorage.getItem('dmz_sb_refresh');
+  if (token && userId) {
+    SB.token  = token;
+    SB.userId = userId;
+    SB.ready  = true;
+    // Verificar que el token aún es válido
+    const ok = await fetch(SB.url + '/auth/v1/user', {
+      headers: { 'apikey': SB.anon, 'Authorization': 'Bearer ' + token }
+    }).then(r => r.ok).catch(() => false);
+    if (!ok && refresh) return sbRefreshToken();
+    if (!ok) { SB.token=null; SB.userId=null; SB.ready=false; return false; }
+    return true;
+  }
+  return false;
+}
+
+// ── AUDITORIAS ────────────────────────────────────────────────────
+
+/** Guarda o actualiza la auditoría activa en Supabase */
+async function sbSaveAuditoria() {
+  if (!SB.ready) return null;
+
+  // Calcular KPIs
+  let totC=0, totO=0, totK=0, totF=0;
+  AREAS.forEach(a => STATE.areas[a.id].photos.forEach(p => {
+    if      (p.alert==='critico')     totC++;
+    else if (p.alert==='observacion') totO++;
+    else if (p.alert==='correcto')    totK++;
+    else                              totF++;
+  }));
+  const totAll = totC+totO+totK || 1;
+
+  // Snapshot compacto (sin imágenes base64 — están en IDB/Storage)
+  const snapshot = {
+    version:        '10.0',
+    savedAt:        new Date().toISOString(),
+    client:         STATE.client,
+    customAreaDefs: STATE.customAreaDefs,
+    cl2State:       CL2_STATE,
+    hallazgosState: HZ_STATE,
+    aliState:       { items: ALI_STATE.items, _cnt: ALI_STATE._cnt },
+    areas:          Object.fromEntries(
+      Object.entries(STATE.areas).map(([aId, aData]) => [
+        aId,
+        { photos: aData.photos.map(p => ({
+            id: p.id, name: p.name, alert: p.alert,
+            state: p.state, notes: p.notes,
+            markers: p.markers, aiSuggestion: p.aiSuggestion,
+          }))
+        }
+      ])
+    ),
+  };
+
+  const payload = {
+    cliente_nombre:   STATE.client || 'Sin nombre',
+    auditor_id:       SB.userId,
+    version_app:      '10.0',
+    total_fotos:      totC + totO + totK + totF,
+    total_criticos:   totC,
+    total_obs:        totO,
+    total_correctos:  totK,
+    pct_cumplimiento: Math.round(totK / totAll * 100),
+    snapshot,
+    guardada_en:      new Date().toISOString(),
+  };
+
+  try {
+    if (SB._auditoriaId) {
+      // Actualizar existente
+      await sbFetch('PATCH',
+        `/rest/v1/auditorias?id=eq.${SB._auditoriaId}`,
+        payload, { Prefer: 'return=minimal' });
+      return SB._auditoriaId;
+    } else {
+      // Crear nueva
+      const rows = await sbFetch('POST', '/rest/v1/auditorias', payload);
+      SB._auditoriaId = rows[0].id;
+      localStorage.setItem('dmz_sb_auditoria_id', SB._auditoriaId);
+      return SB._auditoriaId;
+    }
   } catch(e) {
-    console.warn('Backend sync error:', e.message);
-    return { ok: false, reason: e.message };
+    console.warn('sbSaveAuditoria error:', e.message);
+    return null;
   }
 }
 
-async function backendFetchConfig() {
-  if (!BACKEND.enabled || !BACKEND.BASE_URL) return null;
+/** Carga el listado de auditorías del auditor actual */
+async function sbLoadAuditorias() {
+  if (!SB.ready) return [];
   try {
-    const resp = await fetch(BACKEND.BASE_URL + '/config');
-    return resp.ok ? await resp.json() : null;
-  } catch(e) { return null; }
+    return await sbFetch('GET',
+      '/rest/v1/auditorias?auditor_id=eq.' + SB.userId +
+      '&order=guardada_en.desc&limit=50', null);
+  } catch(e) { return []; }
+}
+
+/** Carga una auditoría por ID y restaura el estado */
+async function sbCargarAuditoria(id) {
+  if (!SB.ready) return false;
+  try {
+    const rows = await sbFetch('GET', `/rest/v1/auditorias?id=eq.${id}`, null);
+    if (!rows || !rows.length) return false;
+    const row  = rows[0];
+    const snap = row.snapshot;
+    if (!snap) return false;
+
+    // Restaurar estado
+    STATE.client = snap.client || '';
+    const el = document.getElementById('inp-client');
+    if (el) el.value = STATE.client;
+    if (snap.cl2State)       Object.assign(CL2_STATE, snap.cl2State);
+    if (snap.hallazgosState) Object.assign(HZ_STATE,  snap.hallazgosState);
+    if (snap.aliState)       { ALI_STATE.items = snap.aliState.items || []; ALI_STATE._cnt = snap.aliState._cnt || 0; }
+
+    SB._auditoriaId = id;
+    localStorage.setItem('dmz_sb_auditoria_id', id);
+    showToast('Auditoria cargada desde Supabase');
+    return true;
+  } catch(e) {
+    console.warn('sbCargarAuditoria error:', e.message);
+    return false;
+  }
+}
+
+// ── LOGIN UI ─────────────────────────────────────────────────────
+function buildLoginModal() {
+  const existing = document.getElementById('sb-login-modal');
+  if (existing) { existing.style.display = 'flex'; return; }
+
+  const modal = document.createElement('div');
+  modal.id = 'sb-login-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:3000;background:rgba(45,58,63,.92);
+    display:flex;align-items:center;justify-content:center;
+  `;
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:8px;width:360px;max-width:96vw;
+                padding:2rem 1.8rem;box-shadow:0 12px 48px rgba(0,0,0,.3)">
+      <div style="font-family:'Raleway',sans-serif;font-size:.65rem;letter-spacing:.3em;
+                  color:#8A9096;margin-bottom:.4rem">DE LA MORA ZUMARÁN</div>
+      <div style="font-family:'Raleway',sans-serif;font-size:1rem;font-weight:800;
+                  letter-spacing:.08em;color:#2D3A3F;margin-bottom:1.4rem">
+        ACCESO AL SISTEMA
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.7rem">
+        <div>
+          <label style="font-size:.6rem;font-weight:700;letter-spacing:.12em;color:#8A9096;
+                        display:block;margin-bottom:.25rem">CORREO</label>
+          <input id="sb-email" type="email" value="mario@delamorazumaran.com"
+            style="width:100%;border:1.5px solid #E5E2DC;border-radius:4px;padding:.5rem .75rem;
+                   font-size:.85rem;outline:none;font-family:inherit"
+            onkeydown="if(event.key==='Enter')sbDoLogin()">
+        </div>
+        <div>
+          <label style="font-size:.6rem;font-weight:700;letter-spacing:.12em;color:#8A9096;
+                        display:block;margin-bottom:.25rem">CONTRASEÑA</label>
+          <input id="sb-password" type="password" placeholder="••••••••"
+            style="width:100%;border:1.5px solid #E5E2DC;border-radius:4px;padding:.5rem .75rem;
+                   font-size:.85rem;outline:none;font-family:inherit"
+            onkeydown="if(event.key==='Enter')sbDoLogin()">
+        </div>
+        <div id="sb-login-err" style="font-size:.68rem;color:#C0392B;min-height:1em"></div>
+        <button onclick="sbDoLogin()"
+          style="width:100%;padding:.65rem;background:#2D3A3F;color:#fff;border:none;
+                 border-radius:4px;font-size:.75rem;font-weight:700;letter-spacing:.1em;
+                 cursor:pointer;font-family:inherit">
+          INICIAR SESION
+        </button>
+        <button onclick="document.getElementById('sb-login-modal').style.display='none'"
+          style="width:100%;padding:.4rem;background:none;border:1px solid #E5E2DC;
+                 border-radius:4px;font-size:.68rem;color:#8A9096;cursor:pointer">
+          Continuar sin cuenta (modo local)
+        </button>
+      </div>
+      <div style="font-size:.58rem;color:#8A9096;text-align:center;margin-top:.8rem;
+                  letter-spacing:.06em">POWERED BY DMZ · KITCHEN SUPPORT</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('sb-password').focus(), 100);
+}
+
+async function sbDoLogin() {
+  const email    = document.getElementById('sb-email').value.trim();
+  const password = document.getElementById('sb-password').value;
+  const errEl    = document.getElementById('sb-login-err');
+  errEl.textContent = 'Autenticando...';
+  try {
+    await sbLogin(email, password);
+    document.getElementById('sb-login-modal').style.display = 'none';
+    updateSbStatus(true);
+    showToast('Sesion iniciada — ' + email);
+    // Restaurar ID de auditoría activa si existe
+    const savedId = localStorage.getItem('dmz_sb_auditoria_id');
+    if (savedId) SB._auditoriaId = savedId;
+  } catch(e) {
+    errEl.textContent = e.message;
+  }
+}
+
+function updateSbStatus(logged) {
+  const strip = document.getElementById('sb-strip');
+  if (!strip) return;
+  if (logged) {
+    strip.innerHTML = `
+      <span style="color:#22C55E;font-weight:700;font-size:.62rem">SUPABASE CONECTADO</span>
+      <span style="color:#64748B;font-size:.62rem">— Las auditorias se guardan en la nube automaticamente</span>
+      <button onclick="sbOpenAuditorias()" class="btn btn-outline"
+        style="font-size:.6rem;padding:.2rem .6rem;margin-left:.5rem">Mis auditorias</button>
+      <button onclick="sbLogout().then(()=>{updateSbStatus(false);showToast('Sesion cerrada')})"
+        class="btn btn-outline"
+        style="font-size:.6rem;padding:.2rem .6rem;color:var(--mid)">Cerrar sesion</button>
+    `;
+    strip.style.background = 'rgba(34,197,94,.07)';
+    strip.style.borderBottomColor = 'rgba(34,197,94,.25)';
+  } else {
+    strip.innerHTML = `
+      <span style="color:var(--mid);font-size:.62rem">Sin cuenta — datos solo en este dispositivo</span>
+      <button onclick="buildLoginModal()" class="btn btn-outline"
+        style="font-size:.6rem;padding:.2rem .6rem;margin-left:.5rem">Iniciar sesion</button>
+    `;
+    strip.style.background = '';
+    strip.style.borderBottomColor = '';
+  }
+}
+
+// ── MODAL: Mis Auditorías ─────────────────────────────────────────
+async function sbOpenAuditorias() {
+  let modal = document.getElementById('sb-aud-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'sb-aud-modal';
+    modal.style.cssText = `position:fixed;inset:0;z-index:3000;background:rgba(45,58,63,.85);
+      display:flex;align-items:center;justify-content:center`;
+    document.body.appendChild(modal);
+  }
+  modal.style.display = 'flex';
+  modal.innerHTML = `<div style="background:#fff;border-radius:8px;width:620px;max-width:96vw;
+    max-height:80vh;overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 12px 48px rgba(0,0,0,.25)">
+    <div style="background:#2D3A3F;color:#fff;padding:.75rem 1.2rem;
+      font-family:'Raleway',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;
+      display:flex;align-items:center;justify-content:space-between">
+      MIS AUDITORIAS EN LA NUBE
+      <button onclick="document.getElementById('sb-aud-modal').style.display='none'"
+        style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer">x</button>
+    </div>
+    <div id="sb-aud-list" style="flex:1;overflow-y:auto;padding:1rem">
+      <div style="text-align:center;color:#8A9096;padding:2rem;font-size:.75rem">Cargando...</div>
+    </div>
+    <div style="padding:.75rem 1.2rem;border-top:1px solid #E5E2DC;display:flex;gap:.5rem;justify-content:flex-end">
+      <button onclick="sbNuevaAuditoria()" class="btn btn-gold" style="font-size:.68rem">Nueva auditoria</button>
+      <button onclick="document.getElementById('sb-aud-modal').style.display='none'"
+        class="btn btn-outline" style="font-size:.68rem">Cerrar</button>
+    </div>
+  </div>`;
+
+  const list = document.getElementById('sb-aud-list');
+  const auds  = await sbLoadAuditorias();
+
+  if (!auds.length) {
+    list.innerHTML = `<div style="text-align:center;color:#8A9096;padding:2rem;font-size:.75rem">
+      Sin auditorias guardadas. Comienza una nueva desde la app.</div>`;
+    return;
+  }
+
+  list.innerHTML = auds.map(a => {
+    const d   = new Date(a.guardada_en);
+    const ds  = d.toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'});
+    const ts  = d.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+    const col = a.pct_cumplimiento < 40 ? '#C0392B' : a.pct_cumplimiento < 70 ? '#E07B00' : '#2E7D32';
+    const est = {en_progreso:'EN PROGRESO', completada:'COMPLETADA', entregada:'ENTREGADA'}[a.estado] || a.estado;
+    return `<div style="border:1px solid #E5E2DC;border-radius:6px;padding:.85rem 1rem;
+      margin-bottom:.65rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+      cursor:pointer;transition:background .15s" onmouseover="this.style.background='#FAFAF8'"
+      onmouseout="this.style.background=''">
+      <div style="flex:1;min-width:180px">
+        <div style="font-weight:700;font-size:.82rem;color:#2D3A3F">${esc(a.cliente_nombre)}</div>
+        <div style="font-size:.63rem;color:#8A9096;margin-top:.15rem">${ds} · ${ts} · ${est}</div>
+      </div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+        <span style="font-size:.62rem;font-weight:700;color:#C0392B;background:#fef0f0;
+          padding:.15rem .4rem;border-radius:3px">${a.total_criticos} CRIT</span>
+        <span style="font-size:.62rem;font-weight:700;color:#E07B00;background:#fff8ec;
+          padding:.15rem .4rem;border-radius:3px">${a.total_obs} OBS</span>
+        <span style="font-size:.7rem;font-weight:800;color:${col}">${a.pct_cumplimiento}%</span>
+      </div>
+      <button onclick="sbCargarAuditoria('${a.id}').then(ok=>{
+          if(ok){document.getElementById('sb-aud-modal').style.display='none';location.reload();}
+        })"
+        class="btn btn-gold" style="font-size:.62rem;padding:.3rem .7rem">Abrir</button>
+    </div>`;
+  }).join('');
+}
+
+function sbNuevaAuditoria() {
+  SB._auditoriaId = null;
+  localStorage.removeItem('dmz_sb_auditoria_id');
+  document.getElementById('sb-aud-modal').style.display = 'none';
+  showToast('Nueva auditoria iniciada');
 }
 
 // Estructura de una foto:
@@ -2472,6 +2844,18 @@ function init() {
   // Google Drive: interceptar callback OAuth2 y cargar token guardado
   driveHandleOAuthCallback();
   driveLoadToken();
+
+  // Supabase: restaurar sesión si existe token guardado
+  sbRestoreSession().then(logged => {
+    updateSbStatus(logged);
+    if (logged) {
+      const savedId = localStorage.getItem('dmz_sb_auditoria_id');
+      if (savedId) SB._auditoriaId = savedId;
+    } else {
+      // Mostrar login al arrancar si no hay sesión
+      setTimeout(buildLoginModal, 800);
+    }
+  });
 
   // Aplica logo guardado
   const _savedLogo = localStorage.getItem('dmz_logo');
