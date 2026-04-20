@@ -2556,13 +2556,39 @@ async function sbSaveAuditoria() {
 }
 
 /** Carga el listado de auditorías del auditor actual */
-async function sbLoadAuditorias() {
+async function sbLoadAuditorias(filtro) {
   if (!SB.ready) return [];
   try {
-    return await sbFetch('GET',
-      '/rest/v1/auditorias?auditor_id=eq.' + SB.userId +
-      '&order=guardada_en.desc&limit=50', null);
+    // Admins ven TODAS las auditorías — la política RLS ya lo permite
+    // Filtro opcional: 'mias' | 'todas' (default: todas para admins)
+    let url = '/rest/v1/auditorias?order=guardada_en.desc&limit=100';
+    if (filtro === 'mias') url += '&auditor_id=eq.' + SB.userId;
+    // Traer también el email del auditor via join
+    url += '&select=*,perfiles(nombre)';
+    return await sbFetch('GET', url, null);
   } catch(e) { return []; }
+}
+
+/** Genera un portal público para una auditoría y lo guarda en Supabase */
+async function sbGenerarPortal(auditoriaId) {
+  if (!SB.ready) return null;
+  try {
+    // Token único de 8 chars para el portal
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const token = Array.from({length: 8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+
+    // Guardar token en la auditoría
+    await sbFetch('PATCH',
+      `/rest/v1/auditorias?id=eq.${auditoriaId}`,
+      { portal_token: token, estado: 'entregada' },
+      { Prefer: 'return=minimal' });
+
+    const portalUrl = `https://mariozumaran.github.io/dmz-sistema/portal.html?t=${token}`;
+    return { token, url: portalUrl };
+  } catch(e) {
+    console.warn('sbGenerarPortal error:', e.message);
+    return null;
+  }
 }
 
 /** Carga una auditoría por ID y restaura el estado */
@@ -2695,73 +2721,239 @@ function updateSbStatus(logged) {
   }
 }
 
-// ── MODAL: Mis Auditorías ─────────────────────────────────────────
-async function sbOpenAuditorias() {
+// ── MODAL: Historial de Auditorías (unificado para admins) ───────
+let _sbAudFiltro = 'todas';
+
+async function sbOpenAuditorias(filtro) {
+  _sbAudFiltro = filtro || _sbAudFiltro || 'todas';
+
   let modal = document.getElementById('sb-aud-modal');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'sb-aud-modal';
     modal.style.cssText = `position:fixed;inset:0;z-index:3000;background:rgba(45,58,63,.85);
-      display:flex;align-items:center;justify-content:center`;
+      display:flex;align-items:center;justify-content:center;padding:1rem`;
     document.body.appendChild(modal);
   }
   modal.style.display = 'flex';
-  modal.innerHTML = `<div style="background:#fff;border-radius:8px;width:620px;max-width:96vw;
-    max-height:80vh;overflow:hidden;display:flex;flex-direction:column;
-    box-shadow:0 12px 48px rgba(0,0,0,.25)">
-    <div style="background:#2D3A3F;color:#fff;padding:.75rem 1.2rem;
-      font-family:'Raleway',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;
-      display:flex;align-items:center;justify-content:space-between">
-      MIS AUDITORIAS EN LA NUBE
+
+  modal.innerHTML = `
+  <div style="background:#fff;border-radius:8px;width:760px;max-width:98vw;
+    max-height:88vh;overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 16px 56px rgba(0,0,0,.3)">
+
+    <!-- Header -->
+    <div style="background:#2D3A3F;color:#fff;padding:.8rem 1.3rem;
+      display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-family:'Raleway',sans-serif;font-size:.8rem;font-weight:800;
+          letter-spacing:.14em">HISTORIAL DE AUDITORIAS</div>
+        <div style="font-size:.58rem;color:rgba(255,255,255,.45);letter-spacing:.1em;margin-top:.1rem">
+          TODOS LOS CLIENTES · TODOS LOS AUDITORES</div>
+      </div>
       <button onclick="document.getElementById('sb-aud-modal').style.display='none'"
-        style="background:none;border:none;color:rgba(255,255,255,.6);font-size:1.1rem;cursor:pointer">x</button>
+        style="background:none;border:none;color:rgba(255,255,255,.55);font-size:1.3rem;
+               cursor:pointer;line-height:1">&times;</button>
     </div>
+
+    <!-- Filtros + búsqueda -->
+    <div style="padding:.7rem 1.3rem;border-bottom:1px solid #E5E2DC;display:flex;
+      gap:.6rem;align-items:center;flex-wrap:wrap;flex-shrink:0;background:#FAFAF8">
+      <div style="display:flex;border:1px solid #E5E2DC;border-radius:4px;overflow:hidden">
+        <button onclick="sbOpenAuditorias('todas')"
+          style="padding:.3rem .8rem;font-size:.65rem;font-weight:700;border:none;cursor:pointer;
+          background:${_sbAudFiltro==='todas'?'#2D3A3F':'transparent'};
+          color:${_sbAudFiltro==='todas'?'#fff':'#8A9096'}">TODAS</button>
+        <button onclick="sbOpenAuditorias('mias')"
+          style="padding:.3rem .8rem;font-size:.65rem;font-weight:700;border:none;cursor:pointer;
+          background:${_sbAudFiltro==='mias'?'#2D3A3F':'transparent'};
+          color:${_sbAudFiltro==='mias'?'#fff':'#8A9096'}">MIS AUDITORIAS</button>
+      </div>
+      <input id="sb-aud-search" type="text" placeholder="Buscar cliente..."
+        oninput="sbFiltrarAuditorias(this.value)"
+        style="border:1px solid #E5E2DC;border-radius:4px;padding:.3rem .65rem;
+               font-size:.72rem;outline:none;flex:1;min-width:140px;font-family:inherit">
+      <span id="sb-aud-count" style="font-size:.62rem;color:#8A9096;white-space:nowrap"></span>
+    </div>
+
+    <!-- Lista -->
     <div id="sb-aud-list" style="flex:1;overflow-y:auto;padding:1rem">
-      <div style="text-align:center;color:#8A9096;padding:2rem;font-size:.75rem">Cargando...</div>
+      <div style="text-align:center;color:#8A9096;padding:3rem;font-size:.75rem">Cargando...</div>
     </div>
-    <div style="padding:.75rem 1.2rem;border-top:1px solid #E5E2DC;display:flex;gap:.5rem;justify-content:flex-end">
-      <button onclick="sbNuevaAuditoria()" class="btn btn-gold" style="font-size:.68rem">Nueva auditoria</button>
-      <button onclick="document.getElementById('sb-aud-modal').style.display='none'"
-        class="btn btn-outline" style="font-size:.68rem">Cerrar</button>
+
+    <!-- Footer -->
+    <div style="padding:.75rem 1.3rem;border-top:1px solid #E5E2DC;display:flex;
+      gap:.5rem;justify-content:space-between;align-items:center;flex-shrink:0">
+      <span style="font-size:.62rem;color:#8A9096">
+        Las auditorias se sincronizan automaticamente al guardar
+      </span>
+      <div style="display:flex;gap:.5rem">
+        <button onclick="sbNuevaAuditoria()" class="btn btn-gold" style="font-size:.68rem">
+          + Nueva auditoria
+        </button>
+        <button onclick="document.getElementById('sb-aud-modal').style.display='none'"
+          class="btn btn-outline" style="font-size:.68rem">Cerrar</button>
+      </div>
     </div>
   </div>`;
 
-  const list = document.getElementById('sb-aud-list');
-  const auds  = await sbLoadAuditorias();
+  await sbRenderAuditorias();
+}
 
-  if (!auds.length) {
-    list.innerHTML = `<div style="text-align:center;color:#8A9096;padding:2rem;font-size:.75rem">
-      Sin auditorias guardadas. Comienza una nueva desde la app.</div>`;
+// Datos en memoria para filtrado sin re-fetch
+let _sbAudData = [];
+
+async function sbRenderAuditorias() {
+  const list = document.getElementById('sb-aud-list');
+  if (!list) return;
+  list.innerHTML = `<div style="text-align:center;color:#8A9096;padding:3rem;font-size:.75rem">Cargando...</div>`;
+
+  _sbAudData = await sbLoadAuditorias(_sbAudFiltro);
+
+  const search = document.getElementById('sb-aud-search');
+  sbFiltrarAuditorias(search ? search.value : '');
+}
+
+function sbFiltrarAuditorias(q) {
+  const list  = document.getElementById('sb-aud-list');
+  const count = document.getElementById('sb-aud-count');
+  if (!list) return;
+
+  const term = (q || '').toLowerCase().trim();
+  const filtered = term
+    ? _sbAudData.filter(a =>
+        (a.cliente_nombre || '').toLowerCase().includes(term) ||
+        (a.perfiles?.nombre || '').toLowerCase().includes(term))
+    : _sbAudData;
+
+  if (count) count.textContent = `${filtered.length} auditoria${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;color:#8A9096;padding:3rem;font-size:.75rem">
+      ${term ? 'Sin resultados para "' + esc(term) + '"' : 'Sin auditorias guardadas en la nube.<br>Guarda una desde la app para verla aqui.'}</div>`;
     return;
   }
 
-  list.innerHTML = auds.map(a => {
-    const d   = new Date(a.guardada_en);
-    const ds  = d.toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'});
-    const ts  = d.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
-    const col = a.pct_cumplimiento < 40 ? '#C0392B' : a.pct_cumplimiento < 70 ? '#E07B00' : '#2E7D32';
-    const est = {en_progreso:'EN PROGRESO', completada:'COMPLETADA', entregada:'ENTREGADA'}[a.estado] || a.estado;
-    return `<div style="border:1px solid #E5E2DC;border-radius:6px;padding:.85rem 1rem;
-      margin-bottom:.65rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
-      cursor:pointer;transition:background .15s" onmouseover="this.style.background='#FAFAF8'"
-      onmouseout="this.style.background=''">
-      <div style="flex:1;min-width:180px">
-        <div style="font-weight:700;font-size:.82rem;color:#2D3A3F">${esc(a.cliente_nombre)}</div>
-        <div style="font-size:.63rem;color:#8A9096;margin-top:.15rem">${ds} · ${ts} · ${est}</div>
+  const ECOL = { en_progreso:'#E07B00', completada:'#2E7D32', entregada:'#1A6B8A' };
+  const ELBL = { en_progreso:'EN PROGRESO', completada:'COMPLETADA', entregada:'ENTREGADA' };
+
+  list.innerHTML = filtered.map(a => {
+    const d    = new Date(a.guardada_en);
+    const ds   = d.toLocaleDateString('es-MX', {day:'2-digit', month:'short', year:'numeric'});
+    const ts   = d.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+    const col  = a.pct_cumplimiento < 40 ? '#C0392B' : a.pct_cumplimiento < 70 ? '#E07B00' : '#2E7D32';
+    const esc_ = a.estado || 'en_progreso';
+    const auditorNombre = a.perfiles?.nombre || 'Auditor';
+    const esMia = a.auditor_id === SB.userId;
+    const tienePortal = !!a.portal_token;
+
+    return `
+    <div style="border:1px solid #E5E2DC;border-radius:6px;padding:.85rem 1rem;
+      margin-bottom:.6rem;background:#fff;transition:box-shadow .15s"
+      onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,.08)'"
+      onmouseout="this.style.boxShadow=''">
+      <div style="display:flex;align-items:flex-start;gap:.8rem;flex-wrap:wrap">
+
+        <!-- Info principal -->
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;font-size:.85rem;color:#2D3A3F">
+            ${esc(a.cliente_nombre || 'Sin nombre')}
+          </div>
+          <div style="font-size:.63rem;color:#8A9096;margin-top:.2rem;display:flex;gap:.6rem;flex-wrap:wrap">
+            <span>${ds} · ${ts}</span>
+            <span style="color:${ECOL[esc_]||'#888'};font-weight:700">${ELBL[esc_]||esc_}</span>
+            <span style="color:${esMia?'#2D3A3F':'#1A6B8A'};font-weight:600">
+              ${esMia ? 'Yo' : auditorNombre}
+            </span>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div style="display:flex;gap:.35rem;align-items:center;flex-wrap:wrap">
+          <span style="font-size:.62rem;font-weight:700;color:#C0392B;
+            background:#fef0f0;padding:.15rem .45rem;border-radius:3px">
+            ${a.total_criticos} CRIT
+          </span>
+          <span style="font-size:.62rem;font-weight:700;color:#E07B00;
+            background:#fff8ec;padding:.15rem .45rem;border-radius:3px">
+            ${a.total_obs} OBS
+          </span>
+          <span style="font-size:.62rem;font-weight:700;color:#2E7D32;
+            background:#f0fdf4;padding:.15rem .45rem;border-radius:3px">
+            ${a.total_correctos} OK
+          </span>
+          <span style="font-size:.78rem;font-weight:800;color:${col};min-width:38px;text-align:right">
+            ${a.pct_cumplimiento}%
+          </span>
+        </div>
+
+        <!-- Acciones -->
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">
+          <button onclick="sbCargarAuditoria('${a.id}').then(ok=>{
+              if(ok){document.getElementById('sb-aud-modal').style.display='none';
+              setTimeout(()=>location.reload(),300);}
+            })"
+            class="btn btn-gold" style="font-size:.62rem;padding:.3rem .7rem">
+            Abrir
+          </button>
+          <button onclick="sbGenerarYMostrarPortal('${a.id}', '${esc(a.cliente_nombre)}')"
+            class="btn btn-outline" style="font-size:.62rem;padding:.3rem .7rem;
+            color:${tienePortal?'#1A6B8A':'var(--mid)'};
+            border-color:${tienePortal?'#1A6B8A':'var(--border)'}">
+            ${tienePortal ? 'Ver portal' : 'Crear portal'}
+          </button>
+        </div>
       </div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
-        <span style="font-size:.62rem;font-weight:700;color:#C0392B;background:#fef0f0;
-          padding:.15rem .4rem;border-radius:3px">${a.total_criticos} CRIT</span>
-        <span style="font-size:.62rem;font-weight:700;color:#E07B00;background:#fff8ec;
-          padding:.15rem .4rem;border-radius:3px">${a.total_obs} OBS</span>
-        <span style="font-size:.7rem;font-weight:800;color:${col}">${a.pct_cumplimiento}%</span>
-      </div>
-      <button onclick="sbCargarAuditoria('${a.id}').then(ok=>{
-          if(ok){document.getElementById('sb-aud-modal').style.display='none';location.reload();}
-        })"
-        class="btn btn-gold" style="font-size:.62rem;padding:.3rem .7rem">Abrir</button>
     </div>`;
   }).join('');
+}
+
+async function sbGenerarYMostrarPortal(auditoriaId, clienteNombre) {
+  const portalData = await sbGenerarPortal(auditoriaId);
+  if (!portalData) { showToast('Error al generar portal'); return; }
+
+  // Mostrar popup con la URL
+  const popup = document.createElement('div');
+  popup.style.cssText = `position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.7);
+    display:flex;align-items:center;justify-content:center;padding:1rem`;
+  popup.innerHTML = `
+    <div style="background:#fff;border-radius:8px;width:480px;max-width:96vw;padding:1.8rem;
+      box-shadow:0 12px 48px rgba(0,0,0,.3)">
+      <div style="font-family:'Raleway',sans-serif;font-size:.72rem;font-weight:800;
+        letter-spacing:.14em;color:#2D3A3F;margin-bottom:.3rem">PORTAL DEL CLIENTE GENERADO</div>
+      <div style="font-size:.68rem;color:#8A9096;margin-bottom:1.2rem">
+        ${esc(clienteNombre)} — acceso directo sin codigo
+      </div>
+
+      <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;
+        padding:.75rem 1rem;margin-bottom:1rem">
+        <div style="font-size:.58rem;font-weight:700;letter-spacing:.12em;color:#16A34A;
+          margin-bottom:.3rem">URL DEL PORTAL</div>
+        <div id="portal-url-txt" style="font-size:.72rem;color:#1A6B8A;word-break:break-all;
+          font-family:monospace">${portalData.url}</div>
+      </div>
+
+      <div style="background:#FFF8EC;border:1px solid #FDE68A;border-radius:6px;
+        padding:.6rem .9rem;margin-bottom:1.2rem;font-size:.67rem;color:#92400E">
+        Comparte este enlace directamente con tu cliente. No requiere login ni codigo de acceso.
+        El reporte se muestra automaticamente al abrir la URL.
+      </div>
+
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button onclick="navigator.clipboard.writeText('${portalData.url}').then(()=>{
+            this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar URL',2000)})"
+          class="btn btn-gold" style="flex:1">Copiar URL</button>
+        <button onclick="window.open('${portalData.url}','_blank')"
+          class="btn btn-outline" style="flex:1">Abrir portal</button>
+        <button onclick="this.closest('div[style*=fixed]').remove()"
+          class="btn btn-outline">Cerrar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(popup);
+
+  // Refrescar lista para actualizar estado del botón
+  await sbRenderAuditorias();
+}
 }
 
 function sbNuevaAuditoria() {

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<!--
+  DMZ AUDITORIA — Portal del Cliente v1.0
+  URL: mariozumaran.github.io/dmz-sistema/portal.html?t=TOKEN
+  Sin login requerido — acceso por token único de 8 caracteres
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporte de Auditoría · DMZ Kitchen Support</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;300;400;600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root {
+  --gold:  #C9952A;
+  --dark:  #2D3A3F;
+  --red:   #C0392B;
+  --amber: #E07B00;
+  --green: #2E7D32;
+  --mid:   #8A9096;
+  --off:   #FAFAF8;
+  --cream: #F5F2EC;
+  --border:#E5E2DC;
+  --f-t:   'Raleway', sans-serif;
+  --f-b:   'Inter', sans-serif;
+  --r:     6px;
+  --shadow:0 1px 4px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body { font-family: var(--f-b); background: var(--off); color: var(--dark); }
+
+/* ── Loading / Error screens ── */
+#loading-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: var(--dark); flex-direction: column; gap: 1rem;
+}
+.spinner-large {
+  width: 40px; height: 40px;
+  border: 3px solid rgba(201,149,42,.3);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-txt { color: rgba(255,255,255,.6); font-size: .72rem; letter-spacing: .18em; }
+
+#error-screen {
+  min-height: 100vh; display: none; align-items: center; justify-content: center;
+  background: var(--dark);
+}
+.err-box {
+  background: #fff; border-radius: 10px; padding: 2.5rem 2rem;
+  width: 380px; max-width: 96vw; text-align: center;
+}
+.err-title { font-family: var(--f-t); font-size: 1rem; font-weight: 800;
+  letter-spacing: .08em; color: var(--red); margin-bottom: .5rem; }
+.err-msg { font-size: .75rem; color: var(--mid); line-height: 1.6; }
+
+/* ── Print bar ── */
+#print-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--dark); color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .55rem 1.5rem; font-size: .62rem; letter-spacing: .1em;
+  gap: .8rem; flex-wrap: wrap;
+}
+.pb-brand { font-family: var(--f-t); font-size: .72rem; font-weight: 300;
+  letter-spacing: .3em; color: rgba(255,255,255,.65); }
+.pb-brand span { color: var(--gold); }
+.pb-right { display: flex; gap: .5rem; align-items: center; }
+.btn-print {
+  padding: .35rem .9rem; border-radius: 4px; border: none; cursor: pointer;
+  font-family: var(--f-b); font-size: .68rem; font-weight: 700; letter-spacing: .07em;
+  background: var(--gold); color: #fff; transition: background .15s;
+}
+.btn-print:hover { background: #b5841f; }
+
+/* ── Report content ── */
+#report-content { max-width: 980px; margin: 0 auto; padding: 0 1rem 3rem; }
+
+.rpt-cover {
+  background: var(--dark); color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 3rem 3.5rem; min-height: 220px; gap: 2rem; flex-wrap: wrap;
+  border-bottom: 3px solid var(--gold); margin-bottom: 1.5rem;
+}
+.rc-brand { font-family: var(--f-t); font-size: .8rem; letter-spacing: .38em;
+  font-weight: 300; color: rgba(255,255,255,.5); }
+.rc-brand span { color: var(--gold); }
+.rc-ksup { font-size: .54rem; letter-spacing: .3em; color: rgba(255,255,255,.3); margin-bottom: .8rem; }
+.rc-sep { width: 40px; height: 2px; background: var(--gold); margin: .8rem 0; }
+.rc-lbl { font-size: .56rem; letter-spacing: .24em; color: rgba(255,255,255,.35); margin-bottom: .2rem; }
+.rc-title { font-family: var(--f-t); font-size: 2rem; font-weight: 800; letter-spacing: .04em; line-height: 1.1; }
+.rc-sub { font-size: .6rem; letter-spacing: .2em; color: rgba(255,255,255,.4); margin-top: .6rem; }
+.rc-kpis { display: flex; gap: .7rem; flex-wrap: wrap; }
+.rc-kpi { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--r); padding: .8rem 1rem; text-align: center; min-width: 80px; }
+.rc-kpi .kn { font-family: var(--f-t); font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.rc-kpi .kl { font-size: .48rem; letter-spacing: .14em; color: rgba(255,255,255,.4); margin-top: .2rem; }
+
+/* Module dividers */
+.rpt-module-divider {
+  background: var(--dark); color: #fff;
+  padding: .5rem 1.5rem; font-family: var(--f-t); font-size: .65rem;
+  letter-spacing: .25em; font-weight: 700; border-top: 3px solid var(--gold);
+  margin: 1.5rem 0 .8rem;
+}
+
+/* Area sections */
+.rpt-area { background: #fff; border-radius: var(--r); margin-bottom: 1.2rem;
+  border: 1px solid var(--border); overflow: hidden; }
+.rpt-ah { padding: 1rem 1.5rem; display: flex; align-items: center;
+  justify-content: space-between; border-left: 4px solid; flex-wrap: wrap; gap: .6rem; }
+.rpt-ah-left { display: flex; align-items: center; gap: .8rem; }
+.rpt-ah-n { font-family: var(--f-t); font-size: 2.4rem; font-weight: 200;
+  color: var(--border); line-height: 1; }
+.rpt-ah-name { font-family: var(--f-t); font-size: 1.1rem; font-weight: 700; letter-spacing: .06em; }
+.rpt-ah-tag { font-size: .56rem; letter-spacing: .16em; font-weight: 700; margin-top: .15rem; }
+.rpt-pct { font-family: var(--f-t); font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.rpt-sbar { padding: .4rem 1.5rem; background: var(--cream); border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); display: flex; gap: 1rem; font-size: .64rem; font-weight: 600; }
+
+.rpt-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap: .8rem; padding: 1rem 1.5rem; }
+.rpt-photo { border-radius: var(--r); overflow: hidden; background: #eee; }
+.rpt-photo img { width: 100%; display: block; max-height: 210px; object-fit: cover; }
+.rpt-caption { padding: .45rem .6rem; background: #fff; border-top: 1px solid var(--border); }
+.rpt-badge { font-size: .57rem; font-weight: 700; letter-spacing: .07em; color: #fff;
+  padding: .14rem .42rem; border-radius: 2px; display: inline-block; margin-bottom: .2rem; }
+.rpt-note { font-size: .66rem; color: var(--mid); line-height: 1.4; text-align: justify; }
+
+/* Tables */
+.rpt-table { width: 100%; border-collapse: collapse; font-size: .7rem; }
+.rpt-table th { padding: .4rem .7rem; font-size: .55rem; letter-spacing: .1em; font-weight: 700;
+  color: var(--mid); border-bottom: 2px solid var(--border); background: #fff; text-align: left; }
+.rpt-table td { padding: .55rem .7rem; border-bottom: 1px solid #F5F2EC; vertical-align: top;
+  line-height: 1.45; text-align: justify; }
+.rpt-table tr:nth-child(even) td { background: #FAFAF8; }
+.tbadge { display: inline-block; padding: .16rem .45rem; border-radius: 2px;
+  font-size: .56rem; font-weight: 700; letter-spacing: .07em; color: #fff; }
+
+/* Dashboard */
+.rpt-dash { padding: 2rem 1.5rem; background: var(--cream); border-top: 3px solid var(--gold); margin-top: 1.5rem; }
+.rpt-dt { font-family: var(--f-t); font-size: 1.3rem; font-weight: 800; letter-spacing: .04em; }
+.rpt-ds { font-size: .6rem; letter-spacing: .16em; color: var(--mid); margin: .2rem 0 1.2rem; }
+.rpt-dkpis { display: flex; gap: .8rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.rpt-dk { background: #fff; border-radius: var(--r); padding: .8rem 1rem;
+  text-align: center; box-shadow: var(--shadow); border-top: 3px solid; min-width: 80px; }
+.rpt-dk .dn { font-family: var(--f-t); font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.rpt-dk .dl { font-size: .48rem; letter-spacing: .12em; color: var(--mid); margin-top: .2rem; font-weight: 700; }
+.d-table { width: 100%; border-collapse: collapse; font-size: .72rem; background: #fff;
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
+.d-table th { padding: .44rem .8rem; font-size: .56rem; letter-spacing: .1em; font-weight: 700;
+  color: #fff; background: var(--dark); text-align: left; }
+.d-table td { padding: .5rem .8rem; border-bottom: 1px solid #F0EDE8; vertical-align: middle; }
+.d-table tbody tr:last-child td { border-bottom: none; }
+.mbar { width: 90px; height: 5px; background: #F0EDE8; border-radius: 3px;
+  display: inline-block; vertical-align: middle; margin-right: .4rem; overflow: hidden; }
+
+/* Alimentos */
+.ali-report-table { width: 100%; border-collapse: collapse; font-size: .7rem; }
+.ali-report-table th { padding: .4rem .7rem; font-size: .55rem; letter-spacing: .1em;
+  font-weight: 700; color: var(--mid); border-bottom: 2px solid var(--border); text-align: left; }
+.ali-report-table td { padding: .5rem .7rem; border-bottom: 1px solid #F5F2EC; vertical-align: middle; }
+
+/* Footer DMZ */
+.dmz-footer {
+  text-align: center; padding: 2rem 1rem; font-size: .58rem; letter-spacing: .2em;
+  color: var(--mid); border-top: 1px solid var(--border); margin-top: 2rem;
+}
+.dmz-footer span { color: var(--gold); }
+
+/* Print */
+@media print {
+  #print-bar { display: none; }
+  #loading-screen, #error-screen { display: none !important; }
+  body { background: #fff; }
+  .rpt-module-divider { break-before: page; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-screen">
+  <div class="spinner-large"></div>
+  <div class="load-txt">CARGANDO REPORTE</div>
+  <div style="color:rgba(255,255,255,.3);font-size:.6rem;letter-spacing:.2em">
+    DE LA MORA ZUMARÁN · KITCHEN SUPPORT
+  </div>
+</div>
+
+<!-- Error -->
+<div id="error-screen">
+  <div class="err-box">
+    <div style="font-family:'Raleway',sans-serif;font-size:.62rem;letter-spacing:.28em;
+      color:var(--mid);margin-bottom:.5rem">DE LA MORA ZUMARÁN</div>
+    <div class="err-title" id="err-title">REPORTE NO ENCONTRADO</div>
+    <div class="err-msg" id="err-msg">
+      El enlace puede haber expirado o ser incorrecto.<br>
+      Contacta a tu asesor DMZ para obtener un nuevo acceso.
+    </div>
+  </div>
+</div>
+
+<!-- Barra de impresión -->
+<div id="print-bar" style="display:none">
+  <div class="pb-brand"><span>D</span>ELA<span>M</span>ORA<span>Z</span>UMARÁN · KITCHEN SUPPORT</div>
+  <div class="pb-right">
+    <span id="pb-client" style="color:rgba(255,255,255,.5);font-size:.65rem"></span>
+    <button class="btn-print" onclick="window.print()">Imprimir / PDF</button>
+  </div>
+</div>
+
+<!-- Contenido del reporte -->
+<div id="report-content" style="display:none"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DMZ PORTAL — Carga auditoría por token público
+═══════════════════════════════════════════════════════════ */
+const SB_URL  = 'https://ikgdpzgmkfkpinorwiob.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrZ2Rwemdta2ZrcGlub3J3aW9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2OTg5MTEsImV4cCI6MjA5MjI3NDkxMX0.I9vTx4CYFnzI29M3y-olEgut8v7oxAs_ajEmp90EKMo';
+
+const AC  = { critico: '#C0392B', observacion: '#E07B00', correcto: '#2E7D32' };
+const AL  = { critico: 'CRÍTICO', observacion: 'OBSERVACIÓN', correcto: 'CORRECTO' };
+const TC  = { INMEDIATO:'#C0392B','24 HRS':'#C0392B','48 HRS':'#E07B00','1 SEMANA':'#E07B00','1 MES':'#2E7D32' };
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(title, msg) {
+  document.getElementById('loading-screen').style.display = 'none';
+  const es = document.getElementById('error-screen');
+  es.style.display = 'flex';
+  document.getElementById('err-title').textContent = title;
+  document.getElementById('err-msg').textContent  = msg;
+}
+
+// Obtener token de la URL
+const params = new URLSearchParams(window.location.search);
+const token  = params.get('t');
+
+if (!token) {
+  showError('ENLACE INVALIDO', 'No se proporcionó un token de acceso. Verifica el enlace con tu asesor DMZ.');
+} else {
+  loadAuditoria(token);
+}
+
+async function loadAuditoria(token) {
+  try {
+    // Buscar auditoría por token público (política RLS permite lectura sin login)
+    const resp = await fetch(
+      `${SB_URL}/rest/v1/auditorias?portal_token=eq.${encodeURIComponent(token)}&select=*`,
+      { headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON } }
+    );
+
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const rows = await resp.json();
+
+    if (!rows || !rows.length) {
+      showError('REPORTE NO ENCONTRADO',
+        'El enlace puede haber expirado o ser incorrecto. Contacta a tu asesor DMZ.');
+      return;
+    }
+
+    const auditoria = rows[0];
+    const snap      = auditoria.snapshot;
+
+    if (!snap) {
+      showError('REPORTE SIN CONTENIDO',
+        'Esta auditoría no tiene datos generados. Contacta a tu asesor DMZ.');
+      return;
+    }
+
+    renderReport(auditoria, snap);
+  } catch(e) {
+    showError('ERROR DE CONEXIÓN', 'No se pudo cargar el reporte: ' + e.message);
+  }
+}
+
+function renderReport(auditoria, snap) {
+  const client  = auditoria.cliente_nombre || snap.client || 'Cliente';
+  const date    = new Date(auditoria.guardada_en).toLocaleDateString('es-MX',
+    { year:'numeric', month:'long', day:'numeric' });
+  const totC    = auditoria.total_criticos;
+  const totO    = auditoria.total_obs;
+  const totK    = auditoria.total_correctos;
+  const gPct    = auditoria.pct_cumplimiento;
+
+  // Áreas con fotos
+  let areaSections = '';
+  const AREAS = snap.customAreaDefs || [];
+  const defaultAreas = [
+    {id:'fachada',name:'EXTERIOR / FACHADA'},{id:'imagen',name:'IMAGEN / REDES'},
+    {id:'alimentos',name:'ALIMENTOS'},{id:'servicio',name:'SERVICIO'},
+    {id:'banos',name:'BAÑOS'},{id:'cocina',name:'COCINA'},
+    {id:'almacen',name:'ALMACÉN'},{id:'barra',name:'BARRA'},
+    {id:'terraza',name:'TERRAZA / SALÓN'},{id:'formatos',name:'FORMATOS'},
+    {id:'personal',name:'PERSONAL / RRHH'},
+  ];
+  const allAreas = [...defaultAreas, ...AREAS];
+
+  allAreas.forEach((a, ai) => {
+    const aData   = snap.areas?.[a.id];
+    const photos  = aData?.photos || [];
+    if (!photos.length) return;
+
+    let aC=0, aO=0, aK=0;
+    photos.forEach(p => {
+      if (p.alert==='critico') aC++;
+      else if (p.alert==='observacion') aO++;
+      else if (p.alert==='correcto') aK++;
+    });
+    const aT    = aC+aO+aK || 1;
+    const aPct  = Math.round(aK/aT*100);
+    const dCol  = aC > 0 ? '#C0392B' : aO > 0 ? '#E07B00' : '#2E7D32';
+    const dLbl  = aC > 0 ? 'ÁREA DE OPORTUNIDAD CRÍTICA' : aO > 0 ? 'ÁREA EN OBSERVACIÓN' : 'ÁREA EN NIVEL CORRECTO';
+
+    const photosHtml = photos.map(p => {
+      const col   = AC[p.alert] || '#888';
+      const lbl   = AL[p.alert] || 'SIN CLASIFICAR';
+      const notes = (p.notes || []).filter(n => n?.trim());
+      // Las fotos no se incluyen en el snapshot — mostrar placeholder
+      return `<div class="rpt-photo">
+        <div style="height:160px;background:#1a1a1a;display:flex;align-items:center;
+          justify-content:center;color:rgba(255,255,255,.2);font-size:.62rem;letter-spacing:.1em">
+          EVIDENCIA FOTOGRÁFICA
+        </div>
+        <div class="rpt-caption">
+          <span class="rpt-badge" style="background:${col}">${lbl}</span>
+          ${notes.map(n => `<div class="rpt-note">${esc(n)}</div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Hallazgos AI
+    let hallRows = '';
+    let rowN = 0;
+    photos.forEach(p => {
+      const s = p.aiSuggestion;
+      if (s && !s.error) {
+        rowN++;
+        const tc = TC[s.tiempo] || '#888';
+        hallRows += `<tr>
+          <td style="text-align:center;color:var(--mid);font-weight:700;font-size:.65rem;width:3%">${rowN}</td>
+          <td style="width:30%">${esc(s.area_oportunidad||'')}</td>
+          <td style="width:35%;color:var(--mid);font-style:italic">${esc(s.propuesta||'')}</td>
+          <td style="width:16%;font-size:.65rem">${esc(s.responsable||'')}</td>
+          <td style="width:16%"><span class="tbadge" style="background:${tc}">${s.tiempo||'—'}</span></td>
+        </tr>`;
+      }
+    });
+
+    areaSections += `<div class="rpt-area">
+      <div class="rpt-ah" style="border-left-color:${dCol}">
+        <div class="rpt-ah-left">
+          <div class="rpt-ah-n">${String(ai+1).padStart(2,'0')}</div>
+          <div>
+            <div class="rpt-ah-name">${esc(a.name)}</div>
+            <div class="rpt-ah-tag" style="color:${dCol}">${dLbl}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="rpt-pct" style="color:${dCol}">${aPct}%</div>
+          <div style="font-size:.52rem;letter-spacing:.1em;color:var(--mid)">cumplimiento</div>
+        </div>
+      </div>
+      <div class="rpt-sbar">
+        <span style="color:#C0392B">${aC} Críticos</span>
+        <span style="color:#E07B00">${aO} Observaciones</span>
+        <span style="color:#2E7D32">${aK} Correctos</span>
+      </div>
+      <div class="rpt-photos">${photosHtml}</div>
+      ${hallRows ? `<div style="padding:.8rem 1.5rem;border-top:1px solid var(--border)">
+        <div style="font-size:.54rem;letter-spacing:.18em;font-weight:700;color:var(--mid);
+          margin-bottom:.6rem">ÁREAS DE OPORTUNIDAD Y PROPUESTAS</div>
+        <table class="rpt-table">
+          <thead><tr>
+            <th>#</th><th>HALLAZGO</th><th>PROPUESTA</th>
+            <th>RESPONSABLE</th><th>TIEMPO</th>
+          </tr></thead>
+          <tbody>${hallRows}</tbody>
+        </table>
+      </div>` : ''}
+    </div>`;
+  });
+
+  if (!areaSections) {
+    areaSections = `<div style="padding:2rem;text-align:center;color:var(--mid);font-size:.78rem">
+      Sin áreas evaluadas registradas en esta auditoría.</div>`;
+  }
+
+  // Módulo alimentos
+  let aliSection = '';
+  const aliItems = snap.aliState?.items || [];
+  if (aliItems.filter(i => i.nombre).length) {
+    const rows = aliItems.filter(i => i.nombre).map((item, i) => {
+      const eCol = item.estandar==='cumple'?'#2E7D32':item.estandar==='desviacion'?'#C0392B':'#888';
+      const eLbl = item.estandar==='cumple'?'CUMPLE':item.estandar==='desviacion'?'DESVIACIÓN':'—';
+      const tNum = parseFloat(item.temperatura);
+      const lNum = parseFloat(item.tempLimite);
+      const over = !isNaN(tNum) && !isNaN(lNum) && tNum > lNum;
+      return `<tr>
+        <td style="text-align:center;color:var(--mid);font-weight:700;font-size:.65rem">${i+1}</td>
+        <td style="font-weight:600">${esc(item.nombre)}</td>
+        <td style="text-align:center;color:${over?'#C0392B':'#2E7D32'};font-weight:700">
+          ${item.temperatura!==''?item.temperatura+' °C':'—'}
+          ${item.tempLimite!==''?`<span style="color:var(--mid);font-weight:400"> / ${item.tempLimite}°C</span>`:''}
+        </td>
+        <td style="text-align:center"><span class="tbadge" style="background:${eCol}">${eLbl}</span></td>
+        <td style="color:var(--mid)">${esc(item.organoleptica||'—')}</td>
+      </tr>`;
+    }).join('');
+
+    aliSection = `<div class="rpt-area">
+      <div class="rpt-ah" style="border-left-color:#E07B00">
+        <div class="rpt-ah-left">
+          <div class="rpt-ah-n" style="color:#E07B00">AL</div>
+          <div>
+            <div class="rpt-ah-name">CALIFICACIÓN DE ALIMENTOS</div>
+            <div class="rpt-ah-tag" style="color:#E07B00">TEMPERATURA · ESTÁNDAR · ORGANOLÉPTICA</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:.8rem 1.5rem;overflow-x:auto">
+        <table class="ali-report-table">
+          <thead><tr>
+            <th style="width:3%">#</th>
+            <th>INSUMO / PRODUCTO</th>
+            <th style="text-align:center">TEMPERATURA</th>
+            <th style="text-align:center">ESTÁNDAR</th>
+            <th>CALIDAD ORGANOLÉPTICA</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // Módulo clima
+  let climaSection = '';
+  const cl2 = snap.cl2State;
+  if (cl2?.resumen) {
+    climaSection = `<div class="rpt-area" style="padding:1.5rem">
+      <div style="font-family:var(--f-t);font-size:.85rem;font-weight:700;letter-spacing:.06em;
+        margin-bottom:.4rem">EVALUACIÓN DE CLIMA LABORAL</div>
+      <div style="font-size:.58rem;letter-spacing:.18em;color:var(--mid);margin-bottom:1rem">
+        ${cl2.colaboradores?.length||0} COLABORADORES EVALUADOS
+      </div>
+      <div style="font-size:.78rem;color:var(--dark);line-height:1.7;white-space:pre-wrap">
+        ${esc(cl2.resumen)}
+      </div>
+    </div>`;
+  }
+
+  // Módulo hallazgos
+  let hallSection = '';
+  const hz = snap.hallazgosState;
+  if (hz?.planAccion?.length) {
+    const TCOL = {'INMEDIATO':'#C0392B','24 HRS':'#C0392B','48 HRS':'#E07B00','1 SEMANA':'#E07B00','1 MES':'#2E7D32'};
+    const CCOL = {critico:'#C0392B',observacion:'#E07B00',correcto:'#2E7D32'};
+    const rows = hz.planAccion.map((item,i) => {
+      const tc = TCOL[item.tiempo]||'#888';
+      const cc = CCOL[item.categoria]||'#888';
+      return `<tr>
+        <td style="text-align:center;color:var(--mid);font-weight:700;font-size:.65rem;width:3%">${i+1}</td>
+        <td style="width:22%;font-weight:600;font-size:.7rem">${esc(item.hallazgo)}
+          <span class="tbadge" style="background:${cc};margin-top:.2rem;display:inline-block">
+            ${item.categoria?.toUpperCase()||''}</span></td>
+        <td style="width:28%;font-size:.7rem">${esc(item.solucion)}</td>
+        <td style="width:25%;font-size:.68rem;color:var(--mid);font-style:italic">${esc(item.mejora)}</td>
+        <td style="width:11%;text-align:center">
+          <span class="tbadge" style="background:${tc}">${esc(item.tiempo)}</span></td>
+        <td style="width:11%;text-align:center;font-size:.65rem;color:var(--mid)">
+          ${esc(item.turno||'')}</td>
+      </tr>`;
+    }).join('');
+
+    hallSection = `<div class="rpt-area">
+      <div class="rpt-ah" style="border-left-color:var(--gold)">
+        <div class="rpt-ah-left">
+          <div class="rpt-ah-n" style="color:var(--gold)">PA</div>
+          <div>
+            <div class="rpt-ah-name">PLAN DE ACCIÓN Y MEJORAS</div>
+            <div class="rpt-ah-tag" style="color:var(--gold)">
+              SOLUCIONES · MEJORAS · TIEMPOS POR TURNO
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:.8rem 1.5rem;overflow-x:auto">
+        <table class="rpt-table">
+          <thead><tr>
+            <th>#</th><th>HALLAZGO</th><th>SOLUCIÓN</th>
+            <th>MEJORA</th><th>TIEMPO</th><th>TURNO</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // Dashboard
+  let dashRows = '';
+  allAreas.forEach((a, ai) => {
+    const photos = snap.areas?.[a.id]?.photos || [];
+    if (!photos.length) return;
+    let aC=0, aO=0, aK=0;
+    photos.forEach(p => {
+      if (p.alert==='critico') aC++;
+      else if (p.alert==='observacion') aO++;
+      else if (p.alert==='correcto') aK++;
+    });
+    const aT   = aC+aO+aK || 1;
+    const aPct = Math.round(aK/aT*100);
+    const col  = aPct < 30 ? '#C0392B' : aPct < 60 ? '#E07B00' : '#2E7D32';
+    dashRows += `<tr>
+      <td style="color:var(--mid);font-size:.64rem;font-weight:700;text-align:center">
+        ${String(ai+1).padStart(2,'0')}</td>
+      <td style="font-weight:600">${esc(a.name)}</td>
+      <td style="color:#C0392B;font-weight:700;text-align:center">${aC}</td>
+      <td style="color:#E07B00;font-weight:700;text-align:center">${aO}</td>
+      <td style="color:#2E7D32;font-weight:700;text-align:center">${aK}</td>
+      <td>
+        <div class="mbar"><div style="width:${aPct}%;background:${col};height:100%;border-radius:2px"></div></div>
+        <b style="color:${col};font-size:.68rem">${aPct}%</b>
+      </td>
+    </tr>`;
+  });
+
+  // Ensamblar reporte completo
+  document.getElementById('report-content').innerHTML = `
+    <div class="rpt-cover">
+      <div>
+        <div class="rc-brand"><span>D</span>ELA<span>M</span>ORA<span>Z</span>UMARÁN</div>
+        <div class="rc-ksup">KITCHEN SUPPORT</div>
+        <div class="rc-sep"></div>
+        <div class="rc-lbl">CLIENTE</div>
+        <div class="rc-title">${esc(client.toUpperCase())}</div>
+        <div class="rc-sub">REPORTE DE AUDITORÍA OPERATIVA · ${date}</div>
+      </div>
+      <div class="rc-kpis">
+        <div class="rc-kpi"><div class="kn" style="color:#C0392B">${totC}</div><div class="kl">CRÍTICOS</div></div>
+        <div class="rc-kpi"><div class="kn" style="color:#E07B00">${totO}</div><div class="kl">OBSERVACIONES</div></div>
+        <div class="rc-kpi"><div class="kn" style="color:#2E7D32">${totK}</div><div class="kl">CORRECTOS</div></div>
+        <div class="rc-kpi"><div class="kn" style="color:var(--gold)">${gPct}%</div><div class="kl">CUMPLIMIENTO</div></div>
+      </div>
+    </div>
+
+    <div class="rpt-module-divider">I · EVIDENCIA FOTOGRÁFICA POR ÁREA</div>
+    ${areaSections}
+
+    ${dashRows ? `<div class="rpt-dash">
+      <div class="rpt-dt">Dashboard Global</div>
+      <div class="rpt-ds">RESUMEN EJECUTIVO · ${esc(client.toUpperCase())}</div>
+      <div class="rpt-dkpis">
+        <div class="rpt-dk" style="border-color:#C0392B"><div class="dn" style="color:#C0392B">${totC}</div><div class="dl">CRÍTICOS</div></div>
+        <div class="rpt-dk" style="border-color:#E07B00"><div class="dn" style="color:#E07B00">${totO}</div><div class="dl">OBSERVACIONES</div></div>
+        <div class="rpt-dk" style="border-color:#2E7D32"><div class="dn" style="color:#2E7D32">${totK}</div><div class="dl">CORRECTOS</div></div>
+        <div class="rpt-dk" style="border-color:var(--gold)"><div class="dn" style="color:var(--gold)">${gPct}%</div><div class="dl">CUMPLIMIENTO</div></div>
+      </div>
+      <table class="d-table">
+        <thead><tr>
+          <th style="width:4%">#</th><th>ÁREA</th>
+          <th style="color:#C0392B;text-align:center;width:9%">CRÍT.</th>
+          <th style="color:#E07B00;text-align:center;width:9%">OBS.</th>
+          <th style="color:#2E7D32;text-align:center;width:9%">OK</th>
+          <th>% CUMPLIMIENTO</th>
+        </tr></thead>
+        <tbody>${dashRows}</tbody>
+      </table>
+    </div>` : ''}
+
+    <div class="rpt-module-divider">II · EVALUACIÓN DE CLIMA LABORAL</div>
+    ${climaSection || `<div style="padding:1rem 1.5rem;color:var(--mid);font-size:.75rem">Sin datos de clima laboral en esta auditoría.</div>`}
+
+    <div class="rpt-module-divider">III · CALIFICACIÓN DE ALIMENTOS</div>
+    ${aliSection || `<div style="padding:1rem 1.5rem;color:var(--mid);font-size:.75rem">Sin datos de calificación de alimentos en esta auditoría.</div>`}
+
+    <div class="rpt-module-divider">IV · HALLAZGOS Y PLAN DE ACCIÓN</div>
+    ${hallSection || `<div style="padding:1rem 1.5rem;color:var(--mid);font-size:.75rem">Sin plan de acción generado en esta auditoría.</div>`}
+
+    <div class="dmz-footer">
+      POWERED BY <span>DMZ</span> · DE LA MORA ZUMARÁN · KITCHEN SUPPORT · ${new Date().getFullYear()}
+    </div>`;
+
+  // Mostrar todo
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('report-content').style.display = 'block';
+  document.getElementById('print-bar').style.display = 'flex';
+  document.getElementById('pb-client').textContent = client.toUpperCase() + ' · ' + date;
+  document.title = 'Reporte ' + client + ' · DMZ';
+}
+</script>
+</body>
+</html>
