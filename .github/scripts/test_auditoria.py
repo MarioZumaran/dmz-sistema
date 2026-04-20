@@ -227,6 +227,62 @@ check('te06', 'CL2 tiene 13 preguntas',    src.count('¿') >= 13,   f'{src.count
 check('te07', 'No hay "localStorage only"','localStorage only' not in src, 'OK', 'Frase obsoleta presente')
 
 # ══════════════════════════════════════════════════════════════════
+
+# GRUPO 12: FUNCIONALES — FLUJO Y BOTONES
+print(f'{BOLD}[12] FUNCIONALES{RESET}')
+check('fn01', 'Drop zone presente',            'id="drop-zone"' in src,               'Presente', 'FALTANTE')
+check('fn02', 'File input formatos RAW',       '.dng' in src and '.nef' in src,        'Presente', 'FALTANTE')
+check('fn03', 'Boton analizar area',           'id="btn-analyze-all"' in src,          'Presente', 'FALTANTE')
+check('fn04', 'Input cliente',                 'id="inp-client"' in src,               'Presente', 'FALTANTE')
+check('fn05', 'Input API key',                 'id="inp-key"' in src,                  'Presente', 'FALTANTE')
+check('fn06', 'Photo grid container',          'id="photo-grid"' in src,               'Presente', 'FALTANTE')
+check('fn07', 'Annotation modal',              'id="ann-modal"' in src,                'Presente', 'FALTANTE')
+check('fn08', 'Session modal',                 'id="session-modal"' in src,            'Presente', 'FALTANTE')
+check('fn09', 'Toast element',                 'id="toast"' in src,                    'Presente', 'FALTANTE')
+check('fn10', 'markDirty() definida',          fn_defined(src, 'markDirty'),           'Definida',  'FALTANTE')
+check('fn11', 'Auto-save 60s',                 '60000' in src,                         'Presente', 'FALTANTE')
+check('fn12', 'Chips de incidencia',           'chips-row' in src,                     'Presente', 'FALTANTE')
+check('fn13', 'Plan accion editable',          'contenteditable="true"' in src,        'Presente', 'FALTANTE')
+check('fn14', 'buildAlimentosView en setMode', "buildAlimentosView()" in src,          'Presente', 'FALTANTE')
+check('fn15', 'Hz textarea presente',          'id="hz-textarea"' in src,              'Presente', 'FALTANTE')
+
+# GRUPO 13: API ANTHROPIC
+print(f'{BOLD}[13] API ANTHROPIC{RESET}')
+check('ap01', 'Endpoint /v1/messages',         '/v1/messages' in src,                  'Presente', 'FALTANTE')
+check('ap02', 'claude-haiku modelo',           'claude-haiku' in src,                  'Presente', 'FALTANTE')
+check('ap03', 'claude-sonnet modelo',          'claude-sonnet' in src,                 'Presente', 'FALTANTE')
+check('ap04', 'Header dangerous-direct',       'anthropic-dangerous-direct-browser-access' in src, 'Presente', 'FALTANTE')
+check('ap05', 'anthropic-version header',      'anthropic-version' in src,             'Presente', 'FALTANTE')
+check('ap06', 'analyzeAll() definida',         fn_defined(src, 'analyzeAll'),          'Definida',  'FALTANTE')
+check('ap07', 'Response content[0].text',      "content?.[0]?.text" in src or "content[0].text" in src, 'Presente', 'FALTANTE')
+check('ap08', 'max_tokens configurado',        'max_tokens' in src,                    'Presente', 'FALTANTE')
+check('ap09', 'JSON.parse respuesta AI',       'JSON.parse' in src,                    'Presente', 'FALTANTE')
+check('ap10', 'catch(err) error handling',     'catch(err)' in src or 'catch(e)' in src, 'Presente', 'FALTANTE')
+check('ap11', 'Prompt plan de accion',         'Plan de Acción estructurado' in src or 'plan de accion' in src.lower(), 'Presente', 'FALTANTE')
+check('ap12', 'Validacion apiKey startsWith',  "startsWith('sk-ant-')" in src,         'Presente', 'FALTANTE')
+
+# GRUPO 14: REGRESION VISUAL — CSS
+print(f'{BOLD}[14] REGRESION VISUAL{RESET}')
+check('vi01', 'CSS var --gold',                '--gold' in src,                         'Presente', 'FALTANTE')
+check('vi02', 'CSS var --dark',                '--dark' in src,                         'Presente', 'FALTANTE')
+check('vi03', 'Font Raleway',                  "'Raleway'" in src,                      'Presente', 'FALTANTE')
+check('vi04', 'Topbar 52px',                   'height: 52px' in src,                   'Presente', 'FALTANTE')
+check('vi05', 'Card layout row',               'flex-direction: row' in src,            'Presente', 'FALTANTE')
+check('vi06', 'Photo 45% width',               'width: 45%' in src,                     'Presente', 'FALTANTE')
+check('vi07', 'object-fit cover',              'object-fit: cover' in src,              'Presente', 'FALTANTE')
+check('vi08', 'Sidebar 196px',                 'width: 196px' in src,                   'Presente', 'FALTANTE')
+check('vi09', 'Ali-grid minmax 340px',         'minmax(340px' in src,                   'Presente', 'FALTANTE')
+check('vi10', '@keyframes spin',               '@keyframes spin' in src,                'Presente', 'FALTANTE')
+check('vi11', '@keyframes pulse',              '@keyframes pulse' in src,               'Presente', 'FALTANTE')
+check('vi12', '@media print',                  '@media print' in src,                   'Presente', 'FALTANTE')
+check('vi13', 'rpt-module-divider CSS',        '.rpt-module-divider' in src,            'Presente', 'FALTANTE')
+check('vi14', 'Drive strip CSS',               '#drive-strip' in src,                   'Presente', 'FALTANTE')
+check('vi15', 'Gold #C9952A',                  'C9952A' in src,                         'Presente', 'FALTANTE')# ══════════════════════════════════════════════════════════════════
+
+
+check('vi15', 'Gold #C9952A',                  'C9952A' in src,                         'Presente', 'FALTANTE')
+
+
 # REPORTE FINAL
 # ══════════════════════════════════════════════════════════════════
 total = len(results)
